@@ -67,8 +67,10 @@ const InputManager = (page, socket, uid)=>{
         input.move_dx = delta * horizontal;
         input.move_dy = delta * vertical;
         input.input_sequence_number = input_sequence_number;
-        socket.emit('input', input);
+        if(vertical == 0 && horizontal == 0)
+            return;
 
+        socket.emit('input', input);
         pending_inputs.push(input);
     }
     //#endregion
