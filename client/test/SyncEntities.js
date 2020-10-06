@@ -48,9 +48,10 @@ const SyncEntities = (page, socket, uid)=>{
     }
     const processServerMessages = (data)=>{
         if(!networkEnt[data.entity_id]){
+            //uid = data.entity_id;
             networkEnt[data.entity_id] = data.entity_properties;
         }
-        if(data.entity_id === uid){
+        if(data.entity_id === uid){ 
             networkEnt[uid].x = data.entity_properties.x;
             networkEnt[uid].y = data.entity_properties.y;
 
@@ -99,8 +100,8 @@ const SyncEntities = (page, socket, uid)=>{
         InterpolateEntities();
         for(let key in entities){
             let cur = entities[key];
-            cur.x = networkEnt[key].x;
-            cur.y = networkEnt[key].y;
+            cur.position.x = networkEnt[key].x;
+            cur.position.y = networkEnt[key].y;
         }
     }
     //#endregion

@@ -3,7 +3,7 @@
 //#endregion
 
 const InputManager = (page, socket, uid)=>{
-    let input_sequence_number;
+    let input_sequence_number = 0;
     let pending_inputs = [];
     let wasd = [0,0,0,0];
     let vertical = 0;
@@ -62,13 +62,14 @@ const InputManager = (page, socket, uid)=>{
         //#endregion
     }
     const onUpdate = (delta)=>{
-        let input = { entity_id: uid };
         assessInput();
-        input.move_dx = delta * horizontal;
-        input.move_dy = delta * vertical;
-        input.input_sequence_number = input_sequence_number;
         if(vertical == 0 && horizontal == 0)
             return;
+
+        let input = { entity_id: uid };
+        input.move_dx = delta * horizontal;
+        input.move_dy = delta * vertical;
+        input.input_sequence_number = input_sequence_number++;
 
         socket.emit('input', input);
         pending_inputs.push(input);

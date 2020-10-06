@@ -39,7 +39,6 @@ const AnotherApp = ()=>{
             pages[curPageInd].events.emit('exit');
 
             uid = _uid;
-            console.log(uid);
             pages.push(SyncEntitiesConst(InputManagerConst(Page(), socket, uid), socket, uid));
             curPageInd = 1;
             pages[curPageInd].addObj(
