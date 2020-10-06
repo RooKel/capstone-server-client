@@ -1,30 +1,19 @@
 import { Scene, Color, PerspectiveCamera, AmbientLight, WebGLRenderer } from 'three'
-
 import * as THREE from 'three';
-
 import Client from './Client.js'
 
 const App = ()=>{
     const Init = ()=>{
         // make a socket and bind in client
         let client = new Client();
-
         // create socket
         client.io = io();
-
         // send login message to server
         client.io.emit("login", true);
-
         // accept a login and get unique id from the server.
         client.io.on("login_accept", function(uid) {
             client.entity_id = uid;
         });
-
-
-
-
-
-
 
         // ***** Rendering part ******
         // declare renderer and set viewport
@@ -89,12 +78,6 @@ const App = ()=>{
             delete client.entities[uid];
             delete circles[uid];
         })
-
-
-
-
-
-
 
         // key handler part
         // when the player presses the arrow keys, set the corresponding flag in the client.
