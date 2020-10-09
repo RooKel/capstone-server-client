@@ -13,14 +13,11 @@ const EventQueue = ()=>{
             trigHand[name].forEach((x)=>x(args));
         }
     }
-    const clear = ()=>{
-        trigHand.clear();
-    }
 
     return {
         on: (name, handler)=>on(name, handler),
         emit: (name, ...args)=>emit(name, args),
-        clear: ()=>clear(),
+        clear: ()=>trigHand.clear(),
     }
 }
 

@@ -1,8 +1,5 @@
-//#region imports
 
-//#endregion
-
-const InputManager = (page, socket, uid)=>{
+const InputManager = (page, socket, client_data)=>{
     let input_sequence_number = 0;
     let pending_inputs = [];
     let wasd = [0,0,0,0];
@@ -66,7 +63,7 @@ const InputManager = (page, socket, uid)=>{
         if(vertical == 0 && horizontal == 0)
             return;
 
-        let input = { entity_id: uid };
+        let input = { entity_id: client_data.uid };
         input.move_dx = delta * horizontal;
         input.move_dy = delta * vertical;
         input.input_sequence_number = input_sequence_number++;
@@ -87,8 +84,5 @@ const InputManager = (page, socket, uid)=>{
         horizontal: ()=>horizontal,
     }
 }
-const InputManagerConst = (page, socket, uid)=>{
-    return Object.assign(page, InputManager(page, socket, uid));
-}
 
-export { InputManagerConst }
+export default InputManager
