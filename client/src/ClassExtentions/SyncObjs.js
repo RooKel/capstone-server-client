@@ -13,8 +13,10 @@ const SyncObjs = (page, socket, client_data)=>{
         let render_timestamp = now - (1000.0/ server_update_rate);
         for(let key in netw_objs){
             let cur = netw_objs[key];
-            if(cur.entity_id == client_data.uid)
+            //BUG: cur_entity_id is undefined
+            if(cur.entity_id === client_data.uid){
                 return;
+            }
             let buffer = cur.position_buffer;
             while(buffer.length >= 2 && buffer[1][0] <= render_timestamp){
                 buffer.shift();
@@ -40,7 +42,8 @@ const SyncObjs = (page, socket, client_data)=>{
         objs[_uid] = cube;
         //#endregion
         objs[_uid].position.x = data.x;
-        objs[_uid].position.y = data.y;
+        objs[_uid].position.y = 1;
+        objs[_uid].position.z = data.y;
         //objs[_uid].position.z = 0;
         page.scene.add(objs[_uid]);
     }
@@ -104,7 +107,7 @@ const SyncObjs = (page, socket, client_data)=>{
         for(let key in objs){
             let cur = objs[key];
             cur.position.x = netw_objs[key].x;
-            cur.position.y = netw_objs[key].y;
+            cur.position.z = -netw_objs[key].y;
         }
     }
     //#endregion

@@ -20,6 +20,8 @@ const StartPage = (page, socket, events, client_data)=>{
     }
     const OnExit = ()=>{
         //#region deregister socket events handlers
+        console.log('start onexit');
+        document.removeEventListener()
         socket.off('login_accept', LoginAccept);
         //#endregion
     }

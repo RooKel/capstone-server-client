@@ -46,7 +46,7 @@ const TestPage = (page, socket, events, client_data)=>{
     //#region extend page
     Object.assign(page, InputManager(page, socket, client_data));
     Object.assign(page, SyncObjs(page, socket, client_data));
-    Object.assign(page.camera, TargetCamera(page));
+    //Object.assign(page.camera, TargetCamera(page));
     //#endregion
     return page;
 }
