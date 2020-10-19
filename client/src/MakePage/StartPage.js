@@ -7,21 +7,22 @@ const StartPage = (page, socket, events, client_data)=>{
     }
     //#endregion
     //#region page event handlers
+    const OnKeyDown = (e)=>{
+        if(e.code === 'KeyQ')
+            socket.emit('login', true);
+    }
     const OnEnter = ()=>{
         //#region register socket events handlers
         socket.on('login_accept', LoginAccept);
         //#endregion
 
         //TEST
-        document.addEventListener('keydown', (e)=>{
-            if(e.code === 'KeyQ')
-                socket.emit('login', true);
-        })
+        document.addEventListener('keydown', OnKeyDown)
     }
     const OnExit = ()=>{
         //#region deregister socket events handlers
         console.log('start onexit');
-        document.removeEventListener()
+        document.removeEventListener('keydown', OnKeyDown);
         socket.off('login_accept', LoginAccept);
         //#endregion
     }

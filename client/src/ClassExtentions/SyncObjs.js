@@ -13,8 +13,7 @@ const SyncObjs = (page, socket, client_data)=>{
         let render_timestamp = now - (1000.0/ server_update_rate);
         for(let key in netw_objs){
             let cur = netw_objs[key];
-            //BUG: cur_entity_id is undefined
-            if(cur.entity_id === client_data.uid){
+            if(key === client_data.uid){
                 return;
             }
             let buffer = cur.position_buffer;
