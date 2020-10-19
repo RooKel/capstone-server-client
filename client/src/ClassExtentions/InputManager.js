@@ -33,7 +33,7 @@ const InputManager = (page, socket, client_data)=>{
     const OnMouseMove = (e)=>{
         //if(!pointerLocked)
         //    return;
-        
+
         mouse_dx = e.offsetX - prev_mouseX;
         mouse_dy = e.offsetY - prev_mouseY;
 
@@ -47,14 +47,14 @@ const InputManager = (page, socket, client_data)=>{
         //    return;
 
         //
-        domElement.requestPointerLock = domElement.requestPointerLock ||
+       /* domElement.requestPointerLock = domElement.requestPointerLock ||
             domElement.mozRequestPointerLock ||
             domElement.webkitRequestPointerLock;
-        domElement.requestPointerLock();
+        domElement.requestPointerLock();*/
     }
     const OnPointerLockChange = ()=>{
-        if(enabled)
-            pointerLocked = !pointerLocked;
+        /*if(enabled)
+            pointerLocked = !pointerLocked;*/
     }
 
     //#region key event handlers

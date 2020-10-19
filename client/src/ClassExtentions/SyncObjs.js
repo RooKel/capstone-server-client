@@ -1,5 +1,6 @@
 //#region imports
 import * as THREE from 'three'
+import {Quaternion} from "three";
 //#endregion
 
 const SyncObjs = (page, socket, client_data)=>{
@@ -7,7 +8,7 @@ const SyncObjs = (page, socket, client_data)=>{
     let netw_objs = {};
     const server_update_rate = 12;
 
-    
+
 
     //#region helper functions
     const InterpolateObjs = ()=>{
@@ -25,7 +26,7 @@ const SyncObjs = (page, socket, client_data)=>{
                 let x0 = buffer[0][1]; let x1 = buffer[1][1];
                 let y0 = buffer[0][2]; let y1 = buffer[1][2];
                 let t0 = buffer[0][0]; let t1 = buffer[1][0];
-          
+
                 cur.x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
                 cur.y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
             }
@@ -52,7 +53,7 @@ const SyncObjs = (page, socket, client_data)=>{
             netw_objs[data.entity_id] = data.entity_properties;
         }
 
-        if(data.entity_id === client_data.uid){ 
+        if(data.entity_id === client_data.uid){
             netw_objs[client_data.uid].x = data.entity_properties.x;
             netw_objs[client_data.uid].y = data.entity_properties.y;
             netw_objs[client_data.uid].quaternion = data.entity_properties.quaternion;
@@ -104,6 +105,15 @@ const SyncObjs = (page, socket, client_data)=>{
         if(input) {
             netw_objs[client_data.uid].x += input.move_dx * netw_objs[client_data.uid].speed;
             netw_objs[client_data.uid].y += input.move_dy * netw_objs[client_data.uid].speed;
+
+            let tempQuat = new Quaternion();
+            let tempRot = objs[client_data.uid].rotation;
+            tempRot.x -= input.mouse_dx;
+            tempRot.y -= input.mouse_dy;
+            tempQuat.setFromEuler(tempRot);
+            tempQuat.normalize();
+            netw_objs[client_data.uid].quaternion = tempQuat;
+
             console.log(netw_objs[client_data.uid].quaternion);
         }
         InterpolateObjs();
@@ -111,8 +121,12 @@ const SyncObjs = (page, socket, client_data)=>{
             let cur = objs[key];
             cur.position.x = netw_objs[key].x;
             cur.position.y = netw_objs[key].y;
-            cur.quaternion.copy(netw_objs[key].quaternion);
-            console.log(cur);
+            let tempQuat = new Quaternion();
+            tempQuat.x = netw_objs[key].quaternion._x;
+            tempQuat.y = netw_objs[key].quaternion._y;
+            tempQuat.z = netw_objs[key].quaternion._z;
+            tempQuat.w = netw_objs[key].quaternion._w;
+            page.camera.quaternion.copy(tempQuat);
         }
     }
     //#endregion
