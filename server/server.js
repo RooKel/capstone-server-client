@@ -1,8 +1,10 @@
 // make a express and convert http to websocket
 var express = require('express');
+const { Vector3, Quaternion } = require('three');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+var THREE = require('three');
 
 // set view engine to ejs engine, and routing to dist path for static web file
 app.set('views', 'dist');
@@ -43,7 +45,8 @@ var updateClock = function() {
 }
 var timer = setInterval(updateClock, 1000 / fps);
 
-
+var x_rot_value = 0;
+var y_rot_value = 0;
 
 // socket part
 // socket.emit   : Sender only
@@ -54,14 +57,16 @@ function onConnect(socket) {
     socket.on('login', function(data) {
         // create new entity for connected user's avatar
         var entity = new Entity();
-        
         // TODO: this part will be modified to get gltf file from s3
         entity.color = getRandomColor();
 
         // store entity data into entities array
         entities[socket.id] = entity;
 
-        // send login accept message to sender 
+        if (!entities[socket.id].quaternion)
+        entities[socket.id].quaternion = new THREE.Quaternion();
+
+        // send login accept message to sender
         socket.emit('login_accept', socket.id);
 
         // send each entity data because socket.io doesn't support to send dictionary data
@@ -70,7 +75,7 @@ function onConnect(socket) {
         }
 
         // sending to all clients except sender
-        socket.broadcast.emit('other_joined', socket.id, entities[socket.id]); 
+        socket.broadcast.emit('other_joined', socket.id, entities[socket.id]);
 
         // make sender starting update and rendering
         socket.emit('run', true);
@@ -79,7 +84,7 @@ function onConnect(socket) {
         console.log(instances);
     });
 
-    // if disconnection happenes, send delete entity message to clients 
+    // if disconnection happenes, send delete entity message to clients
     socket.on('disconnect', function(reason) {
         delete entities[socket.id];
         io.emit('delete_entity', socket.id);
@@ -91,6 +96,16 @@ function onConnect(socket) {
         // update the state of the entity
         entities[uid].x += data.move_dx * entities[uid].speed;
         entities[uid].y += data.move_dy * entities[uid].speed;
+
+        // update rotation
+        x_rot_value -= data.mouse_dx;
+        y_rot_value -= data.mouse_dy;
+        let tempQuat = new Quaternion();
+        tempQuat.setFromEuler(new THREE.Euler(y_rot_value, x_rot_value, 0));
+        tempQuat.normalize();
+        entities[uid].quaternion.copy(tempQuat);
+
+        console.log(entities[uid].quaternion);
         last_processed_input[uid] = data.input_sequence_number;
     });
 }
