@@ -1,6 +1,10 @@
+const { Quaternion } = require('three');
 var Entity = function() {
     this.x = -4;
     this.y = 1;
+
+    this.quaternion = new Quaternion();
+    this.rotation = 0;
 
     this.color = 0;
     this.speed = 2;
