@@ -114,6 +114,14 @@ function Editor() {
 	this.cameras = {};
 	this.viewportCamera = this.camera;
 
+	this.gridPanels ={
+		download_avatar:undefined,
+		download_world:undefined,
+		upload_avatar:undefined,
+		upload_world:undefined,
+		material:undefined
+	};
+
 	this.addCamera( this.camera );
 
 }
