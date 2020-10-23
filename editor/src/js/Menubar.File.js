@@ -1,10 +1,8 @@
 import * as THREE from '../../build/three.module.js';
-
 import { GLTFExporter } from '../../examples/jsm/exporters/GLTFExporter.js';
-
 import { JSZip } from '../../examples/jsm/libs/jszip.module.min.js';
-
 import { UIPanel, UIRow, UIHorizontalRule } from './libs/ui.js';
+import {jsPanel} from "./libs/jspanel/es6module/jspanel.js";
 
 function MenubarFile( editor ) {
 
@@ -116,7 +114,19 @@ function MenubarFile( editor ) {
 	var option = new UIRow();
 	option.setClass( 'option' );
 	option.setTextContent( strings.getKey( 'menubar/file/download/avatar' ) );
-
+	option.onClick( function () {
+		jsPanel.create({
+			theme: 'dimgray filleddark',
+			headerTitle: 'Avatar Download',
+			panelSize: {
+				width: () => { return Math.min(800, window.innerWidth*0.9);},
+				height: () => { return Math.min(500, window.innerHeight*0.6);}
+			},
+			content: '<p>My first panel.</p>',
+			animateIn: 'jsPanelFadeIn',
+			onwindowresize: true
+		})
+	} );
 	options.add( option );
 
 	//	Download World
