@@ -1,0 +1,14 @@
+{
+  "name": "MVW Editor",
+  "short_name": "MVW",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "./images/icon.png",
+      "type": "image/png",
+      "sizes": "144x144"
+    }
+  ]
+}

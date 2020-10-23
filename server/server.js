@@ -7,10 +7,14 @@ var io = require('socket.io')(server);
 var THREE = require('three');
 
 // set view engine to ejs engine, and routing to dist path for static web file
-app.set('views', 'dist');
+app.set('views', ['dist','editor']);
 app.set('view engine', 'ejs');
 app.engine('html', require('ejs').renderFile);
 app.use(express.static('dist'));
+
+app.use('/editor', express.static('./editor/src'));
+app.use('/examples', express.static('./editor/examples'));
+app.use('/build', express.static('./editor/build'));
 
 // server listen with port 3000
 server.listen(3000, function() { console.log("Express server has started on port 3000") });
@@ -57,6 +61,7 @@ function onConnect(socket) {
     socket.on('login', function(data) {
         // create new entity for connected user's avatar
         var entity = new Entity();
+
         // TODO: this part will be modified to get gltf file from s3
         entity.color = getRandomColor();
 
