@@ -271,8 +271,11 @@ function Loader( editor ) {
 						scene.name = filename;
 
 						editor.addAnimation( scene, result.animations );
-						editor.execute( new AddObjectCommand( editor, scene ) );
-
+						let children = scene.children;
+						for (let i = 0; i < children.length; i++)
+						{
+							editor.execute( new AddObjectCommand( editor, children[i] ) );
+						}
 					} );
 
 				}, false );
@@ -703,8 +706,11 @@ function Loader( editor ) {
 						var scene = result.scene;
 
 						editor.addAnimation( scene, result.animations );
-						editor.execute( new AddObjectCommand( editor, scene ) );
-
+						let children = scene.children;
+						for (let i = 0; i < children.length; i++)
+						{
+							editor.execute( new AddObjectCommand( editor, children[i] ) );
+						}
 					} );
 				case 'json':
 					handleJSON( JSON.parse( file.asText() ) );

@@ -160,10 +160,26 @@ Editor.prototype = {
 
 		var scope = this;
 
+		if(object.userData.script !== undefined)
+		{
+			for(let i = 0; i < object.userData.script.length; i++)
+			{
+				this.addScript(object, object.userData.script[i]);
+			}
+		}
+
 		object.traverse( function ( child ) {
 
 			if ( child.geometry !== undefined ) scope.addGeometry( child.geometry );
 			if ( child.material !== undefined ) scope.addMaterial( child.material );
+
+			if(child.userData.script !== undefined)
+			{
+				for(let i = 0; i < child.userData.script.length; i++)
+				{
+					editor.addScript(child, child.userData.script[i]);
+				}
+			}
 
 			scope.addCamera( child );
 			scope.addHelper( child );
