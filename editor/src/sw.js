@@ -68,6 +68,12 @@ const assets = [
 	'./images/scale.svg',
 	'./images/translate.svg',
 
+	'./js/libs/jspanel/es6module/jspanel.css',
+	'./js/libs/jspanel/es6module/jspanel.js',
+
+	'./js/libs/muuri.css',
+	'./js/libs/muuri.js',
+
 	'./js/libs/codemirror/codemirror.css',
 	'./js/libs/codemirror/theme/monokai.css',
 
@@ -108,7 +114,7 @@ const assets = [
 	//
 
 	'./css/main.css',
-
+	'./css/panelCss.css',
 	'./js/EditorControls.js',
 	'./js/Storage.js',
 
@@ -165,6 +171,10 @@ const assets = [
 	'./js/Viewport.Camera.js',
 	'./js/Viewport.Info.js',
 	'./js/Viewport.ViewHelper.js',
+
+	'./js/GridPanel.js',
+	'./js/GridPanelElement.js',
+	'./js/UploadPanel.js',
 
 	'./js/Command.js',
 	'./js/commands/AddObjectCommand.js',

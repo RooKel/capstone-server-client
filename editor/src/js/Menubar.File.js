@@ -4,6 +4,7 @@ import { JSZip } from '../../examples/jsm/libs/jszip.module.min.js';
 import { UIPanel, UIRow, UIHorizontalRule } from './libs/ui.js';
 import {GridPanel} from "./GridPanel.js";
 import {GridPanelElement} from "./GridPanelElement.js";
+import {UploadPanel} from "./UploadPanel.js";
 
 function MenubarFile( editor ) {
 
@@ -109,6 +110,56 @@ function MenubarFile( editor ) {
 	//
 
 	//	Import Scene File
+	options.add( new UIHorizontalRule() );
+	//	Upload Avatar
+
+	var option = new UIRow();
+	option.setClass( 'option' );
+	option.setTextContent( strings.getKey( 'menubar/file/upload/avatar' ) );
+	option.onClick( function () {
+		if(editor.gridPanels.upload_avatar !== undefined)
+		{
+			editor.gridPanels.upload_avatar.close();
+		}
+		let panelContents = {
+			panel_name:'UPLOAD AVATAR',
+			preview:undefined,
+			content_name:'<input type="text" class="upload-panel-content-name">',
+			creator_name:'<input type="text" class="upload-panel-creator-name">',
+			submit_view:'<button type="button">',
+		};
+		editor.gridPanels.upload_avatar = new UploadPanel(panelContents, {
+			theme:'lightslategray filleddark',
+			headerTitle:'Avatar Upload'
+		});
+	} );
+	options.add( option );
+
+	//	Upload World
+
+	var option = new UIRow();
+	option.setClass( 'option' );
+	option.setTextContent( strings.getKey( 'menubar/file/upload/world' ) );
+	option.onClick( function () {
+		if(editor.gridPanels.upload_world !== undefined)
+		{
+			editor.gridPanels.upload_world.close();
+		}
+		let panelContents = {
+			panel_name:'UPLOAD AVATAR',
+			preview:undefined,
+			content_name:'<input type="text" class="upload-panel-content-name">',
+			creator_name:'<input type="text" class="upload-panel-creator-name">',
+			submit_view:'<button type="button">',
+		};
+		editor.gridPanels.upload_world = new UploadPanel(panelContents,{
+			theme:'lightslategray filleddark',
+			headerTitle:'World Upload'
+		});
+	} );
+	options.add( option );
+
+	options.add( new UIHorizontalRule() );
 
 	//	Download Avatar
 
@@ -130,10 +181,6 @@ function MenubarFile( editor ) {
 			headerTitle:'Avatar Download'
 		}, (event)=>{
 			console.log(event.type);
-		});
-		tmpGrid.grid.on('dragStart', function(item, event){
-			console.log(event);
-			console.log(item);
 		});
 		editor.gridPanels.download_avatar = tmpGrid;
 	} );
@@ -157,50 +204,6 @@ function MenubarFile( editor ) {
 		editor.gridPanels.download_world = new GridPanel(elements, {
 			theme:'dark filleddark',
 			headerTitle:'World Download'
-		});
-	} );
-	options.add( option );
-
-	//	Upload Avatar
-
-	var option = new UIRow();
-	option.setClass( 'option' );
-	option.setTextContent( strings.getKey( 'menubar/file/upload/avatar' ) );
-	option.onClick( function () {
-		let elements = [];
-		for(let i = 0; i < 10; i++)
-		{
-			elements.push(new GridPanelElement("test" + i, 100, 100, null));
-		}
-		if(editor.gridPanels.upload_avatar !== undefined)
-		{
-			editor.gridPanels.upload_avatar.close();
-		}
-		editor.gridPanels.upload_avatar = new GridPanel(elements, {
-			theme:'dark filleddark',
-			headerTitle:'Avatar Upload'
-		});
-	} );
-	options.add( option );
-
-	//	Upload World
-
-	var option = new UIRow();
-	option.setClass( 'option' );
-	option.setTextContent( strings.getKey( 'menubar/file/upload/world' ) );
-	option.onClick( function () {
-		let elements = [];
-		for(let i = 0; i < 10; i++)
-		{
-			elements.push(new GridPanelElement("test" + i, 100, 100, null));
-		}
-		if(editor.gridPanels.upload_world !== undefined)
-		{
-			editor.gridPanels.upload_world.close();
-		}
-		editor.gridPanels.upload_world = new GridPanel(elements, {
-			theme:'dark filleddark',
-			headerTitle:'World Upload'
 		});
 	} );
 	options.add( option );
@@ -358,26 +361,46 @@ function MenubarFile( editor ) {
 	option.onClick( function () {
 
 		var zip = new JSZip();
-		var output = { metadata: {}, scripts: {} };
-		output.metadata.type = "Scripts";
-		output.scripts = JSON.stringify( editor.scripts, parseNumber, '\t' );
-		output = JSON.stringify( output, parseNumber, '\t' );
-		output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
-		zip.file( 'scripts.json', output );
 
 		var exporter = new GLTFExporter();
 
 		exporter.parse( editor.scene, function ( result ) {
+			let nameCount = 0;
+			let q = [];
+			for(let c = 0; c < result.scenes[0].nodes.length; c++)
+			{
+				q.push(result.scenes[0].nodes[c]);
+			}
+			while(q.length > 0) {
+				editor.scene.traverse(obj => {
+					if(q.length <= 0) return;
+					let node = result.nodes[q[q.length-1]];
+					if (node.name !== obj.name)	return;
 
-			var sceneJson = JSON.stringify( result, null, 2 );
+					let script = editor.scripts[obj.uuid];
+					node.extras = {
+						name  : obj.name,
+						uuid  : obj.uuid,
+						script: script
+					};
+					q.pop();
+
+					if(node.children === undefined) return;
+
+					for (let k = 0; k < node.children.length; k++) {
+						q.push(node.children[k]);
+					}
+				});
+			}
+
+			let sceneJson = JSON.stringify( result, null, 2 );
+
 			zip.file( 'world.gltf', sceneJson );
 
-			var title = config.getKey( 'project/title' );
-
+			let title = config.getKey( 'project/title' );
 			save( zip.generate( { type: 'blob' } ), ( title !== '' ? title : 'World' ) + '.zip' );
 
 		} );
-
 	} );
 	options.add( option );
 	//

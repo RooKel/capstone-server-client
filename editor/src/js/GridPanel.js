@@ -1,12 +1,12 @@
 import {jsPanel} from "./libs/jspanel/es6module/jspanel.js";
 import("./libs/muuri.js");
 
-let gridPanels = [];
+let gridPanelCount = 0;
 
 function GridPanel(raw_elements, panelOptions, callback)
 {
     let panelContent =
-        '<div class="grid'+gridPanels.length+'">\n'+
+        '<div class="grid'+gridPanelCount +'">\n'+
         '   <template div class="grid-item-template">\n' +
         '   <div class="grid-item">\n' +
         '       <div class="grid-item-content">\n' +
@@ -15,23 +15,24 @@ function GridPanel(raw_elements, panelOptions, callback)
         '   </div>\n' +
         '   </templatediv>\n' +
         '</div>';
-    panelContent.concat()
     panelOptions.content = panelContent;
     panelOptions.onwindowresize = true;
     panelOptions.animateIn = 'jsPanelFadeIn';
+    panelOptions.animateOut = 'jsPanelFadeOut';
     panelOptions.panelSize = {
         width: () => { return Math.min(800, window.innerWidth*0.9);},
         height: () => { return Math.min(500, window.innerHeight*0.6);}
     };
     this.panel = jsPanel.create(panelOptions);
-    this.gridElement = document.querySelector('.grid'+gridPanels.length);
-    this.gridElement.addEventListener('click', callback);
+    this.gridElement = document.querySelector('.grid'+gridPanelCount);
+    if(callback !== undefined)
+        this.gridElement.addEventListener('click', callback);
     this.itemTemplate = document.querySelector('.grid-item-template');
     this.grid = new Muuri(this.gridElement, {
         items: this.createItemElements(raw_elements),
         dragEnabled: false
     });
-    gridPanels.push(this.grid);
+    gridPanelCount++;
     //addItems(raw_elements);
 }
 GridPanel.prototype = {
@@ -60,6 +61,12 @@ GridPanel.prototype = {
         itemElem.src = preview;
         itemElem.querySelector('.grid-item-title').innerHTML = title;
         return itemElem;
+    },
+    close: function()
+    {
+        this.panel.close();
+        this.grid.destroy(true);
+        this.panel.contentRemove();
     }
 };
 export {GridPanel};

@@ -552,9 +552,9 @@
 
 .jsPanelFadeIn {
   opacity: 0;
-  animation: jsPanelFadeIn ease-in 1;
+  animation: jsPanelFadeIn ease-in .25s;
   animation-fill-mode: forwards;
-  animation-duration: 600ms; }
+  animation-duration: 100ms; }
 
 @keyframes jsPanelFadeOut {
   from {
@@ -563,9 +563,9 @@
     opacity: 0; } }
 
 .jsPanelFadeOut {
-  animation: jsPanelFadeOut ease-in 1;
+  animation: jsPanelFadeOut ease-in .25s;
   animation-fill-mode: forwards;
-  animation-duration: 600ms; }
+  animation-duration: 100ms; }
 
 @keyframes modalBackdropFadeIn {
   from {
