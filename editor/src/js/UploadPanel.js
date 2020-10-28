@@ -9,8 +9,10 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     let btn_id = "btn-"+contents.panel_type + "-upload";
     let img_thumbnail_id = "img-" + panel_type + "-thumbnail";
     let input_thumbnail_id = "input-" + panel_type + "-thumbnail";
-
+    let input_name_id = "input-" + panel_type + "-content-name";
+    let input_creator_id = "input-" + panel_type + "-creator-name";
     var data_stream = {
+        data_type: undefined,
         data_name: undefined,
         data_thumbnail: undefined,
         data_creator:undefined,
@@ -27,11 +29,11 @@ function UploadPanel(contents, panelOptions, uploadCallback)
         '  </div>\n' +
         '  <div class="Content-Name">\n' +
         '       <a>'+panel_type+' 이름 '+'</a>\n' +
-        '       <input type="text" id="upload-panel-content-name">\n' +
+        '       <input type="text" id="'+input_name_id + '">\n' +
         '  </div>\n' +
         '  <div class="Creator-Name">\n' +
         '       <a>제작자 </a>\n' +
-        '       <input type="text" id="upload-panel-creator-name">\n' +
+        '       <input type="text" id="'+input_creator_id + '">\n' +
         '  </div>\n' +
         '  <div class="Submit-Area">\n' +
         '       <button id="'+btn_id + '" type="button"/>\n' +
@@ -47,18 +49,19 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     };
     this.panel = jsPanel.create(panelOptions);
 
+    let input_content_name = document.getElementById(input_name_id);
+    let input_creator_name = document.getElementById(input_creator_id);
     let img_thumbnail = document.getElementById(img_thumbnail_id);
+    let input_file_thumbnail = document.getElementById(input_thumbnail_id);
+
     img_thumbnail.setAttribute("width", "100%");
     img_thumbnail.setAttribute("height", "100%");
 
-    let file_input = document.getElementById(input_thumbnail_id);
-    file_input.onchange = function (e) {
-        console.log(e.target.files[0]);
+    input_file_thumbnail.onchange = function (e) {
         var fr = new FileReader();
 
         fr.onload = function(){
             img_thumbnail.setAttribute("src", fr.result);
-            console.log(fr.result);
             data_stream.data_thumbnail = fr.result;
         }
 
@@ -70,7 +73,10 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     submit_button.setAttribute("width", "75%");
     submit_button.setAttribute("height", "75%");
     submit_button.onclick = function (){
-        data_stream.data_name = panel_type;
+        data_stream.data_name = input_content_name.innerText;
+        data_stream.data_creator = input_creator_name.innerText;
+        data_stream.data_type = panel_type;
+
         uploadCallback(data_stream);
     };
 

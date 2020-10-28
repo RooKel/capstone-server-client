@@ -121,7 +121,7 @@ function MenubarFile(editor) {
             editor.gridPanels.upload_avatar.close();
         }
         let panelContents = {
-            panel_type: 'AVATAR',
+            panel_type: 'avatar',
             preview   : undefined,
         };
         editor.gridPanels.upload_avatar = new UploadPanel(panelContents, {
@@ -141,7 +141,7 @@ function MenubarFile(editor) {
             editor.gridPanels.upload_world.close();
         }
         let panelContents = {
-            panel_type: 'WORLD',
+            panel_type: 'world',
             preview   : undefined,
         };
         editor.gridPanels.upload_world = new UploadPanel(panelContents, {
