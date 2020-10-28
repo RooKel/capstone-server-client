@@ -16,6 +16,7 @@ function GridPanel(raw_elements, panelOptions, callback)
         '   </templatediv>\n' +
         '</div>';
     panelOptions.content = panelContent;
+    panelOptions.contentOverflow = 'scroll scroll';
     panelOptions.onwindowresize = true;
     panelOptions.animateIn = 'jsPanelFadeIn';
     panelOptions.animateOut = 'jsPanelFadeOut';

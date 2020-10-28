@@ -22,7 +22,7 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     let panelContent =
         '<div class="grid-container">\n' +
         '  <div class="Preview-Area">\n' +
-        '       <img id="'+img_thumbnail_id+'" src="'+preview+'">\n' +
+        '       <img id="'+img_thumbnail_id+'" src="">\n' +
         '  </div>\n' +
         '  <div class="Preview-File">\n' +
         '       <input id="'+input_thumbnail_id+'" type="file" accept=".png"/>\n' +
@@ -73,8 +73,8 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     submit_button.setAttribute("width", "75%");
     submit_button.setAttribute("height", "75%");
     submit_button.onclick = function (){
-        data_stream.data_name = input_content_name.innerText;
-        data_stream.data_creator = input_creator_name.innerText;
+        data_stream.data_name = input_content_name.value;
+        data_stream.data_creator = input_creator_name.value;
         data_stream.data_type = panel_type;
 
         uploadCallback(data_stream);
