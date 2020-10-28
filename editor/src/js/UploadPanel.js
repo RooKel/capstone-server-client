@@ -10,6 +10,13 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     let img_thumbnail_id = "img-" + panel_type + "-thumbnail";
     let input_thumbnail_id = "input-" + panel_type + "-thumbnail";
 
+    var data_stream = {
+        data_name: undefined,
+        data_thumbnail: undefined,
+        data_creator:undefined,
+        raw_gltf:undefined
+    };
+
     let panelContent =
         '<div class="grid-container">\n' +
         '  <div class="Preview-Area">\n' +
@@ -20,11 +27,11 @@ function UploadPanel(contents, panelOptions, uploadCallback)
         '  </div>\n' +
         '  <div class="Content-Name">\n' +
         '       <a>'+panel_type+' 이름 '+'</a>\n' +
-        '       <input type="text" class="upload-panel-content-name">\n' +
+        '       <input type="text" id="upload-panel-content-name">\n' +
         '  </div>\n' +
         '  <div class="Creator-Name">\n' +
         '       <a>제작자 </a>\n' +
-        '       <input type="text" class="upload-panel-creator-name">\n' +
+        '       <input type="text" id="upload-panel-creator-name">\n' +
         '  </div>\n' +
         '  <div class="Submit-Area">\n' +
         '       <button id="'+btn_id + '" type="button"/>\n' +
@@ -51,7 +58,10 @@ function UploadPanel(contents, panelOptions, uploadCallback)
 
         fr.onload = function(){
             img_thumbnail.setAttribute("src", fr.result);
+            console.log(fr.result);
+            data_stream.data_thumbnail = fr.result;
         }
+
         fr.readAsDataURL(e.target.files[0]);
     }
 
@@ -59,7 +69,10 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     submit_button.setAttribute("value", "UPLOAD");
     submit_button.setAttribute("width", "75%");
     submit_button.setAttribute("height", "75%");
-    submit_button.onclick = uploadCallback;
+    submit_button.onclick = function (){
+        data_stream.data_name = panel_type;
+        uploadCallback(data_stream);
+    };
 
     uploadPanelCount++;
 }

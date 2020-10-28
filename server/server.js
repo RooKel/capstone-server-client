@@ -5,6 +5,7 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var THREE = require('three');
+var fs = require('fs');
 
 // set view engine to ejs engine, and routing to dist path for static web file
 app.set('views', ['dist','editor']);
@@ -112,5 +113,24 @@ function onConnect(socket) {
 
         console.log(entities[uid].quaternion);
         last_processed_input[uid] = data.input_sequence_number;
+    });
+    //  TODO : 테스트 코드니깐 꼭 지워라.
+    socket.on('test', function(data) {
+        //  Save GLTF file
+        let gltf = data.raw_gltf;
+        if(gltf !== undefined)
+        {
+            fs.writeFile("./testGLTF.gltf", gltf, function(e){
+                console.log(e);
+            });
+        }
+
+        //  Save Thumbnail To png File...
+        let base64String = data.data_thumbnail;
+        let base64Image = base64String.split(';base64').pop();
+
+        fs.writeFile("./testThumb.png", base64Image, {encoding:'base64'}, function(e){
+            console.log(e);
+        });
     });
 }
