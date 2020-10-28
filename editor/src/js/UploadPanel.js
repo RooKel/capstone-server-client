@@ -25,7 +25,7 @@ function UploadPanel(contents, panelOptions, uploadCallback)
         '       <img id="'+img_thumbnail_id+'" src="'+preview+'">\n' +
         '  </div>\n' +
         '  <div class="Preview-File">\n' +
-        '       <input id="'+input_thumbnail_id+'" type="file"/>\n' +
+        '       <input id="'+input_thumbnail_id+'" type="file" accept=".png"/>\n' +
         '  </div>\n' +
         '  <div class="Content-Name">\n' +
         '       <a>'+panel_type+' 이름 '+'</a>\n' +
