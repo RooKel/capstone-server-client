@@ -131,12 +131,14 @@ function onConnect(socket) {
     //  TODO : 테스트 코드니깐 꼭 지워라.
     socket.on('file-upload', function(data) {
         var uid = makeUID();
+        var dir = "./" + uid;
 
         //  Save GLTF file
         let gltf = data.raw_gltf;
         if(gltf !== undefined)
         {
-            fs.writeFile("./" + uid + "/GLTF.gltf", gltf, function(e){
+            !fs.existsSync(dir) && fs.mkdirSync(dir);
+            fs.writeFile(dir + "/GLTF.gltf", gltf, function(e){
                 console.log(e);
             });
         }
@@ -145,7 +147,7 @@ function onConnect(socket) {
         let base64String = data.data_thumbnail;
         let base64Image = base64String.split(';base64').pop();
 
-        fs.writeFile("./" + uid + "/thumbnail.png", base64Image, {encoding:'base64'}, function(e){
+        fs.writeFile(dir + "/thumbnail.png", base64Image, {encoding:'base64'}, function(e){
             console.log(e);
         });
 
@@ -154,9 +156,9 @@ function onConnect(socket) {
         if (uid) {
             var avatar = new avatarModel();
             avatar.uid = uid;
-            avatar.name = data_name;
-            avatar.thumbnail = data_thumbnail;
-            avatar.creator = data_creator;
+            avatar.name = data.data_name;
+            avatar.thumbnail = data.data_thumbnail;
+            avatar.creator = data.data_creator;
             avatar.date = Date.now();
             avatar.save(function (err) {
                 if (err)
@@ -170,9 +172,9 @@ function onConnect(socket) {
         else if (data_type == "World") {
             var world = new worldModel();
             world.uid = uid;
-            world.name = data_name;
-            world.thumbnail = data_thumbnail;
-            world.creator = data_creator;
+            world.name = data.data_name;
+            world.thumbnail = data.data_thumbnail;
+            world.creator = data.data_creator;
             world.date = Date.now();
             world.save(function (err) {
                 if (err)
