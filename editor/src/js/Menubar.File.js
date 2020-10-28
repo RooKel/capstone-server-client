@@ -151,7 +151,7 @@ function MenubarFile(editor) {
             getWorldJson(editor.scene, function(sceneJson){
                 dataStream.raw_gltf = sceneJson;
                 var socket = io.connect('ws://localhost:3000');
-                socket.emit('test', dataStream);
+                socket.emit('file-upload', dataStream);
             });
         });
     });

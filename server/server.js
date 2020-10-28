@@ -115,7 +115,7 @@ function onConnect(socket) {
         last_processed_input[uid] = data.input_sequence_number;
     });
     //  TODO : 테스트 코드니깐 꼭 지워라.
-    socket.on('test', function(data) {
+    socket.on('file-upload', function(data) {
         //  Save GLTF file
         let gltf = data.raw_gltf;
         if(gltf !== undefined)
