@@ -15,7 +15,7 @@ function MenubarFile(editor) {
         return typeof value === 'number' ? parseFloat(value.toFixed(precision)) : value;
 
     }
-
+    let socket = io.connect('ws://localhost:3000');
     //
 
     var config = editor.config;
@@ -117,16 +117,22 @@ function MenubarFile(editor) {
     option.setClass('option');
     option.setTextContent(strings.getKey('menubar/file/upload/avatar'));
     option.onClick(function () {
-        if (editor.gridPanels.upload_avatar !== undefined) {
-            editor.gridPanels.upload_avatar.close();
+        if (editor.floatingPanels.upload_avatar !== undefined) {
+            editor.floatingPanels.upload_avatar.close();
         }
         let panelContents = {
             panel_type: 'avatar',
             preview   : undefined,
         };
-        editor.gridPanels.upload_avatar = new UploadPanel(panelContents, {
+        editor.floatingPanels.upload_avatar = new UploadPanel(panelContents, {
             theme      : 'lightslategray filleddark',
             headerTitle: 'Avatar Upload'
+        }, function (dataStream) {
+            getWorldJson(editor.scene, function(sceneJson){
+                dataStream.raw_gltf = sceneJson;
+                socket.emit('file-upload', dataStream);
+                editor.floatingPanels.upload_avatar.close();
+            });
         });
     });
     options.add(option);
@@ -137,21 +143,21 @@ function MenubarFile(editor) {
     option.setClass('option');
     option.setTextContent(strings.getKey('menubar/file/upload/world'));
     option.onClick(function () {
-        if (editor.gridPanels.upload_world !== undefined) {
-            editor.gridPanels.upload_world.close();
+        if (editor.floatingPanels.upload_world !== undefined) {
+            editor.floatingPanels.upload_world.close();
         }
         let panelContents = {
             panel_type: 'world',
             preview   : undefined,
         };
-        editor.gridPanels.upload_world = new UploadPanel(panelContents, {
+        editor.floatingPanels.upload_world = new UploadPanel(panelContents, {
             theme      : 'lightslategray filleddark',
             headerTitle: 'World Upload'
         }, function (dataStream) {
             getWorldJson(editor.scene, function(sceneJson){
                 dataStream.raw_gltf = sceneJson;
-                var socket = io.connect('ws://localhost:3000');
                 socket.emit('file-upload', dataStream);
+                editor.floatingPanels.upload_world.close();
             });
         });
     });
@@ -169,8 +175,8 @@ function MenubarFile(editor) {
         for (let i = 0; i < 10; i++) {
             elements.push(new GridPanelElement("test" + i, 100, 100, null));
         }
-        if (editor.gridPanels.download_avatar !== undefined) {
-            editor.gridPanels.download_avatar.close();
+        if (editor.floatingPanels.download_avatar !== undefined) {
+            editor.floatingPanels.download_avatar.close();
         }
         let tmpGrid = new GridPanel(elements, {
             theme      : 'dark filleddark',
@@ -178,7 +184,7 @@ function MenubarFile(editor) {
         }, (event) => {
             console.log(event.type);
         });
-        editor.gridPanels.download_avatar = tmpGrid;
+        editor.floatingPanels.download_avatar = tmpGrid;
     });
     options.add(option);
 
@@ -192,10 +198,10 @@ function MenubarFile(editor) {
         for (let i = 0; i < 10; i++) {
             elements.push(new GridPanelElement("test" + i, 100, 100, null));
         }
-        if (editor.gridPanels.download_world !== undefined) {
-            editor.gridPanels.download_world.close();
+        if (editor.floatingPanels.download_world !== undefined) {
+            editor.floatingPanels.download_world.close();
         }
-        editor.gridPanels.download_world = new GridPanel(elements, {
+        editor.floatingPanels.download_world = new GridPanel(elements, {
             theme      : 'dark filleddark',
             headerTitle: 'World Download'
         });

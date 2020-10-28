@@ -114,7 +114,7 @@ function Editor() {
 	this.cameras = {};
 	this.viewportCamera = this.camera;
 
-	this.gridPanels ={
+	this.floatingPanels ={
 		download_avatar:undefined,
 		download_world:undefined,
 		upload_avatar:undefined,
