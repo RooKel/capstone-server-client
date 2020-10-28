@@ -1,10 +1,10 @@
 
-function GridPanelElement(title, width, height, preview)
+function GridPanelElement(title, width, height, thumbnail)
 {
     this.title = title;
     this.width = width;
     this.height = height;
-    this.preview = preview;
+    this.thumbnail = thumbnail;
 }
 
 export {GridPanelElement};

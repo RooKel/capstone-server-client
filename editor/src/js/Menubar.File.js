@@ -170,9 +170,29 @@ function MenubarFile(editor) {
     var option = new UIRow();
     option.setClass('option');
     option.setTextContent(strings.getKey('menubar/file/download/avatar'));
+
+    socket.on('file-download', function(data){
+        let models = data.models;
+        if(data.data_type === 'avatar')
+        {
+            let panel = editor.floatingPanels.download_avatar;
+            for (let c = 0; c < models.length; c++)
+            {
+                let model = models[c];
+
+            }
+        }
+        else if (data.data_type === 'world')
+        {
+            let panel = editor.floatingPanels.download_world;
+
+        }
+    });
     option.onClick(function () {
+        socket.emit('rq-file-download',{data_type:'avatar'});
+
         let elements = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 8; i++) {
             elements.push(new GridPanelElement("test" + i, 100, 100, null));
         }
         if (editor.floatingPanels.download_avatar !== undefined) {
@@ -194,8 +214,10 @@ function MenubarFile(editor) {
     option.setClass('option');
     option.setTextContent(strings.getKey('menubar/file/download/world'));
     option.onClick(function () {
+        socket.emit('rq-file-download',{data_type:'world'});
+
         let elements = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 8; i++) {
             elements.push(new GridPanelElement("test" + i, 100, 100, null));
         }
         if (editor.floatingPanels.download_world !== undefined) {
@@ -377,7 +399,6 @@ function MenubarFile(editor) {
 					let script = editor.scripts[obj.uuid];
 					node.extras = {
 						name  : obj.name,
-						uuid  : obj.uuid,
 						script: script
 					};
 					q.pop();
