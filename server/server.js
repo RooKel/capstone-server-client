@@ -118,10 +118,10 @@ function onConnect(socket) {
         entities[uid].y += data.move_dy * entities[uid].speed;
 
         // update rotation
-        camera[uid].x_rot -= data.mouse_dx;
-        camera[uid].y_rot -= data.mouse_dy;
+        cameras[uid].x_rot -= data.mouse_dx;
+        cameras[uid].y_rot -= data.mouse_dy;
         let tempQuat = new Quaternion();
-        tempQuat.setFromEuler(new THREE.Euler(y_rot_value, x_rot_value, 0));
+        tempQuat.setFromEuler(new THREE.Euler(cameras[uid].y_rot, cameras[uid].x_rot, 0));
         tempQuat.normalize();
         entities[uid].quaternion.copy(tempQuat);
 
@@ -131,7 +131,7 @@ function onConnect(socket) {
     //  TODO : 테스트 코드니깐 꼭 지워라.
     socket.on('file-upload', function(data) {
         var uid = makeUID();
-        var dir = "./" + uid;
+        var dir = "./data/" + uid;
 
         //  Save GLTF file
         let gltf = data.raw_gltf;
@@ -153,11 +153,10 @@ function onConnect(socket) {
 
 
         // If it is Avatar Type
-        if (uid) {
+        if (data.data_type === "avatar") {
             var avatar = new avatarModel();
             avatar.uid = uid;
             avatar.name = data.data_name;
-            avatar.thumbnail = data.data_thumbnail;
             avatar.creator = data.data_creator;
             avatar.date = Date.now();
             avatar.save(function (err) {
@@ -169,11 +168,10 @@ function onConnect(socket) {
         }
 
         // If it is World Type
-        else if (data_type == "World") {
+        else if (data.data_type === "world") {
             var world = new worldModel();
             world.uid = uid;
             world.name = data.data_name;
-            world.thumbnail = data.data_thumbnail;
             world.creator = data.data_creator;
             world.date = Date.now();
             world.save(function (err) {
@@ -181,6 +179,33 @@ function onConnect(socket) {
                     throw err;
                 else
                     console.log("DB IS UPDATED SUCCESSFULLY");
+            });
+        }
+    });
+
+
+    // Send File To Client
+    socket.on('rq-file-download', function(data) {
+        if (data.data_type === "avatar") {
+            avatarModel.find({}).select('uid name creator date').exec(function(err, avatars) {
+                avatars.forEach(function(avatar) {
+                    fs.readFile("./data/" + avatar.uid + "/thumbnail.png", function(err, data) {
+                        socket.emit("file-download", { type: "avatar", data: data });
+                        console.log("data::", data);
+                        console.log(avatar.uid + " " + avatar.name + " " + avatar.creator);
+                    });
+                });
+            });
+        }
+
+        else if (data.data_type === "world") {
+            worldModel.find({}).select('uid name creator date').exec(function(err, worlds) {
+                worlds.forEach(function(world) {
+                    fs.readFile("./data/" + world.uid + "/thumbnail.png", function(err, data) {
+                        socket.emit("file-download", { type: "world", data: data });
+                        console.log(world.uid + " " + world.name + " " + world.creator);
+                    });
+                });
             });
         }
     });

@@ -90,6 +90,7 @@ const SyncObjs = (page, socket, client_data)=>{
         socket.on('other_joined', AddNetwObj);
         socket.on('world_state', ProcessServerMessage);
         socket.on('delete_entity', RemNetwObj);
+        socket.emit("rq-file-download", {data_type:"avatar"});
         //#endregion
     }
     const OnExit = ()=>{
