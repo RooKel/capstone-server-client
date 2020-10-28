@@ -3,21 +3,41 @@
     width: 100%;
     height: 100%;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
     gap: 0px 0px;
     grid-template-areas:
-    "Panel-Name Panel-Name Panel-Name Panel-Name Panel-Name"
+    ". . . . ."
     "Preview-Area Preview-Area Content-Name Content-Name Content-Name"
     "Preview-Area Preview-Area Creator-Name Creator-Name Creator-Name"
-    "Preview-Area Preview-Area Submit-Area Submit-Area Submit-Area";
+    "Preview-File Preview-File Submit-Area Submit-Area Submit-Area"
+    ". . . . .";
+}
+.grid-container div {
+    vertical-align: middle;
+    horiz-align: center;
 }
 
-.Panel-Name { grid-area: Panel-Name; }
+.Preview-Area {
+    grid-area: Preview-Area;
+    background-color: white;
+}
 
-.Preview-Area { grid-area: Preview-Area; }
+.Preview-File {
+    grid-area: Preview-File;
+    background-color: #9effff;
+}
 
-.Content-Name { grid-area: Content-Name; }
+.Content-Name {
+    grid-area: Content-Name;
+    background-color: #2e7d32;
+}
 
-.Creator-Name { grid-area: Creator-Name; }
+.Creator-Name {
+    grid-area: Creator-Name;
+    background-color: #8888dd;
+}
 
-.Submit-Area { grid-area: Submit-Area; }
+.Submit-Area {
+    grid-area: Submit-Area;
+    background-color: #cc6666;
+}

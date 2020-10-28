@@ -122,15 +122,14 @@ function MenubarFile( editor ) {
 			editor.gridPanels.upload_avatar.close();
 		}
 		let panelContents = {
-			panel_name:'UPLOAD AVATAR',
+			panel_type:'AVATAR',
 			preview:undefined,
-			content_name:'<input type="text" class="upload-panel-content-name">',
-			creator_name:'<input type="text" class="upload-panel-creator-name">',
-			submit_view:'<button type="button">',
 		};
 		editor.gridPanels.upload_avatar = new UploadPanel(panelContents, {
 			theme:'lightslategray filleddark',
 			headerTitle:'Avatar Upload'
+		}, function (){
+			console.log("EE");
 		});
 	} );
 	options.add( option );
@@ -146,11 +145,8 @@ function MenubarFile( editor ) {
 			editor.gridPanels.upload_world.close();
 		}
 		let panelContents = {
-			panel_name:'UPLOAD AVATAR',
+			panel_type:'WORLD',
 			preview:undefined,
-			content_name:'<input type="text" class="upload-panel-content-name">',
-			creator_name:'<input type="text" class="upload-panel-creator-name">',
-			submit_view:'<button type="button">',
 		};
 		editor.gridPanels.upload_world = new UploadPanel(panelContents,{
 			theme:'lightslategray filleddark',
