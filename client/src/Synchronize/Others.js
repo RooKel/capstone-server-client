@@ -1,19 +1,21 @@
-import * as EVENTS from '../FastImports/Events.js'
+import * as EVENTS from '../Events/Import.js'
 
-const Synchronize = (socket, uid, data, object)=>{
+const Others = (socket, uid, model, data)=>{
+    //#region init
     const netw_obj = data;
     const server_update_rate = 12;
-
-    //#region socket event handlers
-    const ProcessServerMessage = (data)=>{
-        if(data.entity_id !== uid)
-            return;
-        let timestamp = +new Date();
-        netw_obj.position_buffer.push([timestamp, data.entity_properties.x, data.entity_properties.y]);
-    }
-    socket.on('world_state', ProcessServerMessage);
-    //#endregion
     //#region init event link
+    //#region socket event handlers
+    const ProcessServerInput = (msg)=>{
+        if(msg.entity_id !== uid) return;
+        netw_obj.position_buffer.push([
+            +new Date(),
+            msg.entity_properties.x,
+            msg.entity_properties.y
+        ]);
+    }
+    //#endregion
+    //#region event link event handlers
     const Interpolate = ()=>{
         let cur_timestamp = +new Date();
         let render_timestamp = cur_timestamp - (1000.0/server_update_rate);
@@ -30,27 +32,30 @@ const Synchronize = (socket, uid, data, object)=>{
             netw_obj.y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
         }
     }
-    const OnEnter = ()=>{
-        socket.on('world_state', ProcessServerMessage);
+    const OnInit = ()=>{
+        console.log('Others: init');
+        socket.on('world_state', ProcessServerInput);
     }
     const OnUpdate = (delta)=>{
         Interpolate();
-        object.position.x = netw_obj.x;
-        object.position.y = netw_obj.y;
+        model.position.x = netw_obj.x;
+        model.position.y = netw_obj.y;
     }
-    const OnExit = ()=>{
-        socket.off('world_state', ProcessServerMessage);
+    const OnDispose = ()=>{
+        console.log('Others: dispose');
+        socket.off('world_state', ProcessServerInput);
     }
-    const event_link = EVENTS.EventLink([
-        { name:'enter', handler:OnEnter },
-        { name:'update', handler:OnUpdate },
-        { name:'exit', handler:OnExit }
-    ]);
     //#endregion
-
+    const event_link = EVENTS.EventLink([
+        { name:'init', handler:OnInit },
+        { name:'update', handler:OnUpdate },
+        { name:'dispose', handler:OnDispose }
+    ])
+    //#endregion
+    //#endregion
     return {
-        event_link: event_link
+        event_link: event_link,
     }
 }
 
-export default Synchronize
+export default Others

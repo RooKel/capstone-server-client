@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import * as EVENTS from './FastImports/Events.js'
-import * as PGFACT from './FastImports/PageFactories.js'
+import * as EVENTS from './Events/Import.js'
+import * as PAGES from './Pages/Import.js'
 
 const App = ()=>{
     const socket = io();
@@ -21,18 +21,17 @@ const App = ()=>{
     ]);
     //#endregion
     //#region init pages
-    pages.push(PGFACT.StartPageFactory(
+    pages.push(PAGES.StartPage(
         event_link,
         socket,
         client_data
     ));
-    pages.push(PGFACT.TestPageFactory(
+    pages.push(PAGES.TestPage(
         event_link,
         socket,
         client_data
     ));
     cur_page = 0;
-    pages[cur_page].event_link.Invoke('enter');
     //#endregion
     const renderer = new THREE.WebGLRenderer();
     //#region init renderer
@@ -45,6 +44,7 @@ const App = ()=>{
         renderer.render(pages[cur_page].scene, pages[cur_page].camera);
     }
     const Start = ()=>{
+        pages[cur_page].event_link.Invoke('enter');
         document.body.appendChild(renderer.domElement);
         renderer.setAnimationLoop(Update);
     }
