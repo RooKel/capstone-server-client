@@ -1,2 +1,4 @@
-import App from './App.js'
-App();
+import App from './src/App.js'
+
+const myApp = App();
+myApp.Start();
