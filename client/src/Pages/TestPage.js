@@ -18,6 +18,8 @@ const TestPage = (app_event_link, socket, client_data)=>{
         )
     );
     page.camera.position.set(0,1,5);
+    const cam_ctrl = CTRL.FPCameraCtrl(socket, client_data.uid, page.camera, ctrl_manager.inputs);
+    ctrl_manager.AddCtrl(cam_ctrl);
     //#endregion
     //#region event link event handlers
     const OnEnter = ()=>{
