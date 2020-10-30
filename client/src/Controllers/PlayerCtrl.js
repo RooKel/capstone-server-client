@@ -1,30 +1,26 @@
 import EventLink from '../EventLink.js'
 
-const PlayerCtrl = (socket, uid, model, data, out)=>{
+const PlayerCtrl = (socket, uid, data, model, input_collector)=>{
     const netw_obj = data;
-    const pressed = [ false, false, false, false ];
-    const key_map = {
-        0:[ 'KeyW', 'ArrowUp' ],
-        1:[ 'KeyA', 'ArrowLeft' ],
-        2:[ 'KeyS', 'ArrowRight' ],
-        3:[ 'KeyD', 'ArrowDown' ]
-    }
-    const pending_inputs = [ ];
+    let pending_inputs = [ ];
     let input_sequence_number = 0;
+    const pressed = [false,false,false,false];
+    const key_map = {
+        0:['KeyW','ArrowUp'],
+        1:['KeyA','ArrowLeft'],
+        2:['KeyS','ArrowDown'],
+        3:['KeyD','ArrowRight']
+    };
     //#region socket event handlers
-    const OnWorldState = (msg)=>{
-        if(msg.entity_id !== uid)
-            return;
+    const ProcessServerMessage = (msg)=>{
+        if(msg.entity_id !== uid) return;
         netw_obj.x = msg.entity_properties.x;
         netw_obj.y = msg.entity_properties.y;
-        let j = 0;
-        while(j < pending_inputs.length){
-            if(pending_inputs[j].input_sequence_number > msg.last_processed_input){
-                netw_obj.x += pending_inputs[j].move_dx * netw_obj.speed;
-                netw_obj.y += pending_inputs[j].move_dy * netw_obj.speed;
-            }
-            j++;
-        }
+        pending_inputs = pending_inputs.filter((_)=>_.input_sequence_number > msg.last_processed_input);
+        pending_inputs.forEach((_)=>{
+            netw_obj.x += _.move_dx * netw_obj.speed;
+            netw_obj.y += _.move_dy * netw_obj.speed;
+        })
     }
     //#endregion
     //#region input event handlers
@@ -33,67 +29,57 @@ const PlayerCtrl = (socket, uid, model, data, out)=>{
             if(key_map[key].find((_)=>_===code))
                 return key;
         }
-        return -1;
+        return undefined;
     }
     const OnKeyDown = (e)=>{
         const index = TranslateKeyCode(e.code);
-        if(index !== -1)
-            pressed[index] = true;
+        if(!index) return;
+        pressed[index] = true;
     }
     const OnKeyUp = (e)=>{
         const index = TranslateKeyCode(e.code);
-        if(index !== -1)
-            pressed[index] = false;
+        if(!index) return;
+        pressed[index] = false;
     }
     //#endregion
     //#region event link event handlers
-    const AnalyzeInput = (delta)=>{
-        let horizontal = 0;
-        let vertical = 0;
+    const OnEnter = ()=>{
+        socket.on('world_state', ProcessServerMessage);
+        document.addEventListener('keydown', OnKeyDown);
+        document.addEventListener('keyup', OnKeyUp);
+    }
+    const OnUpdate = (delta)=>{
+        let vertical = undefined;
+        if(!(pressed[0]^pressed[2])) vertical = 0;
+        else if(pressed[0]) vertical = 1;
+        else vertical = -1;
 
-        if((pressed[1] && pressed[3]) || (!pressed[1] && !pressed[3]))
-            horizontal = 0;
-        else if(pressed[1])
-            horizontal = -1;
-        else
-            horizontal = 1;
-
-        if((pressed[0] && pressed[2]) || (!pressed[0] && !pressed[2]))
-            vertical = 0;
-        else if(pressed[0])
-            vertical = 1;
-        else
-            vertical = -1;
-
+        let horizontal = undefined;
+        if(!(pressed[1]^pressed[3])) horizontal = 0;
+        else if(pressed[3]) horizontal = 1;
+        else horizontal = -1;
+        
         const input = { 
-            move_dx: horizontal * delta, 
-            move_dy: vertical * delta,
+            move_dx:horizontal*delta,
+            move_dy:vertical*delta,
             input_sequence_number: input_sequence_number++
         };
-        out.push({ name: 'input', args: input });
+        input_collector.AddMsg('input', input);
         pending_inputs.push(input);
 
         model.position.x += input.move_dx * netw_obj.speed;
         model.position.y += input.move_dy * netw_obj.speed;
     }
-    const OnInit = ()=>{
-        socket.on('world_state', OnWorldState);
-        document.addEventListener('keydown', OnKeyDown);
-        document.addEventListener('keyup', OnKeyUp);
-    }
-    const OnUpdate = (delta)=>{
-        AnalyzeInput(delta);
-    }
-    const OnDispose = ()=>{
-        socket.off('world_state', OnWorldState);
+    const OnExit = ()=>{
+        socket.off('world_state', ProcessServerMessage);
         document.removeEventListener('keydown', OnKeyDown);
         document.removeEventListener('keyup', OnKeyUp);
     }
     //#endregion
     const event_link = EventLink([
-        { name:'init', handler:OnInit },
-        { name:'update', handler:OnUpdate },
-        { name:'dispose', handler:OnDispose }
+        {name:'enter',handler:OnEnter},
+        {name:'update',handler:OnUpdate},
+        {name:'exit',handler:OnExit}
     ]);
     return {
         event_link: event_link

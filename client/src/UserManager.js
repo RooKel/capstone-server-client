@@ -1,32 +1,32 @@
 import * as THREE from 'three'
-
 import EventLink from './EventLink.js'
 import * as CTRL from './Controllers/Import.js'
 
-const UserManager = (socket, client_data, scene, ctrl_manager)=>{
-    const sync_objs = { };
-    //#region socket event handlers
+const UserManager = (socket, client_data, scene, camera_ctrl, input_collector)=>{
+    const users = { };
+    //#region socket event handler
     const AddUser = (uid, data)=>{
         let geometry = new THREE.BoxGeometry(1,1,1);
         let material = new THREE.MeshBasicMaterial({color:0xFF0000});
         let cube = new THREE.Mesh(geometry, material);
         cube.position.x = data.x;
         cube.position.y = data.y;
-        scene.add(cube);
+        if(uid !== client_data.uid)
+            Object.assign(cube, CTRL.OthersCtrl(socket, uid, data, cube));
+        else {
+            Object.assign(cube, CTRL.PlayerCtrl(socket, uid, data, cube, input_collector));
+            camera_ctrl.ChangeTarget(cube, new THREE.Vector3(0,1,0));
+        }
+        cube.event_link.Invoke('enter');
+        users[uid] = cube;
 
-        let ctrl = undefined;
-        if(uid === client_data.uid)
-            ctrl = CTRL.PlayerCtrl(socket, uid, cube, data, ctrl_manager.inputs);
-        else
-            ctrl = CTRL.OtherUsersCtrl(socket, uid, cube, data);
-        ctrl_manager.AddCtrl(ctrl);
-        
-        sync_objs[uid] = { model:cube, ctrl:ctrl };
+        scene.add(cube);
+        scene.event_link.AddLink(cube.event_link);
     }
     const RemUser = (uid)=>{
-        scene.remove(sync_objs[uid].model);
-        ctrl_manager.RemCtrl(sync_objs[uid].ctrl);
-        delete sync_objs[uid];
+        scene.remove(users[uid]);
+        users[uid].event_link.Invoke('exit');
+        delete users[uid];
     }
     //#endregion
     //#region event link event handlers
@@ -42,8 +42,8 @@ const UserManager = (socket, client_data, scene, ctrl_manager)=>{
     }
     //#endregion
     const event_link = EventLink([
-        { name:'enter', handler:OnEnter },
-        { name:'exit', handler:OnExit }
+        {name:'enter',handler:OnEnter},
+        {name:'exit',handler:OnExit}
     ]);
     return {
         event_link: event_link

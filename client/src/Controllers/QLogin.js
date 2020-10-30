@@ -1,24 +1,23 @@
 import EventLink from '../EventLink.js'
 
-const QLogin = (out)=>{
-    //#region input event handler
+const QLogin = (input_collector)=>{
+    //#region input event handlers
     const OnKeyDown = (e)=>{
-        if(e.code === 'KeyQ'){
-            out.push({name:'login',args:Object.assign({}, true)});
-        }
+        if(e.code !== 'KeyQ') return;
+        input_collector.AddMsg('login', true);
     }
     //#endregion
     //#region event link event handlers
-    const OnInit = ()=>{
+    const OnEnter = ()=>{
         document.addEventListener('keydown', OnKeyDown);
     }
-    const OnDispose = ()=>{
+    const OnExit = ()=>{
         document.removeEventListener('keydown', OnKeyDown);
     }
     //#endregion
     const event_link = EventLink([
-        { name:'init', handler:OnInit },
-        { name:'dispose', handler:OnDispose }
+        {name:'enter',handler:OnEnter},
+        {name:'exit',handler:OnExit}
     ]);
     return {
         event_link: event_link
