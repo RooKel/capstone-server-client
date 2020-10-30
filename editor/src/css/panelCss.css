@@ -13,8 +13,12 @@
     ". . . . .";
 }
 .grid-container div {
-    vertical-align: middle;
-    horiz-align: center;
+
+}
+
+.grid-container button {
+    width: 40%;
+    height: 40%;
 }
 
 .Preview-Area {
@@ -24,20 +28,35 @@
 
 .Preview-File {
     grid-area: Preview-File;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: #9effff;
 }
 
 .Content-Name {
     grid-area: Content-Name;
+    display: flex;
+    align-items:flex-start;
+    justify-content: left;
+    padding-left: 10px;
     background-color: #2e7d32;
 }
 
 .Creator-Name {
     grid-area: Creator-Name;
+    display: flex;
+    align-items:center;
+    justify-content: left;
+    padding-left: 10px;
     background-color: #8888dd;
 }
 
 .Submit-Area {
     grid-area: Submit-Area;
+    display: flex;
+    align-items:center;
+    padding-right: 5%;
+    justify-content: right;
     background-color: #cc6666;
 }

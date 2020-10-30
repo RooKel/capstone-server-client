@@ -69,9 +69,7 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     }
 
     let submit_button = document.getElementById(btn_id);
-    submit_button.setAttribute("value", "UPLOAD");
-    submit_button.setAttribute("width", "75%");
-    submit_button.setAttribute("height", "75%");
+    submit_button.innerHTML = "UPLOAD";
     submit_button.onclick = function (){
         data_stream.data_name = input_content_name.value;
         data_stream.data_creator = input_creator_name.value;
