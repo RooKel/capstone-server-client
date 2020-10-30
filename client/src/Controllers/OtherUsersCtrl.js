@@ -1,13 +1,12 @@
-import * as EVENTS from '../Events/Import.js'
+import EventLink from '../EventLink.js'
 
-const Others = (socket, uid, model, data)=>{
-    //#region init
+const OtherUserCtrl = (socket, uid, model, data)=>{
     const netw_obj = data;
     const server_update_rate = 12;
-    //#region init event link
     //#region socket event handlers
-    const ProcessServerInput = (msg)=>{
-        if(msg.entity_id !== uid) return;
+    const OnWorldState = (msg)=>{
+        if(msg.entity_id !== uid)
+            return;
         netw_obj.position_buffer.push([
             +new Date(),
             msg.entity_properties.x,
@@ -33,8 +32,7 @@ const Others = (socket, uid, model, data)=>{
         }
     }
     const OnInit = ()=>{
-        console.log('Others: init');
-        socket.on('world_state', ProcessServerInput);
+        socket.on('world_state', OnWorldState);
     }
     const OnUpdate = (delta)=>{
         Interpolate();
@@ -42,20 +40,17 @@ const Others = (socket, uid, model, data)=>{
         model.position.y = netw_obj.y;
     }
     const OnDispose = ()=>{
-        console.log('Others: dispose');
-        socket.off('world_state', ProcessServerInput);
+        socket.off('world_state', OnWorldState);
     }
     //#endregion
-    const event_link = EVENTS.EventLink([
+    const event_link = EventLink([
         { name:'init', handler:OnInit },
         { name:'update', handler:OnUpdate },
         { name:'dispose', handler:OnDispose }
-    ])
-    //#endregion
-    //#endregion
+    ]);
     return {
-        event_link: event_link,
+        event_link: event_link
     }
 }
 
-export default Others
+export default OtherUserCtrl

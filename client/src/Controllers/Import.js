@@ -1,7 +1,11 @@
-import WASD from './WASD.js'
-import Mouse from './Mouse.js'
+import CtrlManager from './CtrlManager.js'
+import PlayerCtrl from './PlayerCtrl.js'
+import OtherUsersCtrl from './OtherUsersCtrl.js'
+import QLogin from './QLogin.js'
 
 export {
-    WASD,
-    Mouse
+    CtrlManager,
+    PlayerCtrl,
+    OtherUsersCtrl,
+    QLogin
 }

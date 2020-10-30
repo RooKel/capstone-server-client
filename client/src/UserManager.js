@@ -1,14 +1,11 @@
 import * as THREE from 'three'
 
-import Player from './Player.js'
-import Others from './Others.js'
-import * as EVENTS from '../Events/Import.js'
+import EventLink from './EventLink.js'
+import * as CTRL from './Controllers/Import.js'
 
-const SyncObjFactory = (socket, client_data, scene)=>{
-    //#region init
+const UserManager = (socket, client_data, scene, ctrl_manager)=>{
     const sync_objs = { };
-    //#region init event link
-    //#region socket event handler
+    //#region socket event handlers
     const AddUser = (uid, data)=>{
         let geometry = new THREE.BoxGeometry(1,1,1);
         let material = new THREE.MeshBasicMaterial({color:0xFF0000});
@@ -16,23 +13,23 @@ const SyncObjFactory = (socket, client_data, scene)=>{
         cube.position.x = data.x;
         cube.position.y = data.y;
         scene.add(cube);
-        sync_objs[uid] = cube;
 
-        if(client_data.uid === uid)
-            Object.assign(sync_objs[uid], Player(socket,uid,sync_objs[uid],data));
-        else 
-            Object.assign(sync_objs[uid], Others(socket,uid,sync_objs[uid],data));
-        sync_objs[uid].event_link.Invoke('init');
-
-        scene.event_link.AddLink(sync_objs[uid].event_link);
+        let ctrl = undefined;
+        if(uid === client_data.uid)
+            ctrl = CTRL.PlayerCtrl(socket, uid, cube, data, ctrl_manager.inputs);
+        else
+            ctrl = CTRL.OtherUsersCtrl(socket, uid, cube, data);
+        ctrl_manager.AddCtrl(ctrl);
+        
+        sync_objs[uid] = { model:cube, ctrl:ctrl };
     }
     const RemUser = (uid)=>{
-        scene.remove(sync_objs[uid]);
-        sync_objs[uid].event_link.Invoke('dispose');
+        scene.remove(sync_objs[uid].model);
+        ctrl_manager.RemCtrl(sync_objs[uid].ctrl);
         delete sync_objs[uid];
     }
     //#endregion
-    //#region event link event handler
+    //#region event link event handlers
     const OnEnter = ()=>{
         socket.on('entity_data', AddUser);
         socket.on('other_joined', AddUser);
@@ -44,15 +41,13 @@ const SyncObjFactory = (socket, client_data, scene)=>{
         socket.off('delete_entity', RemUser);
     }
     //#endregion
-    const event_link = EVENTS.EventLink([
+    const event_link = EventLink([
         { name:'enter', handler:OnEnter },
         { name:'exit', handler:OnExit }
     ]);
-    //#endregion
-    //#endregion
     return {
         event_link: event_link
     }
 }
 
-export default SyncObjFactory
+export default UserManager

@@ -2,12 +2,14 @@ import * as THREE from 'three'
 import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js'
 
 import Page from './Page.js'
-import * as EVENTS from '../Events/Import.js'
-import * as SYNC from '../Synchronize/Import.js'
+import EventLink from '../EventLink.js'
+import * as CTRL from '../Controllers/Import.js'
+import UserManager from '../UserManager.js'
 
 const TestPage = (app_event_link, socket, client_data)=>{
-    let page = Page();
-    //#region init scene
+    const page = Page();
+    const ctrl_manager = CTRL.CtrlManager(socket, client_data);
+    //#region init scene & camera
     page.scene.background = new THREE.Color(0xFFFFFF);
     page.scene.add(
         new THREE.LineSegments(
@@ -15,30 +17,26 @@ const TestPage = (app_event_link, socket, client_data)=>{
             new THREE.LineBasicMaterial( { color: 0x000000 } )
         )
     );
-    page.scene.add(new THREE.DirectionalLight(0xFFFFFF, 5));
-    //#endregion
-    //#region init camera
     page.camera.position.set(0,1,5);
     //#endregion
-    //#region init event link
     //#region event link event handlers
     const OnEnter = ()=>{
-        console.log('TestPage: enter');
+        
     }
-    const OnUpdate = (delta)=>{}
+    const OnUpdate = (delta)=>{
+        
+    }
     const OnExit = ()=>{
-        console.log('TestPage: exit');
+        
     }
     //#endregion
-    const event_link = EVENTS.EventLink([
+    const event_link = EventLink([
         { name:'enter', handler:OnEnter },
         { name:'update', handler:OnUpdate },
         { name:'exit', handler:OnExit }
     ]);
-    event_link.AddLink((SYNC.SyncObjFactory(socket, client_data, page.scene)).event_link);
-    event_link.AddLink(page.scene.event_link);
-    event_link.AddLink(page.camera.event_link);
-    //#endregion
+    event_link.AddLink(ctrl_manager.event_link);
+    event_link.AddLink(UserManager(socket, client_data, page.scene, ctrl_manager).event_link);
     Object.assign(page, { event_link:event_link });
     return page;
 }

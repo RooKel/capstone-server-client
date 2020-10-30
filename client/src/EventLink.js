@@ -16,7 +16,7 @@ const EventLink = (events)=>{
         children.push(link);
     }
     const RemoveLink = (link)=>{
-        children.splice(children.findIndex(link), 1);
+        children.splice(children.findIndex((_)=>_===link), 1);
     }
     const Invoke = (event_name, args)=>{
         if(!handlers[event_name])
