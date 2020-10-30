@@ -1,20 +1,31 @@
 import EventLink from '../EventLink.js'
 import * as THREE from 'three'
 
-const TestCameraCtrl = (socket, uid, camera, input_collector)=>{
+const TestCameraCtrl = (socket, client_data, camera, input_collector)=>{
     let target = undefined;
     let offset = undefined;
+
     const pending_inputs = [ ];
     let input_sequence_number = 0;
+    let prev_mouse_pos = undefined;
+    let d_mouse_pos = { mouse_dx:0, mouse_dy:0 };
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
-        if(msg.entity_id !== uid) return;
-
+        if(msg.entity_id !== client_data.uid) return;
+        
     }
     //#endregion
     //#region input event handlers
     const OnMouseMove = (e)=>{
-
+        if(!prev_mouse_pos){
+            prev_mouse_pos = { x:e.offsetX, y:e.offsetY };
+        }
+        else{
+            d_mouse_pos.mouse_dx = e.offsetX - prev_mouse_pos.x;
+            d_mouse_pos.mouse_dy = prev_mouse_pos.y - e.offsetY;
+            prev_mouse_pos.x = e.offsetX;
+            prev_mouse_pos.y = e.offsetY;
+        }
     }
     //#endregion
     //#region event link event handlers
@@ -30,7 +41,23 @@ const TestCameraCtrl = (socket, uid, camera, input_collector)=>{
         }
         //#endregion
         //#region camera rotation
+        const input = {
+            mouse_dx: d_mouse_pos.mouse_dx,
+            mouse_dy: d_mouse_pos.mouse_dy,
+            input_sequence_number: input_sequence_number++
+        };
+        input_collector.AddMsg('input', input);
         
+        //let tempQuat = new THREE.Quaternion();
+        let tempRot = camera.rotation;
+        tempRot.x -= input.mouse_dx;
+        tempRot.y -= input.mouse_dy;
+        //tempQuat.setFromEuler(tempRot);
+        //tempQuat.normalize();
+        camera.quaternion.setFromEuler(tempRot);
+
+        d_mouse_pos.mouse_dx = 0;
+        d_mouse_pos.mouse_dy = 0;
         //#endregion
     }
     const OnExit = ()=>{
