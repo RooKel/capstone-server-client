@@ -14,11 +14,13 @@ const TestCameraCtrl = (socket, client_data, camera, input_collector)=>{
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== client_data.uid) return;
         let tempQuat = new THREE.Quaternion(
-            msg.entity_properties.quaternion.x,
-            msg.entity_properties.quaternion.y,
-            msg.entity_properties.quaternion.z,
-            msg.entity_properties.quaternion.w
+            msg.entity_properties.quaternion._x,
+            msg.entity_properties.quaternion._y,
+            msg.entity_properties.quaternion._z,
+            msg.entity_properties.quaternion._w
         );
+        console.log(tempQuat);
+        camera.quaternion.copy(tempQuat);
     }
     //#endregion
     //#region input event handlers
@@ -43,7 +45,9 @@ const TestCameraCtrl = (socket, client_data, camera, input_collector)=>{
         //#region camera translation
         if(target){
             let target_pos = target.position.clone().add(offset);
+            let target_rot = target.quaternion.clone();
             camera.position.lerp(target_pos, 0.5);
+            camera.quaternion.copy(target_rot);
         }
         //#endregion
         //#region camera rotation
