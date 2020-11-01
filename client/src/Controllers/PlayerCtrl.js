@@ -1,6 +1,7 @@
 import EventLink from '../EventLink.js'
+import * as THREE from 'three'
 
-const PlayerCtrl = (socket, uid, data, model, input_collector)=>{
+const PlayerCtrl = (socket, uid, data, model, camera, input_collector)=>{
     const netw_obj = data;
     let pending_inputs = [ ];
     let input_sequence_number = 0;
@@ -51,24 +52,35 @@ const PlayerCtrl = (socket, uid, data, model, input_collector)=>{
     const OnUpdate = (delta)=>{
         let vertical = undefined;
         if(!(pressed[0]^pressed[2])) vertical = 0;
-        else if(pressed[0]) vertical = 1;
+        else if(pressed[2]) vertical = 1;
         else vertical = -1;
 
         let horizontal = undefined;
         if(!(pressed[1]^pressed[3])) horizontal = 0;
         else if(pressed[3]) horizontal = 1;
         else horizontal = -1;
-        
+
+        //camera.rotateY(0.01);
+        let look_dir = new THREE.Vector3();
+        camera.getWorldDirection(look_dir);
+        let right_dir = new THREE.Vector3();
+        right_dir.crossVectors(look_dir, new THREE.Vector3(0,1,0));
+        let forward_dir = new THREE.Vector3();
+        forward_dir.crossVectors(right_dir, new THREE.Vector3(0,1,0));
+        let move = new THREE.Vector3().addVectors(
+            forward_dir.multiplyScalar(vertical),
+            right_dir.multiplyScalar(horizontal)
+        );
         const input = { 
-            move_dx:horizontal*delta,
-            move_dy:vertical*delta,
+            move_dx: move.x * delta,
+            move_dy: move.z * delta,
             input_sequence_number: input_sequence_number++
         };
         input_collector.AddMsg('input', input);
         pending_inputs.push(input);
 
         model.position.x += input.move_dx * netw_obj.speed;
-        model.position.y += input.move_dy * netw_obj.speed;
+        model.position.z += input.move_dy * netw_obj.speed;
     }
     const OnExit = ()=>{
         socket.off('world_state', ProcessServerMessage);

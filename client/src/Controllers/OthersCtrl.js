@@ -34,7 +34,7 @@ const OthersCtrl = (socket, uid, data, model)=>{
         }
 
         model.position.x = netw_obj.x;
-        model.position.y = netw_obj.y;
+        model.position.z = netw_obj.y;
     }
     const OnExit = ()=>{
         socket.off('world_state', ProcessServerMessage);

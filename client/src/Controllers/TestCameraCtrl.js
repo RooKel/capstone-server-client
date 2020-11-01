@@ -5,14 +5,20 @@ const TestCameraCtrl = (socket, client_data, camera, input_collector)=>{
     let target = undefined;
     let offset = undefined;
 
-    const pending_inputs = [ ];
-    let input_sequence_number = 0;
     let prev_mouse_pos = undefined;
     let d_mouse_pos = { mouse_dx:0, mouse_dy:0 };
+    const pending_inputs = [ ];
+    let input_sequence_number = 0;
+
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== client_data.uid) return;
-        
+        let tempQuat = new THREE.Quaternion(
+            msg.entity_properties.quaternion.x,
+            msg.entity_properties.quaternion.y,
+            msg.entity_properties.quaternion.z,
+            msg.entity_properties.quaternion.w
+        );
     }
     //#endregion
     //#region input event handlers
@@ -42,19 +48,12 @@ const TestCameraCtrl = (socket, client_data, camera, input_collector)=>{
         //#endregion
         //#region camera rotation
         const input = {
-            mouse_dx: d_mouse_pos.mouse_dx,
-            mouse_dy: d_mouse_pos.mouse_dy,
-            input_sequence_number: input_sequence_number++
+            mouse_dx: d_mouse_pos.mouse_dx * 0.05,
+            mouse_dy: d_mouse_pos.mouse_dy * 0.05,
+            //input_sequence_number: input_sequence_number++
         };
         input_collector.AddMsg('input', input);
-        
-        //let tempQuat = new THREE.Quaternion();
-        let tempRot = camera.rotation;
-        tempRot.x -= input.mouse_dx;
-        tempRot.y -= input.mouse_dy;
-        //tempQuat.setFromEuler(tempRot);
-        //tempQuat.normalize();
-        camera.quaternion.setFromEuler(tempRot);
+        //pending_inputs.push(input);
 
         d_mouse_pos.mouse_dx = 0;
         d_mouse_pos.mouse_dy = 0;

@@ -19,9 +19,10 @@ const App = ()=>{
     const event_link = EventLink([
         { name:'change_page', handler:OnChangePage }
     ]);
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.localClippingEnabled = true;
     renderer.domElement.setAttribute('id', 'three_canvas');
     const Update = ()=>{
         const page = pages[cur_page];

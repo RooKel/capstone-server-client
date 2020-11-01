@@ -5,17 +5,19 @@ module.exports = {
   entry: './client/index.js',
   output: {
     filename: 'main.js',
-    path: path.resolve(__dirname, 'dist'),
-    publicPath: 'dist'
+    path: path.resolve(__dirname, './dist'),
+    publicPath: ''
   },
   mode: 'none',
   module: {
-    rules: [{
-      test: /\.(png|jpeg)$/,
-      use: [
-        'file-loader'
-      ]
-    }]
+    rules: [
+      {
+        test: /\.(png|jpeg)$/,
+        use: [
+          'file-loader'
+        ]
+      }
+    ]
   },
   node: {
     fs: "empty"
