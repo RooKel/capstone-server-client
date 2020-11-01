@@ -47,7 +47,7 @@ const TestCameraCtrl = (socket, client_data, camera, input_collector)=>{
             let target_pos = target.position.clone().add(offset);
             let target_rot = target.quaternion.clone();
             camera.position.lerp(target_pos, 0.5);
-            camera.quaternion.copy(target_rot);
+            //camera.quaternion.copy(target_rot);
         }
         //#endregion
         //#region camera rotation
