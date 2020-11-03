@@ -21,7 +21,7 @@ const PlayerCtrl = (socket, uid, data, model, camera, input_collector)=>{
         pending_inputs.forEach((_)=>{
             netw_obj.x += _.move_dx * netw_obj.speed;
             netw_obj.y += _.move_dy * netw_obj.speed;
-        })
+        });
     }
     //#endregion
     //#region input event handlers

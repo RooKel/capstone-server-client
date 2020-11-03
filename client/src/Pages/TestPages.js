@@ -219,9 +219,7 @@ const TestWorldPage = (socket, client_data, app_event_link)=>{
     );
     page.camera.position.set(0,1,5);
     const input_collector = InputCollector(socket, client_data);
-    const camera_ctrl = CTRL.TestCameraCtrl(socket, client_data, page.camera, input_collector);
-    page.camera.event_link.AddLink(camera_ctrl.event_link);
-    const user_manager = UserManager(socket, client_data, page.scene, camera_ctrl, page.camera, input_collector);
+    const user_manager = UserManager(socket, client_data, page.scene, page.camera, input_collector);
     //#region event link event handlers
     const OnEnter = ()=>{
         console.log('TestWorldPage: enter');

@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import EventLink from './EventLink.js'
 import * as CTRL from './Controllers/Import.js'
 
-const UserManager = (socket, client_data, scene, camera_ctrl, camera, input_collector)=>{
+const UserManager = (socket, client_data, scene, camera, input_collector)=>{
     const users = { };
     //#region socket event handler
     const AddUser = (uid, data)=>{
@@ -15,6 +15,9 @@ const UserManager = (socket, client_data, scene, camera_ctrl, camera, input_coll
             Object.assign(cube, CTRL.OthersCtrl(socket, uid, data, cube));
         else {
             Object.assign(cube, CTRL.PlayerCtrl(socket, uid, data, cube, camera, input_collector));
+            const camera_ctrl = CTRL.TestCameraCtrl(socket, client_data, data, camera, input_collector);
+            camera.event_link.AddLink(camera_ctrl.event_link);
+            camera_ctrl.event_link.Invoke('enter');
             camera_ctrl.ChangeTarget(cube, new THREE.Vector3(0,1,0));
         }
         cube.event_link.Invoke('enter');
