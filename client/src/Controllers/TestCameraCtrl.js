@@ -1,5 +1,6 @@
 import EventLink from '../EventLink.js'
 import * as THREE from 'three'
+import {Quaternion} from "three";
 
 const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
     const netw_obj = data;
@@ -31,6 +32,7 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
             mulQuat.setFromAxisAngle(new THREE.Vector3(-1,0,0), y_rot);
             tempQuat.setFromAxisAngle(new THREE.Vector3(0,1,0), x_rot);
             tempQuat.multiply(mulQuat);
+            prev_quat.slerp(tempQuat, 0.5);
             prev_quat.copy(tempQuat);
         });
         netw_obj.quaternion = prev_quat;
@@ -80,7 +82,8 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
         mulQuat.setFromAxisAngle(new THREE.Vector3(-1,0,0), sum.y);
         tempQuat.setFromAxisAngle(new THREE.Vector3(0,1,0), sum.x);
         tempQuat.multiply(mulQuat);
-        camera.quaternion.copy(tempQuat);
+        camera.quaternion.copy(camera.quaternion.slerp(tempQuat, 0.5));
+        //camera.quaternion.copy(tempQuat);
 
         d_mouse_pos.mouse_dx = 0;
         d_mouse_pos.mouse_dy = 0;
