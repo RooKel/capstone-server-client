@@ -25,6 +25,7 @@ server.listen(3000, function() { console.log("Express server has started on port
 var Entity = require('./components/Entity');
 var Instance = require('./components/Instance');
 var Camera = require('./components/Camera');
+const { waitForDebugger } = require('inspector');
 
 // get uid
 const makeUID = function() { return '_' + Math.random().toString(36).substr(2, 9); }
@@ -59,7 +60,7 @@ var Schema = new mongoose.Schema({
 
 var avatarModel = mongoose.model('avatar', Schema);
 var worldModel = mongoose.model('world', Schema);
-
+var fileDataArray = [];
 
 
 
@@ -185,36 +186,50 @@ function onConnect(socket) {
         }
     });
 
-
     // Send File To Client
     socket.on('rq-file-download', function(data) {
-        var dataArray = [];
-        
         if (data.data_type === "avatar") {
-            avatarModel.find({}).select('uid name creator date').exec(function(err, avatars) {
-                avatars.forEach(function(avatar) {
-                    fs.readFile("./data/" + avatar.uid + "/thumbnail.png", function(err, data) {
-                        dataArray.push(data);
-                        console.log("data::", data);
-                        console.log(avatar.uid + " " + avatar.name + " " + avatar.creator);
-                    });
-                });
-            });
-           socket.emit("file-download", { type: "avatar", data: dataArray });
-            console.log("dataArray:" + dataArray);
-        }
-
-        else if (data.data_type === "world") {
-            worldModel.find({}).select('uid name creator date').exec(function(err, worlds) {
-                worlds.forEach(function(world) {
-                    fs.readFile("./data/" + world.uid + "/thumbnail.png", function(err, data) {
-                        dataArray.push(data);
-                        console.log(world.uid + " " + world.name + " " + world.creator);
-                    });
-                });
-            });
-            socket.emit("file-download", { type: "world", data: dataArray });
-            console.log("dataArray:" + dataArray);
+            sendModelData(socket, avatarModel, "avatar");
+        } else if (data.data_type === "world") {
+            sendModelData(socket, worldModel, "world");
         }
     });
+}
+
+function sendModelData(socket, model, type)
+{
+    var dataArray = [];
+
+    model.find({}).select('uid name creator date').exec()
+        .then((items) => {
+            function logItem(item) {
+                return new Promise((resolve, reject) => {
+                        process.nextTick(() => {
+                        fs.readFile("./data/" + item.uid + "/thumbnail.png", (err, data) => {
+                            var dataTuple = {
+                                uid: undefined,
+                                data: undefined,
+                            };
+
+                            dataTuple.uid = item.uid;
+                            dataTuple.data = data;
+                            dataArray.push(dataTuple);
+                        });
+                        setTimeout(function(){ resolve() }, 100);
+                        })
+                    });
+                }
+            function forEachPromise(items, fn) {
+            return items.reduce(function (promise, item) {
+                    return promise.then(function () {
+                        return fn(item);
+                    });
+            }, Promise.resolve());
+            }
+            forEachPromise(items, logItem).then(() => {
+                console.log(dataArray);
+                socket.emit("file-download", { type: type, data: dataArray });
+                console.log("file-download message sent!");
+            });
+        });
 }
