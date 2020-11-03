@@ -214,12 +214,11 @@ function sendModelData(socket, model, request_type, category)
                 return new Promise((resolve, reject) => {
                         process.nextTick(() => {
                                 fs.readFile("./data/" + item.uid + "/" + file_name + file_format, (err, data) => {
-                                    var dataTuple = {
-                                        uid: undefined,
-                                        data: undefined,
-                                    };
-
+                                    var dataTuple = { uid: undefined, name: undefined, creator:undefined, date:undefined, data: undefined };
                                     dataTuple.uid = item.uid;
+                                    dataTuple.name = item.name;
+                                    dataTuple.creator = item.creator;
+                                    dataTuple.date = item.date;
                                     dataTuple.data = data;
                                     dataArray.push(dataTuple);
                                 });
