@@ -10,6 +10,9 @@ import ThreeMeshUI from 'three-mesh-ui'
 import FontJSON from '../../assets/Roboto-msdf.json'
 import FontImage from '../../assets/Roboto-msdf.png'
 
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import TestGLTF from '../../assets/world.gltf'
+
 const TestStartPage = (socket, client_data, app_event_link)=>{
     const page = Page();
     page.scene.background = new THREE.Color(0x000000);
@@ -109,7 +112,8 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
 		backgroundColor: new THREE.Color( 'blue' ),
 		backgroundOpacity: 0.2,
 		alignContent: 'left'
-	});
+    });
+    const bbox = new THREE.Box3().setFromObject(textContainer);
     container2.add( textContainer );
     const text = new ThreeMeshUI.Text({
 		content: "HelloWorld! ".repeat( 28 ),
@@ -138,14 +142,20 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
         //e.deltaY 1 tick: 125
         let y = textContainer.position.y;
         y += e.deltaY * 0.0001;
+        //if(y < bbox.min.y) y = bbox.min.y;
+        //if(y > bbox.max.y) y = bbox.max.y;
         textContainer.position.y = y;
     }
     //#endregion
     //#region socket event handlers
     const OnLoginAccept = (uid)=>{
         client_data.uid = uid;
+        //app_event_link.Invoke('change_page', 1);
         //load file here
-        app_event_link.Invoke('change_page', 1);
+        
+        const path = TestGLTF;
+        app_event_link.Invoke('new_world', path);
+        app_event_link.Invoke('change_page', 2);
     }
     //#endregion
     //#region event link event handlers
@@ -276,8 +286,57 @@ const TestWorldPage = (socket, client_data, app_event_link)=>{
     Object.assign(page, {event_link:event_link});
     return page;
 }
+const TestWorldPage2 = (socket, client_data, app_event_link, path)=>{
+    const page = Page();
+    page.scene.background = new THREE.Color(0xFFFFFF);
+    page.scene.add(
+        new THREE.LineSegments(
+            new BoxLineGeometry( 10, 10, 10, 10, 10, 10 ).translate( 0, 5, 0 ),
+            new THREE.LineBasicMaterial( { color: 0x000000 } )
+        )
+    );
+    page.scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
+    const loader = new GLTFLoader();
+    loader.load(
+        path,
+        (gltf)=>{
+            page.scene.add(gltf.scene);
+        },
+        (xhr)=>{
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+        },
+        undefined
+    );
+
+    page.camera.position.set(0,1,5);
+    const input_collector = InputCollector(socket, client_data);
+    const user_manager = UserManager(socket, client_data, page.scene, page.camera, input_collector);
+    //#region event link event handlers
+    const OnEnter = ()=>{
+        console.log('TestWorldPage: enter');
+    }
+    const OnUpdate = (delta)=>{
+        //ThreeMeshUI.update();
+    }
+    const OnExit = ()=>{
+        console.log('TestWorldPage: exit');
+    }
+    //#endregion
+    const event_link = EventLink([
+        {name:'enter',handler:OnEnter},
+        {name:'update',handler:OnUpdate},
+        {name:'exit',handler:OnExit},
+    ]);
+    event_link.AddLink(page.scene.event_link);
+    event_link.AddLink(page.camera.event_link);
+    event_link.AddLink(user_manager.event_link);
+    event_link.AddLink(input_collector.event_link);
+    Object.assign(page, {event_link:event_link});
+    return page;
+}
 
 export {
     TestStartPage,
-    TestWorldPage
+    TestWorldPage,
+    TestWorldPage2
 }

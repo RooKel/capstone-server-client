@@ -12,7 +12,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(png|jpeg)$/,
+        test: /\.(png|jpeg|glb|gltf|bin)$/,
         use: [
           'file-loader'
         ]

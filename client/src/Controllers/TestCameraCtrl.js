@@ -66,8 +66,8 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
         //#region camera rotation
         //#region post to server
         const input = {
-            mouse_dx: d_mouse_pos.mouse_dx * 0.05,
-            mouse_dy: d_mouse_pos.mouse_dy * 0.05,
+            mouse_dx: d_mouse_pos.mouse_dx * 0.03,
+            mouse_dy: d_mouse_pos.mouse_dy * 0.03,
             input_sequence_number: input_sequence_number++
         };
         input_collector.AddMsg('input', input);
