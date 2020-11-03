@@ -186,27 +186,33 @@ function onConnect(socket) {
 
     // Send File To Client
     socket.on('rq-file-download', function(data) {
+        var dataArray = [];
+        
         if (data.data_type === "avatar") {
             avatarModel.find({}).select('uid name creator date').exec(function(err, avatars) {
                 avatars.forEach(function(avatar) {
                     fs.readFile("./data/" + avatar.uid + "/thumbnail.png", function(err, data) {
-                        socket.emit("file-download", { type: "avatar", data: data });
+                        dataArray.push(data);
                         console.log("data::", data);
                         console.log(avatar.uid + " " + avatar.name + " " + avatar.creator);
                     });
                 });
             });
+           socket.emit("file-download", { type: "avatar", data: dataArray });
+            console.log("dataArray:" + dataArray);
         }
 
         else if (data.data_type === "world") {
             worldModel.find({}).select('uid name creator date').exec(function(err, worlds) {
                 worlds.forEach(function(world) {
                     fs.readFile("./data/" + world.uid + "/thumbnail.png", function(err, data) {
-                        socket.emit("file-download", { type: "world", data: data });
+                        dataArray.push(data);
                         console.log(world.uid + " " + world.name + " " + world.creator);
                     });
                 });
             });
+            socket.emit("file-download", { type: "world", data: dataArray });
+            console.log("dataArray:" + dataArray);
         }
     });
 }
