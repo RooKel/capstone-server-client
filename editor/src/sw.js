@@ -84,6 +84,8 @@ const assets = [
 	'./js/libs/esprima.js',
 	'./js/libs/jsonlint.js',
 
+	'js/libs/socket.io-client/public/socket.io.js',
+
 	'./js/libs/codemirror/addon/dialog.css',
 	'./js/libs/codemirror/addon/show-hint.css',
 	'./js/libs/codemirror/addon/tern.css',
