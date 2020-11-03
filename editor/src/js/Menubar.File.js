@@ -189,7 +189,7 @@ function MenubarFile(editor) {
         }
     });
     option.onClick(function () {
-        socket.emit('rq-file-download',{data_type:'avatar'});
+        socket.emit('rq-file-download',{request_type:'thumbnail', category:'avatar'});
 
         let elements = [];
         for (let i = 0; i < 8; i++) {
@@ -214,7 +214,7 @@ function MenubarFile(editor) {
     option.setClass('option');
     option.setTextContent(strings.getKey('menubar/file/download/world'));
     option.onClick(function () {
-        socket.emit('rq-file-download',{data_type:'world'});
+        socket.emit('rq-file-download',{request_type:'thumbnail', category:'world'});
 
         let elements = [];
         for (let i = 0; i < 8; i++) {
@@ -355,25 +355,47 @@ function MenubarFile(editor) {
     });
     //options.add( option );
 
-    // Export GLTF
+    // Export Avatar
 
     var option = new UIRow();
     option.setClass('option');
     option.setTextContent(strings.getKey('menubar/file/export/avatar'));
-    option.onClick(function () {
-
-        var exporter = new GLTFExporter();
-
-        exporter.parse(editor.scene, function (result) {
-
-            saveString(JSON.stringify(result, null, 2), 'scene.gltf');
-
-        });
-
-
-    });
+    option.onClick(exportAvatar);
     options.add(option);
 
+    function getAvatarJson(scene, completeCallback) {
+        let exporter = new GLTFExporter();
+        let skinnedMeshRoot = undefined;
+        scene.traverse(obj => {
+            if(undefined !== skinnedMeshRoot) return;
+            if(obj.type == "SkinnedMesh")
+            {
+                if(obj.parent === undefined)
+                    skinnedMeshRoot = editor.scene;
+                else
+                    skinnedMeshRoot = obj.parent;
+                return;
+            }
+        });
+
+        exporter.parse(skinnedMeshRoot, function(result){
+            completeCallback(JSON.stringify(result, null, 2));
+        });
+    }
+
+    function exportAvatar() {
+
+        let zip = new JSZip();
+
+        getAvatarJson(editor.scene, function (avatarJson){
+
+            zip.file('avatar.gltf', avatarJson);
+
+            let title = config.getKey('project/title');
+            save(zip.generate({type: 'blob'}), (title !== '' ? title : 'Avatar') + '.zip');
+
+        });
+    }
     //options.add( new UIHorizontalRule() );
 
     //	Export World
