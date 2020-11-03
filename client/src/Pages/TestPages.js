@@ -151,9 +151,9 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
     //#region socket event handlers
     const OnLoginAccept = (uid)=>{
         client_data.uid = uid;
-        app_event_link.Invoke('change_page', 1);
+        //app_event_link.Invoke('change_page', 1);
         //load file here
-        return;
+
         const path = TestGLTF;
         app_event_link.Invoke('new_world', path);
         app_event_link.Invoke('change_page', 2);
@@ -300,6 +300,19 @@ const TestWorldPage2 = (socket, client_data, app_event_link, path)=>{
             new THREE.LineBasicMaterial( { color: 0x000000 } )
         )
     );
+    //#region init UI
+    const container = new ThreeMeshUI.Block({
+        width: 0.6,
+        height: 0.5,
+        padding: 0.05,
+        alignContent: 'left',
+        fontFamily: FontJSON,
+        fontTexture: FontImage,
+        borderRadius: 0.075
+    }).add(new ThreeMeshUI.Text({content:'Hello World!'}));
+    container.visible = false;
+    page.scene.add(container);
+    //#endregion
     page.scene.add(new THREE.DirectionalLight(0xFFFFFF, 1));
     const loader = new GLTFLoader();
     loader.load(
@@ -316,15 +329,31 @@ const TestWorldPage2 = (socket, client_data, app_event_link, path)=>{
     page.camera.position.set(0,1,5);
     const input_collector = InputCollector(socket, client_data);
     const user_manager = UserManager(socket, client_data, page.scene, page.camera, input_collector);
+    //#region input event handlers
+    const OnKeyDown = (e)=>{
+        if(e.code === 'Escape'){
+            container.visible = !container.visible;
+            console.log(container.visible);
+        }
+    }
+    //#endregion
     //#region event link event handlers
     const OnEnter = ()=>{
         console.log('TestWorldPage: enter');
+        document.addEventListener('keydown', OnKeyDown);
     }
     const OnUpdate = (delta)=>{
-        //ThreeMeshUI.update();
+        let look_dir  = new THREE.Vector3();
+        page.camera.getWorldDirection(look_dir);
+        look_dir.normalize();
+        look_dir.add(page.camera.position);
+        container.position.addVectors(new THREE.Vector3(0,0,0), look_dir);
+        container.lookAt(page.camera.position);
+        ThreeMeshUI.update();
     }
     const OnExit = ()=>{
         console.log('TestWorldPage: exit');
+        document.removeEventListener('keydown', OnKeyDown);
     }
     //#endregion
     const event_link = EventLink([
