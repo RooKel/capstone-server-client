@@ -112,7 +112,7 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
 	});
     container2.add( textContainer );
     const text = new ThreeMeshUI.Text({
-		content: "hiddenOverflow ".repeat( 28 ),
+		content: "HelloWorld! ".repeat( 28 ),
 		fontSize: 0.059,
 		fontFamily: FontJSON,
 		fontTexture: FontImage
@@ -134,10 +134,17 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
         mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
 	    mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
     }
+    const OnWheel = (e)=>{
+        //e.deltaY 1 tick: 125
+        let y = textContainer.position.y;
+        y += e.deltaY * 0.0001;
+        textContainer.position.y = y;
+    }
     //#endregion
     //#region socket event handlers
     const OnLoginAccept = (uid)=>{
         client_data.uid = uid;
+        //load file here
         app_event_link.Invoke('change_page', 1);
     }
     //#endregion
@@ -149,6 +156,7 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
         document.addEventListener('mousemove', OnMouseMove);
         window.addEventListener( 'mousedown', ()=> { selectState = true });
         window.addEventListener( 'mouseup', ()=> { selectState = false });
+        document.addEventListener('wheel', OnWheel);
     }
     function raycast() {
         return objsToTest.reduce( (closestIntersection, obj)=> {
@@ -161,7 +169,6 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
                 return closestIntersection
             };
         }, null );
-    
     };
     const OnUpdate = (delta)=>{
         if(mouse.x && mouse.y){
@@ -184,8 +191,8 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
                 };
             });
         }
-        const y = (Math.cos( Date.now() / 2000 ) * 0.25);
-        textContainer.position.y = y * 0.6;
+        //const y = (Math.cos( Date.now() / 2000 ) * 0.25);
+        //textContainer.position.y = y * 0.6;
         ThreeMeshUI.update();
     }
     const OnExit = ()=>{
@@ -195,6 +202,7 @@ const TestStartPage = (socket, client_data, app_event_link)=>{
         document.removeEventListener('mousemove', OnMouseMove);
         window.removeEventListener( 'mousedown', ()=> { selectState = true });
         window.removeEventListener( 'mouseup', ()=> { selectState = false });
+        document.removeEventListener('wheel', OnWheel);
     }
     //#endregion
     const event_link = EventLink([
@@ -218,17 +226,42 @@ const TestWorldPage = (socket, client_data, app_event_link)=>{
         )
     );
     page.camera.position.set(0,1,5);
+    //#region init UI
+    const container = new ThreeMeshUI.Block({
+        width: 0.6,
+		height: 0.5,
+		padding: 0.05,
+		alignContent: 'left',
+		fontFamily: FontJSON,
+        fontTexture: FontImage,
+        borderRadius: 0.075
+    }).add(new ThreeMeshUI.Text({content:'Hello World!'}));
+    container.position.set(0,1,0);
+    container.visible = false;
+
+    page.scene.add(container);
+    //#endregion
     const input_collector = InputCollector(socket, client_data);
     const user_manager = UserManager(socket, client_data, page.scene, page.camera, input_collector);
+    //#region input event handlers
+    const OnKeyDown = (e)=>{
+        console.log(container.visible);
+        if(e.code === 'Escape'){
+            container.visible = !container.visible;
+        }
+    }
+    //#endregion
     //#region event link event handlers
     const OnEnter = ()=>{
         console.log('TestWorldPage: enter');
+        document.addEventListener('keydown', OnKeyDown);
     }
     const OnUpdate = (delta)=>{
-
+        ThreeMeshUI.update();
     }
     const OnExit = ()=>{
         console.log('TestWorldPage: exit');
+        document.removeEventListener('keydown', OnKeyDown);
     }
     //#endregion
     const event_link = EventLink([
