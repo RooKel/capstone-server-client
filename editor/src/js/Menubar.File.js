@@ -193,7 +193,7 @@ function MenubarFile(editor) {
 
         let elements = [];
         for (let i = 0; i < 8; i++) {
-            elements.push(new GridPanelElement("test" + i, 100, 100, null));
+            elements.push(new GridPanelElement("test" + i, "nickname", 100, 100, null));
         }
         if (editor.floatingPanels.download_avatar !== undefined) {
             editor.floatingPanels.download_avatar.close();
@@ -218,7 +218,7 @@ function MenubarFile(editor) {
 
         let elements = [];
         for (let i = 0; i < 8; i++) {
-            elements.push(new GridPanelElement("test" + i, 100, 100, null));
+            elements.push(new GridPanelElement("test" + i, "nickname", 100, 100, null));
         }
         if (editor.floatingPanels.download_world !== undefined) {
             editor.floatingPanels.download_world.close();
@@ -413,11 +413,11 @@ function MenubarFile(editor) {
             completeCallback(JSON.stringify(result, null, 2));
 		});
 	}
-    function exportWorld(scene) {
+    function exportWorld() {
 
         let zip = new JSZip();
 
-        getWorldJson(scene, function (sceneJson){
+        getWorldJson(editor.scene, function (sceneJson){
 
             zip.file('world.gltf', sceneJson);
 
