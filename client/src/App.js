@@ -11,13 +11,18 @@ const App = ()=>{
     let cur_page = undefined;
     //#region event link event handlers
     const OnChangePage = (to)=>{
+        console.log(pages.length);
         pages[cur_page].event_link.Invoke('exit');
         pages[to].event_link.Invoke('enter');
         cur_page = to;
     }
+    const CreateNewWorld = (path)=>{
+        pages.push(TEST.TestWorldPage2(socket, client_data, event_link, path));
+    }
     //#endregion
     const event_link = EventLink([
-        { name:'change_page', handler:OnChangePage }
+        { name:'change_page', handler:OnChangePage },
+        { name:'new_world', handler:CreateNewWorld }
     ]);
     const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(window.innerWidth, window.innerHeight);
