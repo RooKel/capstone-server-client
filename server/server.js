@@ -189,14 +189,14 @@ function onConnect(socket) {
     // Send File To Client
     socket.on('rq-file-download', function(data) {
         if (data.category === "avatar") {
-            sendModelData(socket, avatarModel, data.request_type, data.category);
+            sendModelData(socket, avatarModel, data.request_type, data.category, data.uid);
         } else if (data.category === "world") {
-            sendModelData(socket, worldModel, data.request_type, data.category);
+            sendModelData(socket, worldModel, data.request_type, data.category, data.uid);
         }
     });
 }
 
-function sendModelData(socket, model, request_type, category)
+function sendModelData(socket, model, request_type, category, uid)
 {
     var dataArray = [];
 
@@ -208,35 +208,53 @@ function sendModelData(socket, model, request_type, category)
     else if (request_type === "gltf")
         file_format = ".gltf";
 
-    model.find({}).select('uid name creator date').exec()
-        .then((items) => {
-            function logItem(item) {
-                return new Promise((resolve, reject) => {
-                        process.nextTick(() => {
-                                fs.readFile("./data/" + item.uid + "/" + file_name + file_format, (err, data) => {
-                                    var dataTuple = { uid: undefined, name: undefined, creator:undefined, date:undefined, data: undefined };
-                                    dataTuple.uid = item.uid;
-                                    dataTuple.name = item.name;
-                                    dataTuple.creator = item.creator;
-                                    dataTuple.date = item.date;
-                                    dataTuple.data = data;
-                                    dataArray.push(dataTuple);
-                                });
-                        setTimeout(function(){ resolve() }, 100);
-                        })
-                    });
+    if (uid === undefined) {
+        model.find({}).select('uid name creator date').exec()
+            .then((items) => {
+                function logItem(item) {
+                    return new Promise((resolve, reject) => {
+                            process.nextTick(() => {
+                                    fs.readFile("./data/" + item.uid + "/" + file_name + file_format, (err, data) => {
+                                        var dataTuple = { uid: undefined, name: undefined, creator:undefined, date:undefined, data: undefined };
+                                        dataTuple.uid = item.uid;
+                                        dataTuple.name = item.name;
+                                        dataTuple.creator = item.creator;
+                                        dataTuple.date = item.date;
+                                        dataTuple.data = data;
+                                        dataArray.push(dataTuple);
+                                    });
+                            setTimeout(function(){ resolve() }, 100);
+                            })
+                        });
+                    }
+                function forEachPromise(items, fn) {
+                return items.reduce(function (promise, item) {
+                        return promise.then(function () {
+                            return fn(item);
+                        });
+                }, Promise.resolve());
                 }
-            function forEachPromise(items, fn) {
-            return items.reduce(function (promise, item) {
-                    return promise.then(function () {
-                        return fn(item);
-                    });
-            }, Promise.resolve());
-            }
-            forEachPromise(items, logItem).then(() => {
-                console.log(dataArray);
-                socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
-                console.log("file-download message sent!");
+                forEachPromise(items, logItem).then(() => {
+                    console.log(dataArray);
+                    socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
+                    console.log("file-download message sent!");
+                });
             });
+    } else {
+        model.findOne({ uid: uid }).exec()
+        .then((item) => {
+            fs.readFile("./data/" + item.uid + "/" + file_name + file_format, (err, data) => {
+                var dataTuple = { uid: undefined, name: undefined, creator:undefined, date:undefined, data: undefined };
+                dataTuple.uid = item.uid;
+                dataTuple.name = item.name;
+                dataTuple.creator = item.creator;
+                dataTuple.date = item.date;
+                dataTuple.data = data;
+                dataArray.push(dataTuple);
+            });
+            console.log(dataArray);
+            socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
+            console.log("one file-download message sent!");
         });
+    }
 }
