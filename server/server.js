@@ -121,10 +121,12 @@ function onConnect(socket) {
         cameras[uid].x_rot -= data.mouse_dx;
         cameras[uid].y_rot -= data.mouse_dy;
         let tempQuat = new Quaternion();
-        tempQuat.setFromEuler(new THREE.Euler(cameras[uid].y_rot, cameras[uid].x_rot, 0));
-        tempQuat.normalize();
-        entities[uid].quaternion.copy(tempQuat);
+        let mulQuat = new Quaternion();
+        mulQuat.setFromAxisAngle(new Vector3(-1,0,0), cameras[uid].y_rot);
+        tempQuat.setFromAxisAngle(new Vector3(0,1,0), cameras[uid].x_rot);
+        tempQuat.multiply(mulQuat);
 
+        entities[uid].quaternion.copy(tempQuat);
         last_processed_input[uid] = data.input_sequence_number;
     });
 

@@ -27,25 +27,40 @@ function UploadPanel(contents, panelOptions, uploadCallback)
         '  <div class="Preview-File">\n' +
         '       <input id="'+input_thumbnail_id+'" type="file" accept=".png"/>\n' +
         '  </div>\n' +
-        '  <div class="Content-Name">\n' +
-        '       <a>'+panel_type+' 이름 '+'</a>\n' +
-        '       <input type="text" id="'+input_name_id + '">\n' +
-        '  </div>\n' +
-        '  <div class="Creator-Name">\n' +
-        '       <a>제작자 </a>\n' +
-        '       <input type="text" id="'+input_creator_id + '">\n' +
+        '  <div class="Content-Outline">\n' +
+        '       <div class="Content-Name">\n' +
+        '           <div class="name-rect">' +
+        '               <a>NAME</a>\n' +
+        '           </div>' +
+        '           <div class="content-rect">' +
+        '               <input type="text" id="'+input_name_id + '">\n' +
+        '           </div>' +
+        '       </div>\n' +
+        '       <div class="Creator-Name">\n' +
+        '           <div class="name-rect">' +
+        '               <a>CREATOR </a>\n' +
+        '           </div>' +
+        '           <div class="content-rect">' +
+        '               <input type="text" id="'+input_creator_id + '">\n' +
+        '           </div>' +
+        '       </div>\n' +
         '  </div>\n' +
         '  <div class="Submit-Area">\n' +
-        '       <button id="'+btn_id + '" type="button"/>\n' +
+        '       <div class="name-rect"></div>' +
+        '       <div class="content-rect">' +
+        '       <div class="button-wrapper">' +
+        '           <button id="'+btn_id + '" type="button"/>\n' +
+        '       </div>' +
+        '       </div>' +
         '  </div>\n' +
         '</div>';
     panelOptions.content = panelContent;
-    panelOptions.onwindowresize = true;
+    panelOptions.onwindowresize = false;
     panelOptions.animateIn = 'jsPanelFadeIn';
     panelOptions.animateOut = 'jsPanelFadeOut';
     panelOptions.panelSize = {
-        width: () => { return Math.min(800, window.innerWidth*0.9);},
-        height: () => { return Math.min(500, window.innerHeight*0.6);}
+        width: () => { return Math.min(570, window.innerWidth*0.9);},
+        height: () => { return Math.min(370, window.innerHeight*0.6);}
     };
     this.panel = jsPanel.create(panelOptions);
 
@@ -69,9 +84,7 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     }
 
     let submit_button = document.getElementById(btn_id);
-    submit_button.setAttribute("value", "UPLOAD");
-    submit_button.setAttribute("width", "75%");
-    submit_button.setAttribute("height", "75%");
+    submit_button.innerHTML = "UPLOAD";
     submit_button.onclick = function (){
         data_stream.data_name = input_content_name.value;
         data_stream.data_creator = input_creator_name.value;
