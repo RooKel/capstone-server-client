@@ -188,33 +188,41 @@ function onConnect(socket) {
 
     // Send File To Client
     socket.on('rq-file-download', function(data) {
-        if (data.data_type === "avatar") {
-            sendModelData(socket, avatarModel, "avatar");
-        } else if (data.data_type === "world") {
-            sendModelData(socket, worldModel, "world");
+        if (data.category === "avatar") {
+            sendModelData(socket, avatarModel, data.request_type, data.category);
+        } else if (data.category === "world") {
+            sendModelData(socket, worldModel, data.request_type, data.category);
         }
     });
 }
 
-function sendModelData(socket, model, type)
+function sendModelData(socket, model, request_type, category)
 {
     var dataArray = [];
+
+    var file_name = request_type;
+    var file_format = "";
+
+    if (request_type === "thumbnail")
+        file_format = ".png";
+    else if (request_type === "gltf")
+        file_format = ".gltf";
 
     model.find({}).select('uid name creator date').exec()
         .then((items) => {
             function logItem(item) {
                 return new Promise((resolve, reject) => {
                         process.nextTick(() => {
-                        fs.readFile("./data/" + item.uid + "/thumbnail.png", (err, data) => {
-                            var dataTuple = {
-                                uid: undefined,
-                                data: undefined,
-                            };
+                                fs.readFile("./data/" + item.uid + "/" + file_name + file_format, (err, data) => {
+                                    var dataTuple = {
+                                        uid: undefined,
+                                        data: undefined,
+                                    };
 
-                            dataTuple.uid = item.uid;
-                            dataTuple.data = data;
-                            dataArray.push(dataTuple);
-                        });
+                                    dataTuple.uid = item.uid;
+                                    dataTuple.data = data;
+                                    dataArray.push(dataTuple);
+                                });
                         setTimeout(function(){ resolve() }, 100);
                         })
                     });
@@ -228,7 +236,7 @@ function sendModelData(socket, model, type)
             }
             forEachPromise(items, logItem).then(() => {
                 console.log(dataArray);
-                socket.emit("file-download", { type: type, data: dataArray });
+                socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
                 console.log("file-download message sent!");
             });
         });
