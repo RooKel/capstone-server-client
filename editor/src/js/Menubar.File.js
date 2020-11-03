@@ -171,23 +171,6 @@ function MenubarFile(editor) {
     option.setClass('option');
     option.setTextContent(strings.getKey('menubar/file/download/avatar'));
 
-    socket.on('file-download', function(data){
-        let models = data.models;
-        if(data.data_type === 'avatar')
-        {
-            let panel = editor.floatingPanels.download_avatar;
-            for (let c = 0; c < models.length; c++)
-            {
-                let model = models[c];
-
-            }
-        }
-        else if (data.data_type === 'world')
-        {
-            let panel = editor.floatingPanels.download_world;
-
-        }
-    });
     option.onClick(function () {
         socket.emit('rq-file-download',{request_type:'thumbnail', category:'avatar'});
 
@@ -210,22 +193,59 @@ function MenubarFile(editor) {
 
     //	Download World
 
+    function b64(e){var t="";var n=new Uint8Array(e);var r=n.byteLength;for(var i=0;i<r;i++){t+=String.fromCharCode(n[i])}return window.btoa(t)}
+
     var option = new UIRow();
     option.setClass('option');
     option.setTextContent(strings.getKey('menubar/file/download/world'));
     option.onClick(function () {
         socket.emit('rq-file-download',{request_type:'thumbnail', category:'world'});
+        socket.on('file-download', function(res){
+            let models = res.data;
 
+            if(res.request_type === 'thumbnail')
+            {
+                let panel = undefined;
+                if(res.category === 'avatar')
+                {
+                    panel = editor.floatingPanels.download_avatar;
+                }
+                else if (res.category === 'world')
+                {
+                    panel = editor.floatingPanels.download_world;
+                }
+                for (let c = 0; c < models.length; c++)
+                {
+                    let model = models[c];
+                    let b64data = "data:image/png;base64," + b64(model.data);
+                    panel.createItemElement(model.name, model.creator, 100, 100, b64data);
+                }
+            }
+        });
         let elements = [];
-        for (let i = 0; i < 8; i++) {
+        /*for (let i = 0; i < 8; i++) {
             elements.push(new GridPanelElement("test" + i, "nickname", 100, 100, null));
-        }
+        }*/
         if (editor.floatingPanels.download_world !== undefined) {
             editor.floatingPanels.download_world.close();
         }
         editor.floatingPanels.download_world = new GridPanel(elements, {
             theme      : 'dark filleddark',
             headerTitle: 'World Download'
+        }, (event)=>{
+            if(event.type == 'click')
+            {
+                socket.emit('rq-file-download',{request_type:'gltf', category:'world', uid: undefined});
+                socket.on('file-download', function(res){
+                    let models = res.data;
+
+                    if (res.request_type === 'gltf')
+                    {
+
+                    }
+
+                });
+            }
         });
     });
     options.add(option);
