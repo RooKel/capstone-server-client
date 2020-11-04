@@ -1,4 +1,5 @@
 import {jsPanel} from "./libs/jspanel/es6module/jspanel.js";
+import {GridPanelElement} from "./GridPanelElement.js";
 import("./libs/muuri.js");
 
 let gridPanelCount = 0;
@@ -31,11 +32,16 @@ function GridPanel(raw_elements, panelOptions, callback)
         height: () => { return Math.min(500, window.innerHeight*0.6);}
     };
     this.panel = jsPanel.create(panelOptions);
-    this.gridElement = document.querySelector('.grid'+gridPanelCount);
+    this.htmlPanelElementMap = {};
+    let gridElement = document.querySelector('.grid'+gridPanelCount);
+    this.clickCallback = undefined;
     if(callback !== undefined)
-        this.gridElement.addEventListener('click', callback);
+    {
+        this.clickCallback = callback;
+        gridElement.addEventListener('click', callback);
+    }
     this.itemTemplate = document.querySelector('.grid-item-template');
-    this.grid = new Muuri(this.gridElement, {
+    this.grid = new Muuri(gridElement, {
         items: this.createItemElements(raw_elements),
         dragEnabled: false
     });
@@ -48,22 +54,26 @@ GridPanel.prototype = {
         for(let i = 0; i < raw_elements.length; i++)
         {
             let raw_element = raw_elements[i];
-            let element = this.createItemElement(raw_element.title, raw_element.creator, raw_element.width, raw_element.height, raw_element.preview);
+            let element = this.createItemElement(raw_element.title, raw_element.creator, raw_element.width, raw_element.height, raw_element.preview, raw_element.uid);
             elements.push(element);
         }
         return elements;
     },
-    createItemElement: function(title, creator, width, height, preview)
+    createItemElement: function(title, creator, width, height, preview, uid)
     {
         const itemElem = document.importNode(this.itemTemplate.content.children[0], true);
 
         itemElem.classList.add('h'+height, 'w' + width);
         itemElem.setAttribute('data-title', title);
+        itemElem.setAttribute('data-uid', uid);
         itemElem.querySelector('.grid-item-content-title').innerHTML = title;
         itemElem.querySelector('.grid-item-content-creator').innerHTML = creator;
+
         if(preview !== undefined)
             itemElem.querySelector('.grid-item-preview-img').src = preview;
+        itemElem.addEventListener('click', this.clickCallback);
         this.grid.add(itemElem);
+        this.htmlPanelElementMap[itemElem.dataset.uid] = new GridPanelElement(title,creator,width,height,preview,uid);
         return itemElem;
     },
     close: function()
