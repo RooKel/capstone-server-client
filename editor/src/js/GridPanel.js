@@ -43,12 +43,6 @@ function GridPanel(raw_elements, panelOptions, callback)
     //addItems(raw_elements);
 }
 GridPanel.prototype = {
-    addItems: function(raw_elements){
-        const items = this.grid.add(this.createItemElements(raw_elements),{
-            layout:false,
-            active:false
-        });
-    },
     createItemElements: function(raw_elements){
         const elements = [];
         for(let i = 0; i < raw_elements.length; i++)
@@ -69,7 +63,7 @@ GridPanel.prototype = {
         itemElem.querySelector('.grid-item-content-creator').innerHTML = creator;
         if(preview !== undefined)
             itemElem.querySelector('.grid-item-preview-img').src = preview;
-
+        this.grid.add(itemElem);
         return itemElem;
     },
     close: function()
