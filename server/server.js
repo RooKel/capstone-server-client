@@ -196,7 +196,7 @@ function onConnect(socket) {
     });
 }
 
-function sendModelData(socket, model, request_type, category, uid)
+function sendModelData(socket, model, request_type, category, param_uid)
 {
     var dataArray = [];
 
@@ -208,7 +208,7 @@ function sendModelData(socket, model, request_type, category, uid)
     else if (request_type === "gltf")
         file_format = ".gltf";
 
-    if (uid === undefined) {
+    if (param_uid === undefined) {
         model.find({}).select('uid name creator date').exec()
             .then((items) => {
                 function logItem(item) {
@@ -241,19 +241,17 @@ function sendModelData(socket, model, request_type, category, uid)
                 });
             });
     } else {
-        model.findOne({ uid: uid }).exec()
-        .then((item) => {
-            fs.readFile("./data/" + item.uid + "/" + file_name + file_format, (err, data) => {
-                var dataTuple = { uid: undefined, name: undefined, creator:undefined, date:undefined, data: undefined };
-                dataTuple.uid = item.uid;
-                dataTuple.name = item.name;
-                dataTuple.creator = item.creator;
-                dataTuple.date = item.date;
-                dataTuple.data = data;
-                dataArray.push(dataTuple);
-            });
-            console.log(dataArray);
+        model.findOne({'uid':param_uid}).exec()
+            .then((item) => {
+            var dataTuple = { uid: undefined, name: undefined, creator:undefined, date:undefined, data: undefined };
+            dataTuple.uid = item.uid;
+            dataTuple.name = item.name;
+            dataTuple.creator = item.creator;
+            dataTuple.date = item.date;
+            dataTuple.data = fs.readFileSync("./data/" + item.uid + "/" + file_name + file_format);
+            dataArray.push(dataTuple);
             socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
+            console.log("dataArray : " + dataArray[0].uid + " " + dataArray[0].name + " " + dataArray[0].creator);
             console.log("one file-download message sent!");
         });
     }
