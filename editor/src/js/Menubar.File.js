@@ -3,14 +3,13 @@ import {GLTFExporter} from '../../examples/jsm/exporters/GLTFExporter.js';
 import {JSZip} from '../../examples/jsm/libs/jszip.module.min.js';
 import {UIPanel, UIRow, UIHorizontalRule} from './libs/ui.js';
 import {GridPanel} from "./GridPanel.js";
-import {GridPanelElement} from "./GridPanelElement.js";
 import {UploadPanel} from "./UploadPanel.js";
-import {EditorNetworkObject} from "./EditorNetworkObject.js";
+import {FileTransferManager} from "./FileTransferManager.js";
 
 function b64(e){let t="";let n=new Uint8Array(e);let r=n.byteLength;for(let i=0;i<r;i++){t+=String.fromCharCode(n[i])}return window.btoa(t)}
 
 function MenubarFile(editor) {
-    var networkObject = new EditorNetworkObject(editor, 'ws://localhost:3000');
+    var networkObject = new FileTransferManager(editor, "ws://localhost:3000");
 
     networkObject.signals.file_download.add((res)=>
     {
@@ -36,7 +35,7 @@ function MenubarFile(editor) {
         }
         else if(res.request_type === 'gltf')
         {
-
+            editor.loader.loadFiles(fileInput.files);
         }
     });
 

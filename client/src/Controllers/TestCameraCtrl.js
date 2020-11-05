@@ -1,8 +1,10 @@
 import EventLink from '../EventLink.js'
 import * as THREE from 'three'
 import {Quaternion} from "three";
+import {Clock} from "../../../editor/build/three.module";
 
 const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
+    let mouse_sensitivity = 1.5;
     const netw_obj = data;
     const sum = { x:0, y:0 };
     let target = undefined;
@@ -13,6 +15,8 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
     let pending_inputs = [ ];
     let input_sequence_number = 0;
 
+    let clock = new Clock();
+    let deltaTime = 0;
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== client_data.uid) return;
@@ -32,7 +36,7 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
             mulQuat.setFromAxisAngle(new THREE.Vector3(-1,0,0), y_rot);
             tempQuat.setFromAxisAngle(new THREE.Vector3(0,1,0), x_rot);
             tempQuat.multiply(mulQuat);
-            prev_quat.slerp(tempQuat, 0.5);
+            //prev_quat.slerp(tempQuat, deltaTime);
             prev_quat.copy(tempQuat);
         });
         netw_obj.quaternion = prev_quat;
@@ -44,8 +48,8 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
             prev_mouse_pos = { x:e.offsetX, y:e.offsetY };
         }
         else{
-            d_mouse_pos.mouse_dx = e.offsetX - prev_mouse_pos.x;
-            d_mouse_pos.mouse_dy = prev_mouse_pos.y - e.offsetY;
+            d_mouse_pos.mouse_dx = (e.offsetX - prev_mouse_pos.x) / screen.width;
+            d_mouse_pos.mouse_dy = (prev_mouse_pos.y - e.offsetY) / screen.height;
             prev_mouse_pos.x = e.offsetX;
             prev_mouse_pos.y = e.offsetY;
         }
@@ -65,9 +69,10 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
         //#endregion
         //#region camera rotation
         //#region post to server
+        deltaTime = clock.getDelta();
         const input = {
-            mouse_dx: d_mouse_pos.mouse_dx * 0.03,
-            mouse_dy: d_mouse_pos.mouse_dy * 0.03,
+            mouse_dx: d_mouse_pos.mouse_dx * mouse_sensitivity,
+            mouse_dy: d_mouse_pos.mouse_dy * mouse_sensitivity,
             input_sequence_number: input_sequence_number++
         };
         input_collector.AddMsg('input', input);
@@ -82,8 +87,8 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
         mulQuat.setFromAxisAngle(new THREE.Vector3(-1,0,0), sum.y);
         tempQuat.setFromAxisAngle(new THREE.Vector3(0,1,0), sum.x);
         tempQuat.multiply(mulQuat);
-        camera.quaternion.copy(camera.quaternion.slerp(tempQuat, 0.5));
-        //camera.quaternion.copy(tempQuat);
+        //camera.quaternion.copy(camera.quaternion.slerp(tempQuat, deltaTime));
+        camera.quaternion.copy(tempQuat);
 
         d_mouse_pos.mouse_dx = 0;
         d_mouse_pos.mouse_dy = 0;

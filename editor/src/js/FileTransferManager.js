@@ -1,7 +1,4 @@
-import EventLink from '../../../client/src/EventLink.js'
-
-
-function EditorNetworkObject(editor, socket_url)
+function FileTransferManager(editor, socket_url)
 {
     var Signal = signals.Signal;
 
@@ -11,7 +8,7 @@ function EditorNetworkObject(editor, socket_url)
     this.socket = io.connect(socket_url);
 }
 
-EditorNetworkObject.prototype={
+FileTransferManager.prototype={
 
     requestFileDownload: function (request_type, category, uid){
         /*  Request Data Structure
@@ -43,4 +40,4 @@ EditorNetworkObject.prototype={
     },
 };
 
-export {EditorNetworkObject};
+export {FileTransferManager};

@@ -31,6 +31,7 @@
     "file-loader": "^6.1.0",
     "mongoose": "^5.10.11",
     "socket.io": "^2.3.0",
+    "signals": "^1.0.0",
     "three": "^0.120.1",
     "three-mesh-ui": "^4.4.1"
   }
