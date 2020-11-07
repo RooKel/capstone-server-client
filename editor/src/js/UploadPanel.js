@@ -69,6 +69,12 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     let img_thumbnail = document.getElementById(img_thumbnail_id);
     let input_file_thumbnail = document.getElementById(input_thumbnail_id);
 
+    input_content_name.addEventListener('keydown', function(event){
+        event.stopPropagation();
+    });
+    input_creator_name.addEventListener('keydown', function(event){
+        event.stopPropagation();
+    });
     img_thumbnail.setAttribute("width", "100%");
     img_thumbnail.setAttribute("height", "100%");
 
