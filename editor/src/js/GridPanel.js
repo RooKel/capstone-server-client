@@ -71,16 +71,16 @@ GridPanel.prototype = {
 
         if(preview !== undefined)
             itemElem.querySelector('.grid-item-preview-img').src = preview;
-        itemElem.addEventListener('click', this.clickCallback);
+        itemElem.addEventListener('dblclick', this.clickCallback);
         this.grid.add(itemElem);
         this.htmlPanelElementMap[itemElem.dataset.uid] = new GridPanelElement(title,creator,width,height,preview,uid);
         return itemElem;
     },
     close: function()
     {
+        this.panel.contentRemove();
         this.panel.close();
         this.grid.destroy(true);
-        this.panel.contentRemove();
     }
 };
 export {GridPanel};

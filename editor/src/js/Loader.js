@@ -552,7 +552,9 @@ function Loader( editor ) {
 		}
 
 	};
-
+	this.handleJSON = (data) => {
+		handleJSON(data);
+	}
 	function handleJSON( data ) {
 
 		if ( data.metadata === undefined ) { // 2.0

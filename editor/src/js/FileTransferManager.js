@@ -32,9 +32,12 @@ FileTransferManager.prototype={
         * */
         this.socket.emit('file-upload', dataStream);
     },
-    receiveFileDownload: function (){
+    addFileDownloadListener: function (callback){
+        this.signals.file_download.add(callback);
+    },
+    listenFileDownload: function (){
         this.socket.on('file-download',(response)=>{
-            console.log("File-Downloaded")
+            console.log("File-Downloaded");
             this.signals.file_download.dispatch(response);
         });
     },

@@ -5,13 +5,24 @@ import {UIPanel, UIRow, UIHorizontalRule} from './libs/ui.js';
 import {GridPanel} from "./GridPanel.js";
 import {UploadPanel} from "./UploadPanel.js";
 import {FileTransferManager} from "./FileTransferManager.js";
+import {DRACOLoader} from "../../examples/jsm/loaders/DRACOLoader.js";
+import {GLTFLoader} from "../../examples/jsm/loaders/GLTFLoader.js";
+import {AddObjectCommand} from "./commands/AddObjectCommand.js";
 
-function b64(e){let t="";let n=new Uint8Array(e);let r=n.byteLength;for(let i=0;i<r;i++){t+=String.fromCharCode(n[i])}return window.btoa(t)}
-
+function b64(e){
+    let t="";
+    let n=new Uint8Array(e);
+    let r=n.byteLength;
+    for(let i=0;i<r;i++)
+    {
+        t+=String.fromCharCode(n[i])
+    }
+    return window.btoa(t)
+}
 function MenubarFile(editor) {
     var networkObject = new FileTransferManager(editor, "ws://localhost:3000");
 
-    networkObject.signals.file_download.add((res)=>
+    function onFileDownloaded(res)
     {
         let models = res.data;
 
@@ -35,9 +46,29 @@ function MenubarFile(editor) {
         }
         else if(res.request_type === 'gltf')
         {
-            editor.loader.loadFiles(fileInput.files);
+            for (let c = 0; c < models.length; c++)
+            {
+                let model = models[c];
+                let dracoLoader = new DRACOLoader();
+                dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
+
+                let loader = new GLTFLoader();
+                loader.setDRACOLoader( dracoLoader );
+                loader.parse( model.data, '', function ( result ) {
+
+                    var scene = result.scene;
+                    scene.name = result.scene.name;
+
+                    editor.addAnimation( scene, result.animations );
+                    editor.execute( new AddObjectCommand( editor, scene ) );
+
+                } );
+            }
         }
-    });
+    }
+
+    networkObject.addFileDownloadListener(onFileDownloaded);
+    networkObject.listenFileDownload();
 
     this.htmlEvents = {
         clickNewSceneOption: () => {
@@ -88,8 +119,6 @@ function MenubarFile(editor) {
 
             let elements = [];
 
-            networkObject.receiveFileDownload();
-
             if (editor.floatingPanels.download_avatar !== undefined) {
                 editor.floatingPanels.download_avatar.close();
             }
@@ -98,6 +127,13 @@ function MenubarFile(editor) {
                 headerTitle: 'Avatar Download'
             }, (event) => {
                 console.log(event.type);
+                if(event.type === 'dblclick')
+                {
+                    if(event.currentTarget.dataset.uid === undefined) return;
+                    let panel = editor.floatingPanels.download_avatar;
+                    let panelElement = panel.htmlPanelElementMap[event.currentTarget.dataset.uid];
+                    networkObject.requestFileDownload('gltf', 'avatar', panelElement.uid);
+                }
             });
             editor.floatingPanels.download_avatar = tmpGrid;
         },
@@ -109,32 +145,23 @@ function MenubarFile(editor) {
                 editor.floatingPanels.download_world.close();
             }
             //  Download thumbnail files
-            networkObject.receiveFileDownload();
 
             editor.floatingPanels.download_world = new GridPanel(elements, {
                 theme      : 'dark filleddark',
                 headerTitle: 'World Download'
             }, (event)=>
             {
-                if(event.type === 'click')
+                if(event.type === 'dblclick')
                 {
                     if(event.currentTarget.dataset.uid === undefined) return;
                     let panel = editor.floatingPanels.download_world;
                     let panelElement = panel.htmlPanelElementMap[event.currentTarget.dataset.uid];
                     networkObject.requestFileDownload('gltf', 'world', panelElement.uid);
-                    networkObject.receiveFileDownload();
                 }
             });
         }
     }
 
-    function parseNumber(key, value) {
-
-        var precision = config.getKey('exportPrecision');
-
-        return typeof value === 'number' ? parseFloat(value.toFixed(precision)) : value;
-
-    }
     //
 
     var config = editor.config;
