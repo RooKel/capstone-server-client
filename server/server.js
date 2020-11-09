@@ -7,6 +7,8 @@ var io = require('socket.io')(server);
 var THREE = require('three');
 var mongoose = require('mongoose');
 var fs = require('fs');
+const { PeerServer } = require('peer');
+const peerServer = PeerServer({ port: 3001, path: '/peer' });
 
 // set view engine to ejs engine, and routing to dist path for static web file
 app.set('views', ['dist','editor']);
