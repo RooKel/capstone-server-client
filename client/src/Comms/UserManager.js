@@ -13,7 +13,8 @@ const UserManager = (socket, client_data, scene, camera, input_collector)=>{
         let material = new MeshBasicMaterial({color:0xFF0000});
         let cube = new Mesh(geometry, material);
         cube.position.x = data.x;
-        cube.position.y = data.y;
+        cube.position.y = 1;
+        cube.position.z = data.y;
         if(uid !== client_data.uid)
             Object.assign(cube, OtherUsersCtrl(socket, uid, data, cube));
         else {
