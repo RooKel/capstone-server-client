@@ -208,7 +208,10 @@ function sendModelData(socket, model, request_type, category, param_uid)
     if (request_type === "thumbnail")
         file_format = ".png";
     else if (request_type === "gltf")
+    {
+        file_name = "GLTF";
         file_format = ".gltf";
+    }
 
     if (param_uid === undefined) {
         model.find({}).select('uid name creator date').exec()
