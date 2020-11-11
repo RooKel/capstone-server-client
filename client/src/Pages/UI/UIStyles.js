@@ -6,14 +6,16 @@ const large_panel = {
     height: 1.0,
     padding: 0.05,
     alignContent: 'center',
-    borderRadius: 0.075
+    borderRadius: 0.075,
+    hiddenOverflow: true
 }
 const small_panel = {
     width: 0.75,
     height: 0.75,
     padding: 0.05,
     alignContent: 'center',
-    borderRadius: 0.075
+    borderRadius: 0.075,
+    hiddenOverflow: true
 }
 
 const button_type1 = {

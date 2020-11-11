@@ -7,6 +7,7 @@ import InputCollector from '../Comms/InputCollector.js'
 import UserManager from '../Comms/UserManager.js'
 import TMUI from 'three-mesh-ui'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import WorldPageMenu from './UI/WorldPageMenu.js'
 
 const WorldPage = (socket, client_data, app_event_link, path)=>{
     const page = Page();
@@ -23,6 +24,7 @@ const WorldPage = (socket, client_data, app_event_link, path)=>{
         )
     );
     page.camera.position.set(0,1,4);
+    page.ui_manager.AddUIElem(WorldPageMenu(ui_objs));
     //#endregion
     //#region event link event handlers
     const OnEnter = ()=>{

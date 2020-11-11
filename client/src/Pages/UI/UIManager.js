@@ -34,6 +34,7 @@ const UIManager = ()=>{
     event_link.AddLink(scene.event_link);
     const AddUIElem = (elem)=>{
         scene.add(elem);
+        if(elem.event_link) event_link.AddLink(elem.event_link);
     }
     return {
         scene: scene,

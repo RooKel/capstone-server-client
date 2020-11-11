@@ -32,7 +32,7 @@ const Pointer = (camera, objsToTest)=>{
                 _.event_link.Invoke('idle');
                 const intersection = raycaster.intersectObject(_, true);
                 if(intersection.length > 0){
-                    if(closest === null || intersection[0].distance < closest_dist){
+                    if((closest === null || intersection[0].distance < closest_dist) && _.visible){
                         closest_dist = intersection[0].distance;
                         closest = _;
                     }

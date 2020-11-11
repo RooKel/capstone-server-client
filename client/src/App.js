@@ -14,7 +14,10 @@ const App = ()=>{
         renderer.clear(0x000000, 0);
         const cur_page = pages[cur_page_ind];
         cur_page.event_link.Invoke('update', clock.getDelta());
+        
+        renderer.getContext().enable(renderer.getContext().DEPTH_TEST);
         renderer.render(cur_page.scene, cur_page.camera);
+        renderer.getContext().disable(renderer.getContext().DEPTH_TEST);
         renderer.render(cur_page.ui_manager.scene, cur_page.ui_manager.camera);
     }
     //#region event link event handlers
