@@ -1,10 +1,8 @@
 import EventLink from '../EventLink.js'
 import * as THREE from 'three'
-import {Quaternion} from "three";
-import {Clock} from "../../../editor/build/three.module";
 
 const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
-    let mouse_sensitivity = 1.5;
+    let mouse_sensitivity = 50;
     const netw_obj = data;
     const sum = { x:0, y:0 };
     let target = undefined;
@@ -15,7 +13,6 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
     let pending_inputs = [ ];
     let input_sequence_number = 0;
 
-    let clock = new Clock();
     let deltaTime = 0;
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
@@ -69,7 +66,7 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
         //#endregion
         //#region camera rotation
         //#region post to server
-        deltaTime = clock.getDelta();
+        deltaTime = delta;
         const input = {
             mouse_dx: d_mouse_pos.mouse_dx * mouse_sensitivity,
             mouse_dy: d_mouse_pos.mouse_dy * mouse_sensitivity,
@@ -88,7 +85,7 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
         tempQuat.setFromAxisAngle(new THREE.Vector3(0,1,0), sum.x);
         tempQuat.multiply(mulQuat);
         //camera.quaternion.copy(camera.quaternion.slerp(tempQuat, deltaTime));
-        camera.quaternion.copy(tempQuat);
+        camera.quaternion.slerp(tempQuat, 0.5);
 
         d_mouse_pos.mouse_dx = 0;
         d_mouse_pos.mouse_dy = 0;

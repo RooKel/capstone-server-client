@@ -10,7 +10,6 @@ const EventLink = (events)=>{
         else
             handlers[_.name].push(_.handler);
     });
-
     const AddLink = (link)=>{
         children.push(link);
     }
