@@ -88,7 +88,7 @@ function MenubarFile(editor) {
                 theme      : 'lightslategray filleddark',
                 headerTitle: 'Avatar Upload'
             }, function (dataStream) {
-                getWorldJson(editor.scene, function(avatarJson){
+                getAvatarJson(editor.scene, function(avatarJson){
                     dataStream.raw_gltf = avatarJson;
                     networkObject.requestFileUpload(dataStream);
                     editor.floatingPanels.upload_avatar.close();
