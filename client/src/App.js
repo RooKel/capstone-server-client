@@ -3,6 +3,8 @@ import { WebGLRenderer, Clock } from 'three'
 import StartPage from './Pages/StartPage.js'
 import WorldPage from './Pages/WorldPage.js'
 
+import MyPeer from './MyPeer.js'
+
 const App = ()=>{
     const socket = io();
     const client_data = { uid: undefined };
@@ -10,6 +12,9 @@ const App = ()=>{
     let cur_page_ind = undefined;
     const renderer = new WebGLRenderer({ antialias: true });
     const clock = new Clock();
+
+    MyPeer(socket);
+
     const Update = ()=>{
         renderer.clear(0x000000, 0);
         const cur_page = pages[cur_page_ind];

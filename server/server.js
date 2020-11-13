@@ -107,10 +107,15 @@ function onConnect(socket) {
         socket.broadcast.emit('other_joined', socket.id, entities[socket.id]);
     });
 
+    socket.on('peer-login', function(data) {
+        socket.broadcast.emit('peer-connected', socket.id);
+    })
+
     // if disconnection happenes, send delete entity message to clients
     socket.on('disconnect', function(reason) {
         delete entities[socket.id];
         io.emit('delete_entity', socket.id);
+        socket.broadcast.emit('peer-disconnected', socket.id);
     });
 
     socket.on('input', function(data) {
