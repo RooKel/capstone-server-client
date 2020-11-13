@@ -6,60 +6,94 @@ const MyPeer = (socket) => {
         path: '/peer'
     })
 
-    const myVideo = document.createElement('video')
-    // myVideo.muted = true
-     const peers = {}
+    const myVideo = document.createElement('video');
+    myVideo.muted = true;
+    const peers = {};
 
-     
-     navigator.mediaDevices.getUserMedia({
-         video: true,
-         audio: true
-    }).then(stream => {
-        addVideoStream(myVideo, stream)
+    //connectSelfVideo(socket.uid, myVideo);
 
-        // 내가 전화가 왔을 때
-        myPeer.on('call', call => {
-            console.log("전화를 받았습니다.");
-            call.answer(stream) // 전화를 받겠습니다. call.on('stream') 이벤트 실행
-            const video = document.createElement('video')
+    myPeer.on('open', (id) => {
+        socket.emit('peer-login', id);
+    });
 
-            // 상대에게 스트림 이벤트를 받았을 때
-            call.on('stream', userVideoStream => {
-                addVideoStream(video, userVideoStream)
-            })
-        })
+    socket.on('peer-connected', pid => {
+        connectToNewUser(pid);
+    });
 
-        socket.on('peer-connected', uid => {
-            console.log("peer connected : " + uid)
-            connectToNewUser(uid, stream)
-        })
-    })
+    myPeer.on('connection', (conn)=>{
+       console.log("incoming peer connection!");
+       conn.on('data',(data)=>{
+          console.log("MY Received Data : " + data);
+       });
+       conn.on('open', ()=>{
+           conn.send('My Send Hello!');
+       })
+    });
+
+    // 내가 전화가 왔을 때
+    myPeer.on('call', (call)=>{
+        //let video = document.createElement('video');
+        //videoGrid.append(video);
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        }).then(stream=>{
+            call.answer(stream);
+
+            let video = document.createElement('video');
+            videoGrid.append(video);
+
+            call.on('stream', (remoteStream)=>{
+                console.log("test");
+                addVideoStream(video, remoteStream)
+            });
+
+        }).catch((err)=>{
+            console.log("Failed to get local stream", err);
+        });
+    });
+
 
     socket.on('peer-disconnected', uid => {
         if (peers[uid]) peers[uid].close()
     })
 
-    myPeer.on('open', id => {
-        socket.emit('peer-login', true);
-    })
-
-    function connectToNewUser(userId, stream) {
-        const call = myPeer.call(userId, stream)
-        const video = document.createElement('video')
-
-        call.on('stream', userVideoStream => {
-            console.log("스트림에 연결됨")
-          addVideoStream(video, userVideoStream)
+    function connectSelfVideo(video)
+    {
+        navigator.mediaDevices.getUserMedia({video:true, audio:true})
+            .then((stream)=>{
+                addVideoStream(video, stream);
+            })
+            .catch((err)=>{
+                console.log('Failed to get local stream', err);
+            })
+    }
+    function connectToNewUser(userId) {
+        let conn = myPeer.connect(userId);
+        conn.on('data', (data)=>{
+            console.log("Receive Data : " + data);
         })
-        call.on('close', () => {
-          video.remove()
+        conn.on('open', ()=>{
+            conn.send('hi!');
         })
-      
-        peers[userId] = call
-        console.log("connectToNewUser 연결 아이디 : " + userId);
-        console.log(call);
+        let video = document.createElement('video')
+
+        navigator.mediaDevices.getUserMedia({video:true, audio:true})
+            .then((stream)=>{
+                let call = myPeer.call(userId, stream);
+                let video = document.createElement('video');
+                videoGrid.append(video);
+                call.on('stream', (userVideoStream)=>{
+                    console.log("스트림에 연결됨")
+                    addVideoStream(video, userVideoStream)
+                })
+                peers[userId] = call;
+            })
+            .catch((err)=>{
+               console.log('Failed to get local stream', err);
+            });
       }
-      
+
       function addVideoStream(video, stream) {
           console.log("video added");
         video.srcObject = stream

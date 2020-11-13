@@ -32,6 +32,8 @@ const { waitForDebugger } = require('inspector');
 // get uid
 const makeUID = function() { return '_' + Math.random().toString(36).substr(2, 9); }
 
+let chatUID = makeUID();
+
 // instances and entities map for processing
 var instances = [];
 var entities = [];
@@ -107,14 +109,16 @@ function onConnect(socket) {
         socket.broadcast.emit('other_joined', socket.id, entities[socket.id]);
     });
 
-    socket.on('peer-login', function(data) {
-        socket.broadcast.emit('peer-connected', socket.id);
+    socket.on('peer-login', function(pid) {
+        console.log("PEER CONNECT : " + pid);
+        socket.broadcast.emit('peer-connected', pid);
     })
 
     // if disconnection happenes, send delete entity message to clients
     socket.on('disconnect', function(reason) {
         delete entities[socket.id];
         io.emit('delete_entity', socket.id);
+        console.log("PEER DISCONNECT : " + socket.id);
         socket.broadcast.emit('peer-disconnected', socket.id);
     });
 
