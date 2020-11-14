@@ -195,6 +195,9 @@ function onConnect(socket) {
                     console.log("DB IS UPDATED SUCCESSFULLY");
             });
         }
+
+        socket.emit("file-upload-ack", { uid: uid, data_name: data.data_name, data_size: data.raw_gltf.length, data_type: data.data_type, data_creator:data.data_creator });
+        console.log("file-upload-ack : " + uid + " " + data.data_name + " " + data.raw_gltf.length + " " + data.data_type + " " + data.data_creator);
     });
 
     // Send File To Client
