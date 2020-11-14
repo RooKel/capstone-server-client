@@ -107,6 +107,7 @@ function Editor() {
 
 	this.materialsRefCounter = new Map(); // tracks how often is a material used by a 3D object
 
+	this.skeletons = new Map();
 	this.animations = {};
 	this.mixer = new THREE.AnimationMixer( this.scene );
 
@@ -174,6 +175,7 @@ Editor.prototype = {
 
 			if ( child.geometry !== undefined ) scope.addGeometry( child.geometry );
 			if ( child.material !== undefined ) scope.addMaterial( child.material );
+			if ( child.type === "SkinnedMesh" ) scope.addSkeleton( child );
 
 			if(child.userData.script !== undefined)
 			{
@@ -381,6 +383,15 @@ Editor.prototype = {
 
 		this.textures[ texture.uuid ] = texture;
 
+	},
+
+	addSkeleton: function (object) {
+		if(object === undefined) return;
+		this.skeletons.set(object.uuid,object);
+	},
+
+	removeSkeleton: function(object) {
+		delete this.skeletons[object.uuid];
 	},
 
 	addAnimation: function ( object, animations ) {

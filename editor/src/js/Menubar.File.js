@@ -101,6 +101,9 @@ function MenubarFile(editor) {
                     dataStream.raw_gltf = avatarJson;
                     networkObject.requestFileUpload(dataStream);
                     editor.floatingPanels.upload_avatar.close();
+                }, function(err){
+                    editor.floatingPanels.upload_avatar.close();
+                    editor.signals.loadStateChanged.dispatch("close");
                 });
             });
         },
@@ -295,10 +298,23 @@ function MenubarFile(editor) {
     option.onClick(exportAvatar);
     options.add(option);
 
-    function getAvatarJson(scene, completeCallback) {
-        let exporter = new GLTFExporter();
+    function getAvatarJson(scene, completeCallback, errorCallback) {
         let skinnedMeshRoot = undefined;
-        scene.traverse(obj => {
+
+        editor.skeletons.forEach((value, key, mapObj) => {
+            if(undefined !== mapObj)
+            {
+                skinnedMeshRoot = mapObj;
+            }
+        });
+
+        if(undefined === skinnedMeshRoot)
+        {
+            errorCallback("No Skeleton");
+            return;
+        }
+        let exporter = new GLTFExporter();
+        /*scene.traverse(obj => {
             if(undefined !== skinnedMeshRoot) return;
             if(obj.type == "SkinnedMesh")
             {
@@ -308,7 +324,7 @@ function MenubarFile(editor) {
                     skinnedMeshRoot = obj.parent;
                 return;
             }
-        });
+        });*/
 
         exporter.parse(skinnedMeshRoot, function(result){
             completeCallback(JSON.stringify(result, null, 2));
@@ -326,6 +342,8 @@ function MenubarFile(editor) {
             let title = config.getKey('project/title');
             save(zip.generate({type: 'blob'}), (title !== '' ? title : 'Avatar') + '.zip');
 
+        }, function(err){
+            console.log(err);
         });
     }
 

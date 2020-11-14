@@ -49,7 +49,11 @@ FileTransferManager.prototype={
         *   --data_thumbnail    : base64 형식의 png raw data
         *   --raw_gltf          : gltf 파일이다.
         * */
-        asyncCall(this.socket, dataStream).then(r=>console.log(r));
+        asyncCall(this.socket, dataStream)
+            .then(r=>console.log(r))
+            .catch(err => {
+            console.log("ERR : " + err);
+        });
     },
     addFileDownloadListener: function (callback){
         this.signals.file_download.add(callback);
