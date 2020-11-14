@@ -212,7 +212,7 @@ const assets = [
 
 ];
 
-self.addEventListener( 'install', async function () {
+/*self.addEventListener( 'install', async function () {
 
 	const cache = await caches.open( 'threejs-editor' );
 
@@ -248,4 +248,4 @@ async function cacheFirst( request ) {
 
 	return cachedResponse;
 
-}
+}*/

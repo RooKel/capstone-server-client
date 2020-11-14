@@ -47,6 +47,7 @@ function MenubarFile(editor) {
                 let b64data = "data:image/png;base64," + b64(model.data);
                 panel.createItemElement(model.name, model.creator, 100, 100, b64data, model.uid);
             }
+            editor.signals.loadStateChanged.dispatch("close");
         }
         else if(res.request_type === 'gltf')
         {
@@ -65,11 +66,10 @@ function MenubarFile(editor) {
 
                     editor.addAnimation( scene, result.animations );
                     editor.execute( new AddObjectCommand( editor, scene ) );
-
+                    editor.signals.loadStateChanged.dispatch("close");
                 } );
             }
         }
-        editor.signals.loadStateChanged.dispatch("close");
     }
 
     networkObject.addFileUploadAckListener(onFileUploadAck);
@@ -96,11 +96,10 @@ function MenubarFile(editor) {
                 theme      : 'lightslategray filleddark',
                 headerTitle: 'Avatar Upload'
             }, function (dataStream) {
+                editor.signals.loadStateChanged.dispatch("open");
                 getAvatarJson(editor.scene, function(avatarJson){
                     dataStream.raw_gltf = avatarJson;
-                    editor.signals.loadStateChanged.dispatch("open");
                     networkObject.requestFileUpload(dataStream);
-                    editor.signals.loadStateChanged.dispatch("close");
                     editor.floatingPanels.upload_avatar.close();
                 });
             });
@@ -117,9 +116,9 @@ function MenubarFile(editor) {
                 theme      : 'lightslategray filleddark',
                 headerTitle: 'World Upload'
             }, function (dataStream) {
+                editor.signals.loadStateChanged.dispatch("open");
                 getWorldJson(editor.scene, function(sceneJson){
                     dataStream.raw_gltf = sceneJson;
-                    editor.signals.loadStateChanged.dispatch("open");
                     networkObject.requestFileUpload(dataStream);
                     editor.floatingPanels.upload_world.close();
                 });
