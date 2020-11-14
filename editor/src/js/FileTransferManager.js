@@ -3,7 +3,8 @@ function FileTransferManager(editor, socket_url)
     var Signal = signals.Signal;
 
     this.signals = {
-        file_download: new Signal()
+        file_download: new Signal(),
+        file_upload_ack: new Signal()
     }
     this.socket = io.connect(socket_url);
 }
@@ -52,6 +53,15 @@ FileTransferManager.prototype={
     },
     addFileDownloadListener: function (callback){
         this.signals.file_download.add(callback);
+    },
+    addFileUploadAckListener: function (callback){
+        this.signals.file_upload_ack.add(callback);
+    },
+    listenFileUploadAck: function (){
+        this.socket.on('file-upload-ack', (response)=>{
+            console.log("File-Upload-Ack");
+            this.signals.file_upload_ack.dispatch(response);
+        });
     },
     listenFileDownload: function (){
         this.socket.on('file-download',(response)=>{

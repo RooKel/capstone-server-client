@@ -21,7 +21,11 @@ function b64(e){
 }
 function MenubarFile(editor) {
     var networkObject = new FileTransferManager(editor, "ws://localhost:3000");
-
+    function onFileUploadAck(res)
+    {
+        console.log(res.uid + " : " + res.data_name);
+        editor.signals.loadStateChanged.dispatch("close");
+    }
     function onFileDownloaded(res)
     {
         let models = res.data;
@@ -68,7 +72,10 @@ function MenubarFile(editor) {
         editor.signals.loadStateChanged.dispatch("close");
     }
 
+    networkObject.addFileUploadAckListener(onFileUploadAck);
     networkObject.addFileDownloadListener(onFileDownloaded);
+
+    networkObject.listenFileUploadAck();
     networkObject.listenFileDownload();
 
     this.htmlEvents = {
@@ -93,6 +100,7 @@ function MenubarFile(editor) {
                     dataStream.raw_gltf = avatarJson;
                     editor.signals.loadStateChanged.dispatch("open");
                     networkObject.requestFileUpload(dataStream);
+                    editor.signals.loadStateChanged.dispatch("close");
                     editor.floatingPanels.upload_avatar.close();
                 });
             });
