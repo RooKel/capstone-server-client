@@ -1,0 +1,115 @@
+.loader,
+.loader:before,
+.loader:after {
+    background: #70ffd7;
+    -webkit-animation: load1 1s infinite ease-in-out;
+    animation: load1 1s infinite ease-in-out;
+    width: 1em;
+    height: 4em;
+}
+.loader {
+    color: #70ffd7;
+    text-indent: -9999em;
+    margin: 88px auto;
+    position: relative;
+    z-index: 300;
+    font-size: 13px;
+    -webkit-transform: translateZ(0) translateY(270px);
+    -ms-transform: translateZ(0) translateY(270px);
+    transform: translateZ(0) translateY(270px);
+    -webkit-animation-delay: -0.16s;
+    animation-delay: -0.16s;
+}
+.loader:before,
+.loader:after {
+    position: absolute;
+    top: 0;
+    content: '';
+}
+.loader:before {
+    left: -1.5em;
+    -webkit-animation-delay: -0.32s;
+    animation-delay: -0.32s;
+}
+.loader:after {
+    left: 1.5em;
+}
+
+.loader-closed,
+.loader-closed:before,
+.loader-closed:after {
+    background: #70ffd7;
+    -webkit-animation: load2 800ms 1 ease-in-out;
+    animation: load2 800ms 1 ease-in-out;
+    width: 0em;
+    height: 0em;
+}
+.loader-closed{
+    color: #70ffd7;
+    text-indent: -9999em;
+    margin: 88px auto;
+    position: relative;
+    z-index: 300;
+    font-size: 13px;
+    -webkit-transform: translateZ(0) translateY(270px);
+    -ms-transform: translateZ(0) translateY(270px);
+    transform: translateZ(0) translateY(270px);
+    -webkit-animation-delay: -0.16s;
+    animation-delay: -0.16s;
+}
+.loader-closed:before,
+.loader-closed:after {
+    position: absolute;
+    top: 0;
+    content: '';
+}
+.loader-closed:before {
+    left: -1.5em;
+    -webkit-animation-delay: -0.32s;
+    animation-delay: -0.32s;
+}
+.loader-closed:after {
+    left: 1.5em;
+}
+@-webkit-keyframes load1 {
+    0%,
+    80%,
+    100% {
+        box-shadow: 0 0;
+        height: 4em;
+    }
+    40% {
+        box-shadow: 0 -2em;
+        height: 5em;
+    }
+}
+@keyframes load1 {
+    0%,
+    80%,
+    100% {
+        box-shadow: 0 0;
+        height: 4em;
+    }
+    40% {
+        box-shadow: 0 -2em;
+        height: 5em;
+    }
+}
+@keyframes load2 {
+    0%{
+        width: 1em;
+        height: 4em;
+    }
+    40% {
+        box-shadow: 0 -2em;
+        height: 5em;
+    }
+    80%,
+    100% {
+        box-shadow: 0 0;
+        width: 1em;
+        height: 4em;
+        background: rgba(255,151,234,0);
+        color: rgba(255,151,234,0);
+    }
+}

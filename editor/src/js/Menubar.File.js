@@ -65,6 +65,7 @@ function MenubarFile(editor) {
                 } );
             }
         }
+        editor.signals.loadStateChanged.dispatch("close");
     }
 
     networkObject.addFileDownloadListener(onFileDownloaded);
@@ -90,6 +91,7 @@ function MenubarFile(editor) {
             }, function (dataStream) {
                 getAvatarJson(editor.scene, function(avatarJson){
                     dataStream.raw_gltf = avatarJson;
+                    editor.signals.loadStateChanged.dispatch("open");
                     networkObject.requestFileUpload(dataStream);
                     editor.floatingPanels.upload_avatar.close();
                 });
@@ -109,12 +111,14 @@ function MenubarFile(editor) {
             }, function (dataStream) {
                 getWorldJson(editor.scene, function(sceneJson){
                     dataStream.raw_gltf = sceneJson;
+                    editor.signals.loadStateChanged.dispatch("open");
                     networkObject.requestFileUpload(dataStream);
                     editor.floatingPanels.upload_world.close();
                 });
             });
         },
         clickDownloadAvatarPanel: () => {
+            editor.signals.loadStateChanged.dispatch("open");
             networkObject.requestFileDownload('thumbnail','avatar');
 
             let elements = [];
@@ -132,12 +136,14 @@ function MenubarFile(editor) {
                     if(event.currentTarget.dataset.uid === undefined) return;
                     let panel = editor.floatingPanels.download_avatar;
                     let panelElement = panel.htmlPanelElementMap[event.currentTarget.dataset.uid];
+                    editor.signals.loadStateChanged.dispatch("open");
                     networkObject.requestFileDownload('gltf', 'avatar', panelElement.uid);
                 }
             });
             editor.floatingPanels.download_avatar = tmpGrid;
         },
         clickDownloadWorldPanel: () => {
+            editor.signals.loadStateChanged.dispatch("open");
             networkObject.requestFileDownload('thumbnail','world');
 
             let elements = [];
@@ -156,6 +162,7 @@ function MenubarFile(editor) {
                     if(event.currentTarget.dataset.uid === undefined) return;
                     let panel = editor.floatingPanels.download_world;
                     let panelElement = panel.htmlPanelElementMap[event.currentTarget.dataset.uid];
+                    editor.signals.loadStateChanged.dispatch("open");
                     networkObject.requestFileDownload('gltf', 'world', panelElement.uid);
                 }
             });

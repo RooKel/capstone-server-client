@@ -66,4 +66,10 @@ const ScrollContainer = (ui_objs)=>{
     return container;
 }
 
+ScrollContainer.prototype ={
+    AddUIElement : function (element) {
+        this.container
+    }
+}
+
 export default ScrollContainer

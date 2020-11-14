@@ -30,6 +30,7 @@
 		<link rel="stylesheet" href="js/libs/codemirror/addon/tern.css">
 		<link rel="stylesheet" href="js/libs/jspanel/es6module/jspanel.css">
 		<link rel="stylesheet" href="js/libs/muuri.css">
+		<link rel="stylesheet" href="css/spinnerCss.css">
 
 		<script src="js/libs/codemirror/addon/dialog.js"></script>
 		<script src="js/libs/codemirror/addon/show-hint.js"></script>
@@ -60,6 +61,7 @@
 			import { Menubar } from './js/Menubar.js';
 			import { Resizer } from './js/Resizer.js';
 			import { VRButton } from '../examples/jsm/webxr/VRButton.js';
+			import {LoadingSpinner} from "./js/LoadingSpinner.js";
 
 			window.URL = window.URL || window.webkitURL;
 			window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
@@ -98,6 +100,9 @@
 
 			var resizer = new Resizer( editor );
 			document.body.appendChild( resizer.dom );
+
+			var spinner = new LoadingSpinner(editor);
+			document.body.appendChild(spinner.dom);
 
 			//
 

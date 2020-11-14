@@ -286,7 +286,7 @@ input, textarea {
 }
 
 input.Number {
-	color: #08f!important;
+	color: #ddd!important;
 	font-size: 12px;
 	border: 0px;
 	padding: 2px;
@@ -338,6 +338,7 @@ select {
 	right: 300px;
 	bottom: 0;
 	opacity: 0.9;
+	z-index: 200;
 }
 
 #player {
@@ -347,6 +348,61 @@ select {
 	right: 300px;
 	bottom: 0;
 }
+
+@keyframes spinnerFadeIn {
+	from{
+		background: rgba(32,28,44,0);
+	}
+	to{
+		background: rgba(32,28,44,0.8);
+	}
+}
+
+#spinner {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background: rgba(32,28,44,0);
+	z-index: 250;
+	padding: 0;
+	margin: 0;
+	right: 0;
+	top: 0;
+	animation: spinnerFadeIn ease-in 1;
+	animation-fill-mode: forwards;
+	animation-duration: 300ms;
+}
+@keyframes spinnerFadeOut {
+	from{
+		width: 100%;
+		height:100%;
+		background: rgba(32,28,44,0.8);
+
+	}
+	to{
+		width: 100%;
+		height:100%;
+		background: rgba(32,28,44,0);
+	}
+}
+#spinner-closed{
+	position: absolute;
+	width: 0%;
+	height: 0%;
+	background: rgba(32,28,44,0);
+	z-index: 250;
+	padding: 0;
+	margin: 0;
+	right: 0;
+	top: 0;
+	animation-name: spinnerFadeOut;
+	animation-duration: 1000ms;
+	animation-delay: 0ms;
+	animation-timing-function: ease-in;
+	animation-iteration-count: 1;
+}
+
+
 
 #menubar {
 	position: absolute;

@@ -33,6 +33,8 @@ function Editor() {
 		savingStarted: new Signal(),
 		savingFinished: new Signal(),
 
+		loadStateChanged: new Signal(),
+
 		transformModeChanged: new Signal(),
 		snapChanged: new Signal(),
 		spaceChanged: new Signal(),

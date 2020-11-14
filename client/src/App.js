@@ -4,6 +4,7 @@ import StartPage from './Pages/StartPage.js'
 import WorldPage from './Pages/WorldPage.js'
 
 import MyPeer from './MyPeer.js'
+import WorldSelectPage from "./Pages/WorldSelectPage";
 
 const App = ()=>{
     const socket = io();
@@ -19,7 +20,7 @@ const App = ()=>{
         renderer.clear(0x000000, 0);
         const cur_page = pages[cur_page_ind];
         cur_page.event_link.Invoke('update', clock.getDelta());
-        
+
         renderer.getContext().enable(renderer.getContext().DEPTH_TEST);
         renderer.render(cur_page.scene, cur_page.camera);
         renderer.getContext().disable(renderer.getContext().DEPTH_TEST);
@@ -34,7 +35,9 @@ const App = ()=>{
     }
     const OnCreateWorld = (path)=>{
         //console.log('App: create_world');
-        pages.push(WorldPage(socket, client_data, event_link, path));
+        let worldPage = WorldPage(socket, client_data, event_link, path);
+        pages.push(worldPage);
+        event_link.Invoke("change_page", pages.length-1);
     }
     //#endregion
     const event_link = EventLink([
@@ -49,8 +52,10 @@ const App = ()=>{
         renderer.domElement.setAttribute('id', 'three_canvas');
         renderer.setAnimationLoop(Update);
         document.body.appendChild(renderer.domElement);
-        
+
         pages.push(StartPage(socket, client_data, event_link));
+        pages.push(WorldSelectPage(socket, client_data, event_link));
+
         cur_page_ind = 0;
         pages[cur_page_ind].event_link.Invoke('enter');
     }
