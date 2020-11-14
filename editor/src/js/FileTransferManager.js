@@ -35,7 +35,7 @@ FileTransferManager.prototype={
     requestFileUpload: function (dataStream){
         function resolveAfterEmit(socket, dataStream){
             return new Promise(resolve=>{
-                this.socket.emit('file-upload', dataStream);
+                socket.emit('file-upload', dataStream);
                 resolve('resolved');
             })
         }
