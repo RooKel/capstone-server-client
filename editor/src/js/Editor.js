@@ -108,7 +108,7 @@ function Editor() {
 	this.materialsRefCounter = new Map(); // tracks how often is a material used by a 3D object
 
 	this.skeletons = new Map();
-	this.animations = {};
+	this.animations = new Map();
 	this.mixer = new THREE.AnimationMixer( this.scene );
 
 	this.selected = null;
@@ -391,15 +391,13 @@ Editor.prototype = {
 	},
 
 	removeSkeleton: function(object) {
-		delete this.skeletons[object.uuid];
+		this.skeletons.remove(object.uuid);
 	},
 
 	addAnimation: function ( object, animations ) {
 
 		if ( animations.length > 0 ) {
-
-			this.animations[ object.uuid ] = animations;
-
+			this.animations.set(object.uuid, animations);
 		}
 
 	},
@@ -671,7 +669,7 @@ Editor.prototype = {
 
 		this.materialsRefCounter.clear();
 
-		this.animations = {};
+		this.animations = new Map();
 		this.mixer.stopAllAction();
 
 		this.deselect();

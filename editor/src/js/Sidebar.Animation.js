@@ -9,7 +9,7 @@ function SidebarAnimation( editor ) {
 
 	signals.objectSelected.add( function ( object ) {
 
-		var animations = editor.animations[ object !== null ? object.uuid : '' ];
+		var animations = editor.animations.get( object !== null ? object.uuid : '' );
 
 		if ( animations !== undefined ) {
 
@@ -40,7 +40,7 @@ function SidebarAnimation( editor ) {
 
 	signals.objectRemoved.add( function ( object ) {
 
-		var animations = editor.animations[ object !== null ? object.uuid : '' ];
+		var animations = editor.animations.get( object !== null ? object.uuid : '' );
 
 		if ( animations !== undefined ) {
 

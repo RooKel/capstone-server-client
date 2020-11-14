@@ -708,12 +708,9 @@ function Loader( editor ) {
 						var scene = result.scene;
 
 						editor.addAnimation( scene, result.animations );
-						let children = scene.children;
-						for (let i = 0; i < children.length; i++)
-						{
-							editor.execute( new AddObjectCommand( editor, children[i] ) );
-						}
+						editor.execute( new AddObjectCommand( editor, scene ) );
 					} );
+					break;
 				case 'json':
 					handleJSON( JSON.parse( file.asText() ) );
 

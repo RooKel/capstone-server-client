@@ -302,9 +302,16 @@ function MenubarFile(editor) {
         let skinnedMeshRoot = undefined;
 
         editor.skeletons.forEach((value, key, mapObj) => {
-            if(undefined !== mapObj)
+            if(undefined !== value)
             {
-                skinnedMeshRoot = mapObj;
+                if(value.parent === undefined)
+                {
+                    skinnedMeshRoot = editor.scene;
+                }
+                else
+                {
+                    skinnedMeshRoot = value.parent;
+                }
             }
         });
 
@@ -313,22 +320,17 @@ function MenubarFile(editor) {
             errorCallback("No Skeleton");
             return;
         }
+
+        var animations = [];
+        editor.animations.forEach((value, key, mapObj) => {
+            animations.push(... value);
+        });
+
         let exporter = new GLTFExporter();
-        /*scene.traverse(obj => {
-            if(undefined !== skinnedMeshRoot) return;
-            if(obj.type == "SkinnedMesh")
-            {
-                if(obj.parent === undefined)
-                    skinnedMeshRoot = editor.scene;
-                else
-                    skinnedMeshRoot = obj.parent;
-                return;
-            }
-        });*/
 
         exporter.parse(skinnedMeshRoot, function(result){
             completeCallback(JSON.stringify(result, null, 2));
-        });
+        }, { animations: animations });
     }
 
     function exportAvatar() {
