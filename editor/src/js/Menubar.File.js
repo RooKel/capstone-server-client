@@ -8,6 +8,7 @@ import {FileTransferManager} from "./FileTransferManager.js";
 import {DRACOLoader} from "../../examples/jsm/loaders/DRACOLoader.js";
 import {GLTFLoader} from "../../examples/jsm/loaders/GLTFLoader.js";
 import {AddObjectCommand} from "./commands/AddObjectCommand.js";
+import {AnimationClip} from '../../build/three.module.js';
 
 function b64(e){
     let t="";
@@ -61,11 +62,28 @@ function MenubarFile(editor) {
                 loader.setDRACOLoader( dracoLoader );
                 loader.parse( model.data, '', function ( result ) {
 
-                    var scene = result.scene;
+                    let scene = result.scene;
                     scene.name = result.scene.name;
 
-                    editor.addAnimation( scene, result.animations );
-                    editor.execute( new AddObjectCommand( editor, scene ) );
+                    while(scene.children.length > 0)
+                    {
+                        editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
+                    }
+                    editor.scene.traverse(x => {
+                        if(x.userData === undefined)        return;
+                        if(x.userData.animSet === undefined)return;
+                        if(x.userData.animSet.length === 0) return;
+
+                        let getAnimSet = [];
+                        for (let a = 0; a < x.userData.animSet.length; a++)
+                        {
+                            let animByName = result.animations.find(anim => anim.name === x.userData.animSet[a]);
+                            getAnimSet.push(animByName);
+                        }
+                        editor.addAnimation( x, getAnimSet );
+
+                    });
+                    //editor.execute( new AddObjectCommand( editor, scene ) );
                     editor.signals.loadStateChanged.dispatch("close");
                 } );
             }
@@ -311,6 +329,10 @@ function MenubarFile(editor) {
                 else
                 {
                     skinnedMeshRoot = value.parent;
+                    while(skinnedMeshRoot.parent !== editor.scene)
+                    {
+                        skinnedMeshRoot = skinnedMeshRoot.parent;
+                    }
                 }
             }
         });
@@ -328,7 +350,54 @@ function MenubarFile(editor) {
 
         let exporter = new GLTFExporter();
 
-        exporter.parse(skinnedMeshRoot, function(result){
+        exporter.parse(scene, function(result){
+            let gScene = result.scenes[0];
+
+            if(gScene.nodes === undefined) return;
+            let eScene = editor.scene;
+
+            let gQ = [];
+            let eQ = [];
+
+            //  씬 하이어라키의 최상위 객체들의 인덱스를 q에 넣는다.
+            for (let c = 0; c < gScene.nodes.length; c++) {
+                gQ.push(result.nodes[gScene.nodes[c]]);
+                eQ.push(eScene.children[c]);
+            }
+            //  gltf와 scene을 동시에 traverse하며 script 비교 생성
+            while(gQ.length > 0)
+            {
+                let topNode = gQ.shift();
+                let topObject = eQ.shift();
+
+                let script = editor.scripts[topObject.uuid];
+                let anims = editor.animations.get(topObject.uuid);
+                let animSet = [];
+                if (anims !== undefined)
+                {
+                    for (let a = 0; a < anims.length; a++)
+                    {
+                        animSet.push(anims[a].name);
+                    }
+                }
+                topNode.extras = {
+                    name  : topObject.name,
+                    script: script,
+                    animSet: animSet
+                }
+
+                if(topNode.children !== undefined)
+                {
+                    //  TODO Handle 자식있을 때
+                    for (let c = 0; c < topNode.children.length; c++)
+                    {
+                        let cNodeIdx = topNode.children[c];
+                        gQ.push(result.nodes[cNodeIdx]);
+                        eQ.push(topObject.children[c]);
+                    }
+                }
+            }
+
             completeCallback(JSON.stringify(result, null, 2));
         }, { animations: animations });
     }
@@ -357,28 +426,45 @@ function MenubarFile(editor) {
 
 	function getWorldJson(scene, completeCallback) {
 		let exporter = new GLTFExporter();
+
+        var animations = [];
+        editor.animations.forEach((value, key, mapObj) => {
+            animations.push(... value);
+        });
+
 		exporter.parse(scene, function (result) {
-		    let gQ = [];
-            let eQ = [];
-            let gScene = result.scenes[0];
-            let eScene = editor.scene;
-            eScene.children
+		    let gScene = result.scenes[0];
+
             if(gScene.nodes === undefined) return;
+            let eScene = editor.scene;
+
+            let gQ = [];
+            let eQ = [];
+
             //  씬 하이어라키의 최상위 객체들의 인덱스를 q에 넣는다.
             for (let c = 0; c < gScene.nodes.length; c++) {
                 gQ.push(result.nodes[gScene.nodes[c]]);
                 eQ.push(eScene.children[c]);
             }
             //  gltf와 scene을 동시에 traverse하며 script 비교 생성
-            while(gQ.length > 0)
-            {
+            while(gQ.length > 0) {
                 let topNode = gQ.shift();
                 let topObject = eQ.shift();
 
                 let script = editor.scripts[topObject.uuid];
+                let anims = editor.animations.get(topObject.uuid);
+                let animSet = [];
+                if (anims !== undefined)
+                {
+                    for (let a = 0; a < anims.length; a++)
+                    {
+                        animSet.push(anims[a].name);
+                    }
+                }
                 topNode.extras = {
                     name  : topObject.name,
-                    script: script
+                    script: script,
+                    animSet: animSet
                 }
 
                 if(topNode.children !== undefined)
@@ -392,8 +478,9 @@ function MenubarFile(editor) {
                     }
                 }
             }
+
             completeCallback(JSON.stringify(result, null, 2));
-		});
+		}, { animations: animations });
 	}
     function exportWorld() {
 
