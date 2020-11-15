@@ -14,7 +14,7 @@ _DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
 function Editor() {
 
 	var Signal = signals.Signal;
-
+	this.renderer = null;
 	this.signals = {
 
 		// script
@@ -96,6 +96,7 @@ function Editor() {
 
 	this.scene = new THREE.Scene();
 	this.scene.name = 'Scene';
+	this.scene.background = new THREE.Color(0x343D4B);
 
 	this.sceneHelpers = new THREE.Scene();
 

@@ -77,6 +77,9 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     });
     img_thumbnail.setAttribute("width", "100%");
     img_thumbnail.setAttribute("height", "100%");
+    let snapshot = editor.renderer.domElement.toDataURL("image/png");
+    img_thumbnail.setAttribute("src", snapshot);
+    data_stream.data_thumbnail = snapshot;
 
     input_file_thumbnail.onchange = function (e) {
         var fr = new FileReader();
