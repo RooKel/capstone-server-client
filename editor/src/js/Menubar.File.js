@@ -358,31 +358,40 @@ function MenubarFile(editor) {
 	function getWorldJson(scene, completeCallback) {
 		let exporter = new GLTFExporter();
 		exporter.parse(scene, function (result) {
-			if(result.scenes[0].nodes === undefined) return;
-			let q = [];
-			for (let c = 0; c < result.scenes[0].nodes.length; c++) {
-				q.push(result.scenes[0].nodes[c]);
-			}
-			while (q.length > 0) {
-				scene.traverse(obj => {
-					if (q.length <= 0) return;
-					let node = result.nodes[q[q.length - 1]];
-					if (node.name !== obj.name) return;
+		    let gQ = [];
+            let eQ = [];
+            let gScene = result.scenes[0];
+            let eScene = editor.scene;
+            eScene.children
+            if(gScene.nodes === undefined) return;
+            //  씬 하이어라키의 최상위 객체들의 인덱스를 q에 넣는다.
+            for (let c = 0; c < gScene.nodes.length; c++) {
+                gQ.push(result.nodes[gScene.nodes[c]]);
+                eQ.push(eScene.children[c]);
+            }
+            //  gltf와 scene을 동시에 traverse하며 script 비교 생성
+            while(gQ.length > 0)
+            {
+                let topNode = gQ.shift();
+                let topObject = eQ.shift();
 
-					let script = editor.scripts[obj.uuid];
-					node.extras = {
-						name  : obj.name,
-						script: script
-					};
-					q.pop();
+                let script = editor.scripts[topObject.uuid];
+                topNode.extras = {
+                    name  : topObject.name,
+                    script: script
+                }
 
-					if (node.children === undefined) return;
-
-					for (let k = 0; k < node.children.length; k++) {
-						q.push(node.children[k]);
-					}
-				});
-			}
+                if(topNode.children !== undefined)
+                {
+                    //  TODO Handle 자식있을 때
+                    for (let c = 0; c < topNode.children.length; c++)
+                    {
+                        let cNodeIdx = topNode.children[c];
+                        gQ.push(result.nodes[cNodeIdx]);
+                        eQ.push(topObject.children[c]);
+                    }
+                }
+            }
             completeCallback(JSON.stringify(result, null, 2));
 		});
 	}
