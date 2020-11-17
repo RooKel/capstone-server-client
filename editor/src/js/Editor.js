@@ -165,7 +165,7 @@ Editor.prototype = {
 	addObject: function ( object, parent, index ) {
 
 		var scope = this;
-		this.addUserData(object);
+		scope.addUserData(object);
 
 		object.traverse( function ( child ) {
 
@@ -173,7 +173,7 @@ Editor.prototype = {
 			if ( child.material !== undefined ) scope.addMaterial( child.material );
 			if ( child.type === "SkinnedMesh" ) scope.addSkeleton( child );
 
-			this.addUserData(child);
+			scope.addUserData(child);
 
 			scope.addCamera( child );
 			scope.addHelper( child );
@@ -396,7 +396,7 @@ Editor.prototype = {
 		if(object === undefined) return;
 
 		this.userDatas.set(object.uuid,object.userData);
-		
+
 		if(object.userData.script !== undefined)
 		{
 			for(let i = 0; i < object.userData.script.length; i++)
@@ -404,7 +404,7 @@ Editor.prototype = {
 				this.addScript(object, object.userData.script[i]);
 			}
 		}
-		
+
 	},
 
 	getUserData: function (uuid) {
