@@ -110,6 +110,8 @@ function Editor() {
 
 	this.skeletons = new Map();
 	this.animations = new Map();
+	this.userDatas = new Map();
+
 	this.mixer = new THREE.AnimationMixer( this.scene );
 
 	this.selected = null;
@@ -163,14 +165,7 @@ Editor.prototype = {
 	addObject: function ( object, parent, index ) {
 
 		var scope = this;
-
-		if(object.userData.script !== undefined)
-		{
-			for(let i = 0; i < object.userData.script.length; i++)
-			{
-				this.addScript(object, object.userData.script[i]);
-			}
-		}
+		this.addUserData(object);
 
 		object.traverse( function ( child ) {
 
@@ -178,13 +173,7 @@ Editor.prototype = {
 			if ( child.material !== undefined ) scope.addMaterial( child.material );
 			if ( child.type === "SkinnedMesh" ) scope.addSkeleton( child );
 
-			if(child.userData.script !== undefined)
-			{
-				for(let i = 0; i < child.userData.script.length; i++)
-				{
-					editor.addScript(child, child.userData.script[i]);
-				}
-			}
+			this.addUserData(child);
 
 			scope.addCamera( child );
 			scope.addHelper( child );
@@ -401,6 +390,30 @@ Editor.prototype = {
 			this.animations.set(object.uuid, animations);
 		}
 
+	},
+
+	addUserData: function(object) {
+		if(object === undefined) return;
+
+		this.userDatas.set(object.uuid,object.userData);
+		
+		if(object.userData.script !== undefined)
+		{
+			for(let i = 0; i < object.userData.script.length; i++)
+			{
+				this.addScript(object, object.userData.script[i]);
+			}
+		}
+		
+	},
+
+	getUserData: function (uuid) {
+		return this.userDatas(uuid);
+	},
+
+	removeUserData: function(object) {
+		if(object === undefined) return;
+		this.userDatas.delete(object.uuid);
 	},
 
 	//
