@@ -379,7 +379,10 @@ function MenubarFile(editor) {
                 {
                     for (let a = 0; a < anims.length; a++)
                     {
-                        animSet.push(anims[a].name);
+                        animSet.push({
+                            state:'idle',
+                            animation:anims[a].name
+                        });
                     }
                 }
                 topNode.extras = {
