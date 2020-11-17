@@ -2,7 +2,8 @@ import Page from './Page.js'
 import Canvas from './UI/Canvas.js'
 import WorldPgMainMenu from './UI/WorldPgMainMenu.js'
 import Pointer from './Pointer.js'
-import { Color, LineSegments, LineBasicMaterial, BoxGeometry, MeshBasicMaterial, Mesh } from 'three'
+import { Color, LineSegments, LineBasicMaterial, BoxGeometry, MeshBasicMaterial, Mesh,
+    AnimationMixer, AnimationClip } from 'three'
 import UserManager from './Comms/UserManager.js'
 import InputCollector from './Comms/InputCollector.js'
 import Click from './Interaction/Click.js'
@@ -28,6 +29,7 @@ const WorldPage = (socket, client_data, app_sigs)=>{
         )
     );
 
+    let mixer = undefined;
     const network_object = new FileTransferManager(null, "ws://localhost:3000");
     const OnFileDownload = (res)=>{
         let models = res.data;
@@ -44,14 +46,29 @@ const WorldPage = (socket, client_data, app_sigs)=>{
                 var scene = result.scene;
                 scene.name = result.scene.name;
 
+                scene.position.set(-2,0,-2);
                 page.scene.add(scene);
+                let getAnimSet = [ ];
+                scene.traverse((_)=>{
+                    if(_.userData === undefined) return;
+                    if(_.userData.animSet === undefined) return;
+                    if(_.userData.animSet.length === 0) return;
+                    for(let a = 0; a < _.userData.animSet.length; a++){
+                        let animByName = result.animations.find(
+                            anim=>anim.name == _.userData.animSet[a].animation
+                        );
+                        getAnimSet.push(animByName);
+                        mixer = new AnimationMixer(_);
+                        mixer.clipAction(getAnimSet[0], _).play();
+                    }
+                });
                 //editor.addAnimation( scene, result.animations );
                 //editor.execute( new AddObjectCommand( editor, scene ) );
             });
         }
     }
     network_object.addFileDownloadListener(OnFileDownload);
-    network_object.requestFileDownload('gltf', 'world', '_eqi573nbz');
+    network_object.requestFileDownload('gltf', 'world', '_waql4iri2');
     network_object.listenFileDownload();
 
     //const peer = MyPeer(socket);
@@ -88,8 +105,9 @@ const WorldPage = (socket, client_data, app_sigs)=>{
     const OnExit = ()=>{
         //console.log('WorldPage: exit');
     }
-    const OnUpdate = ()=>{
-        //console.log('WorldPage: update');
+    const OnUpdate = (delta)=>{
+        if(mixer)
+            mixer.update(delta)
     }
     //#endregion
     page.sigs.enter.add(OnEnter);
