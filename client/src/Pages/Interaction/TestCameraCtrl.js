@@ -1,7 +1,6 @@
-import EventLink from '../EventLink.js'
 import * as THREE from 'three'
 
-const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
+const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
     let mouse_sensitivity = 50;
     const netw_obj = data;
     const sum = { x:0, y:0 };
@@ -96,11 +95,13 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
         document.removeEventListener('mousemove', OnMouseMove);
     }
     //#endregion
-    const event_link = EventLink([
-        {name:'enter',handler:OnEnter},
-        {name:'update',handler:OnUpdate},
-        {name:'exit',handler:OnExit}
-    ]);
+    const mysig = {
+        init: new signals.Signal(),
+        dispose: new signals.Signal()
+    }
+    mysig.init.add(OnEnter);
+    mysig.dispose.add(OnExit);
+    sigs.update.add(OnUpdate);
     //#region public funcs
     const ChangeTarget = (_target, _offset)=>{
         if(!(_target instanceof THREE.Object3D)) return -1;
@@ -110,7 +111,7 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector)=>{
     }
     //#endregion
     return {
-        event_link: event_link,
+        sigs: mysig,
         ChangeTarget: (target, offset)=>ChangeTarget(target, offset)
     }
 }

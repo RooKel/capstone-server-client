@@ -1,6 +1,5 @@
-import EventLink from '../EventLink.js'
 
-const OtherUsersCtrl = (socket, uid, data, model)=>{
+const OtherUsersCtrl = (socket, uid, data, model, sigs)=>{
     const netw_obj = data;
     const server_update_rate = 12;
     //#region socket event handlers
@@ -40,13 +39,15 @@ const OtherUsersCtrl = (socket, uid, data, model)=>{
         socket.off('world_state', ProcessServerMessage);
     }
     //#endregion
-    const event_link = EventLink([
-        {name:'enter',handler:OnEnter},
-        {name:'update',handler:OnUpdate},
-        {name:'exit',handler:OnExit}
-    ]);
+    const mysigs = {
+        init: new signals.Signal(),
+        dispose: new signals.Signal()
+    }
+    mysigs.init.add(OnEnter);
+    mysigs.dispose.add(OnExit);
+    sigs.update.add(OnUpdate);
     return {
-        event_link: event_link
+        sigs: mysigs
     }
 }
 
