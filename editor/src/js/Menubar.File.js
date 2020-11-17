@@ -77,7 +77,9 @@ function MenubarFile(editor) {
                         let getAnimSet = [];
                         for (let a = 0; a < x.userData.animSet.length; a++)
                         {
-                            let animByName = result.animations.find(anim => anim.name === x.userData.animSet[a]);
+                            let animByName = result.animations.find(
+                                anim => anim.name === x.userData.animSet[a].animation
+                            );
                             getAnimSet.push(animByName);
                         }
                         editor.addAnimation( x, getAnimSet );
@@ -458,7 +460,10 @@ function MenubarFile(editor) {
                 {
                     for (let a = 0; a < anims.length; a++)
                     {
-                        animSet.push(anims[a].name);
+                        animSet.push({
+                            state:'idle',
+                            animation:anims[a].name
+                        });
                     }
                 }
                 topNode.extras = {
