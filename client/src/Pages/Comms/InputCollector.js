@@ -1,8 +1,7 @@
-import EventLink from '../EventLink.js'
 
-const InputCollector = (socket, client_data)=>{
+const InputCollector = (socket, client_data, sigs)=>{
     const batches = [ ];
-    //#region event link event handler
+    //#region signal event handlers
     const OnUpdate = (delta)=>{
         batches.forEach((_)=>{
             Object.assign(_.batch, {entity_id:client_data.uid});
@@ -11,9 +10,7 @@ const InputCollector = (socket, client_data)=>{
         batches.splice(0, batches.length);
     }
     //#endregion
-    const event_link = EventLink([
-        {name:'update',handler:OnUpdate},
-    ]);
+    sigs.update.add(OnUpdate);
     //#region public funcs
     const AddMsg = (batch_name, msg)=>{
         let index = batches.findIndex((_)=>_.name===batch_name);
@@ -24,7 +21,6 @@ const InputCollector = (socket, client_data)=>{
     }
     //#endregion
     return {
-        event_link: event_link,
         AddMsg: (batch_name, msg)=>AddMsg(batch_name, msg)
     }
 }

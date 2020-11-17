@@ -1,67 +1,51 @@
-import EventLink from './EventLink.js'
-import { WebGLRenderer, Clock } from 'three'
+import { Clock, WebGLRenderer } from 'three'
+//#region import pages
 import StartPage from './Pages/StartPage.js'
 import WorldPage from './Pages/WorldPage.js'
-
-import MyPeer from './MyPeer.js'
-import WorldSelectPage from "./Pages/WorldSelectPage";
+//#endregion
 
 const App = ()=>{
     const socket = io();
-    const client_data = { uid: undefined };
+    const client_data = { uid:undefined };
     const pages = [ ];
     let cur_page_ind = undefined;
-    const renderer = new WebGLRenderer({ antialias: true });
     const clock = new Clock();
-
-    MyPeer(socket);
-
-    const Update = ()=>{
-        renderer.clear(0x000000, 0);
-        const cur_page = pages[cur_page_ind];
-        cur_page.event_link.Invoke('update', clock.getDelta());
-
-        renderer.getContext().enable(renderer.getContext().DEPTH_TEST);
-        renderer.render(cur_page.scene, cur_page.camera);
-        renderer.getContext().disable(renderer.getContext().DEPTH_TEST);
-        renderer.render(cur_page.ui_manager.scene, cur_page.ui_manager.camera);
+    const renderer = new WebGLRenderer({ antialias: true });
+    const sigs = {
+        change_page: new signals.Signal()
     }
-    //#region event link event handlers
+    //#region signal event handlers
     const OnChangePage = (to)=>{
         //console.log('App: change_page');
-        pages[cur_page_ind].event_link.Invoke('exit');
-        pages[to].event_link.Invoke('enter');
+        pages[cur_page_ind].sigs.exit.dispatch();
+        pages[to].sigs.enter.dispatch();
         cur_page_ind = to;
     }
-    const OnCreateWorld = (path)=>{
-        //console.log('App: create_world');
-        let worldPage = WorldPage(socket, client_data, event_link, path);
-        pages.push(worldPage);
-        event_link.Invoke("change_page", pages.length-1);
-    }
+    sigs.change_page.add(OnChangePage);
     //#endregion
-    const event_link = EventLink([
-        { name:'change_page', handler:OnChangePage },
-        { name:'create_world', handler:OnCreateWorld }
-    ]);
-    const Init = ()=>{
-        renderer.autoClear = false;
-        renderer.localClippingEnabled = true;
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.domElement.setAttribute('id', 'three_canvas');
-        renderer.setAnimationLoop(Update);
-        document.body.appendChild(renderer.domElement);
-
-        pages.push(StartPage(socket, client_data, event_link));
-        pages.push(WorldSelectPage(socket, client_data, event_link));
-
-        cur_page_ind = 0;
-        pages[cur_page_ind].event_link.Invoke('enter');
-    }
-    return {
-        Init: ()=>Init()
-    }
+    //#region init pages
+    pages.push(StartPage(socket, client_data, sigs));
+    pages.push(WorldPage(socket, client_data, sigs));
+    cur_page_ind = 0;
+    pages[cur_page_ind].sigs.enter.dispatch();
+    //#endregion
+    //#region init renderer
+    renderer.autoClear = false;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.domElement.setAttribute('id', 'three_canvas');
+    renderer.setAnimationLoop(()=>{
+        renderer.clear();
+        pages[cur_page_ind].sigs.update.dispatch(clock.getDelta());
+        renderer.render(pages[cur_page_ind].scene, pages[cur_page_ind].camera);
+        if(pages[cur_page_ind].canvas){
+            renderer.getContext().disable(renderer.getContext().DEPTH_TEST);
+            renderer.render(pages[cur_page_ind].canvas.scene, pages[cur_page_ind].canvas.camera);
+            renderer.getContext().enable(renderer.getContext().DEPTH_TEST);
+        }
+    });
+    //#endregion
+    document.body.appendChild(renderer.domElement);
 }
 
 export default App

@@ -1,5 +1,5 @@
-import RobotoJSON from './Font/Roboto/Roboto-msdf.json'
-import RobotoIMG from './Font/Roboto/Roboto-msdf.png'
+import RobotoJSON from '../../../assets/Fonts/Roboto/Roboto-msdf.json'
+import RobotoIMG from '../../../assets/Fonts/Roboto/Roboto-msdf.png'
 
 const large_panel = {
     width: 1.0,
@@ -17,7 +17,6 @@ const small_panel = {
     borderRadius: 0.075,
     hiddenOverflow: true
 }
-
 const button_type1 = {
     width: 0.4,
     height: 0.15,
@@ -27,7 +26,6 @@ const button_type1 = {
     margin: 0.02,
     borderRadius: 0.075
 }
-
 const roboto_font = {
     fontFamily: RobotoJSON,
     fontTexture: RobotoIMG

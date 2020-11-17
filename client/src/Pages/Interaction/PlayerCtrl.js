@@ -1,7 +1,6 @@
-import EventLink from '../EventLink.js'
 import * as THREE from 'three'
 
-const PlayerCtrl = (socket, uid, data, model, camera, input_collector)=>{
+const PlayerCtrl = (socket, uid, data, model, camera, input_collector, sigs)=>{
     const netw_obj = data;
     let pending_inputs = [ ];
     let input_sequence_number = 0;
@@ -60,7 +59,8 @@ const PlayerCtrl = (socket, uid, data, model, camera, input_collector)=>{
         else if(pressed[3]) horizontal = 1;
         else horizontal = -1;
 
-        //camera.rotateY(0.01);
+        //console.log(horizontal + ", " + vertical);
+
         let look_dir = new THREE.Vector3();
         camera.getWorldDirection(look_dir);
         let right_dir = new THREE.Vector3();
@@ -88,13 +88,15 @@ const PlayerCtrl = (socket, uid, data, model, camera, input_collector)=>{
         document.removeEventListener('keyup', OnKeyUp);
     }
     //#endregion
-    const event_link = EventLink([
-        {name:'enter',handler:OnEnter},
-        {name:'update',handler:OnUpdate},
-        {name:'exit',handler:OnExit}
-    ]);
+    sigs.update.add(OnUpdate);
+    const mysigs = {
+        init: new signals.Signal(),
+        dispose: new signals.Signal()
+    }
+    mysigs.init.add(OnEnter);
+    mysigs.dispose.add(OnExit);
     return {
-        event_link: event_link
+        sigs: mysigs
     }
 }
 

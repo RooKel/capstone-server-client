@@ -1,23 +1,18 @@
 import { PerspectiveCamera, Scene } from "three"
+import * as TMUI from 'three-mesh-ui'
 
-const Page = ()=>{
+const Canvas = (update_signal)=>{
     const scene = new Scene();
     const camera = new PerspectiveCamera(
         75,
         window.innerWidth / window.innerHeight,
         0.1, 1000
     );
-    const sigs = {
-        enter: new signals.Signal(),
-        exit: new signals.Signal(),
-        update: new signals.Signal()
-    }
-
+    update_signal.add(()=>{ TMUI.update(); });
     return {
         scene: scene,
-        camera: camera,
-        sigs: sigs
+        camera: camera
     }
 }
 
-export default Page
+export default Canvas
