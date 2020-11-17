@@ -4,10 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capstone 2020</title>
+    <script defer src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
     <script src='http://localhost:3000/socket.io/socket.io.js'></script>
+    <script src='signals.js'></script>
     <link rel='stylesheet' href='./index.css'>
+
+    <style>
+        #video-grid {
+          display: none;
+          grid-template-columns: repeat(auto-fill, 300px);
+          grid-auto-rows: 300px;
+        }
+
+        video {
+          width: 100%;
+          height: 100%;
+          background-color: green;
+          object-fit: cover;
+        }
+      </style>
 </head>
 <body>
     <script type='module' src='main.js'></script>
-</body>
+    <div id="video-grid"></div>
+    </body>
 </html>
