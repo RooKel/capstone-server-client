@@ -170,7 +170,7 @@ Editor.prototype = {
 
 		var scope = this;
 		scope.addUserData(object);
-
+		console.log(object.name);
 		object.traverse( function ( child ) {
 
 			if ( child.geometry !== undefined ) scope.addGeometry( child.geometry );

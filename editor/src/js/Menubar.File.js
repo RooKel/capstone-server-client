@@ -65,11 +65,13 @@ function MenubarFile(editor) {
                     let scene = result.scene;
                     scene.name = result.scene.name;
 
-                    while(scene.children.length > 0)
+                    for (let c = 0; c < scene.children.length; c++)
                     {
-                        editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
+                        editor.execute( new AddObjectCommand( editor, scene.children[c] ) );
                     }
+
                     editor.scene.traverse(x => {
+
                         if(x.userData === undefined)        return;
                         if(x.userData.animSet === undefined)return;
                         if(x.userData.animSet.length === 0) return;
@@ -83,9 +85,8 @@ function MenubarFile(editor) {
                             getAnimSet.push(animByName);
                         }
                         editor.addAnimation( x, getAnimSet );
-
+                        editor.deselect();
                     });
-                    //editor.execute( new AddObjectCommand( editor, scene ) );
                     editor.signals.loadStateChanged.dispatch("close");
                 } );
             }
@@ -457,22 +458,24 @@ function MenubarFile(editor) {
                 let topObject = eQ.shift();
 
                 let script = editor.scripts[topObject.uuid];
-                let anims = editor.animations.get(topObject.uuid);
-                let animSet = [];
-                if (anims !== undefined)
+                let userData = editor.getUserData(topObject.uuid);
+                if(userData === undefined)
                 {
-                    for (let a = 0; a < anims.length; a++)
-                    {
-                        animSet.push({
-                            state:'idle',
-                            animation:anims[a].name
-                        });
+                    topNode.extras ={
+                        name : topObject.name,
+                        script: [],
+                        animSet: []
                     }
                 }
-                topNode.extras = {
-                    name  : topObject.name,
-                    script: script,
-                    animSet: animSet
+                else
+                {
+                    let animSet = userData.animSet;
+
+                    topNode.extras = {
+                        name  : topObject.name,
+                        script: script,
+                        animSet: animSet
+                    }
                 }
 
                 if(topNode.children !== undefined)
