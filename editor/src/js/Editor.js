@@ -70,6 +70,10 @@ function Editor() {
 		materialChanged: new Signal(),
 		materialRemoved: new Signal(),
 
+		animStateAdded: new Signal(),
+		animStateChanged: new Signal(),
+		animStateRemoved: new Signal(),
+
 		scriptAdded: new Signal(),
 		scriptChanged: new Signal(),
 		scriptRemoved: new Signal(),
@@ -408,7 +412,7 @@ Editor.prototype = {
 	},
 
 	getUserData: function (uuid) {
-		return this.userDatas(uuid);
+		return this.userDatas.get(uuid);
 	},
 
 	removeUserData: function(object) {
