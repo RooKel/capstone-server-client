@@ -153,7 +153,7 @@ function onConnect(socket)
         delete instance.entities[socket.id];
 
         // broadcast disconnected user id
-        io.emit('disconnected', socket.id);
+        socket.to(instance_id).emit('disconnected', socket.id);
         socket.to(instance_id).emit('peer-disconnected', socket.id);
         console.log("PEER DISCONNECT : " + socket.id);
     });
