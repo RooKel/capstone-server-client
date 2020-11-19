@@ -114,6 +114,7 @@ function onConnect(socket)
     socket.on('join-instance', instance_id => {
         // user join specific socket instance
         socket.join(instance_id);
+        instance_of_users[socket.id] = instance_id;
 
         // store entity data into entities array
         var instance = instances[instance_id];
@@ -159,7 +160,6 @@ function onConnect(socket)
 
     /* process user input */
     socket.on('input', data => {
-        console.log("input으로 들어온 유저의 아이디 : " + socket.id + " / 유저가 있는 instance id : " + instance_of_users[socket.id]);
         var user_instance = instance_of_users[socket.id];
         var user_entity = instances[user_instance].entities[socket.id];
         
