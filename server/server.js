@@ -159,9 +159,9 @@ function onConnect(socket)
 
     /* process user input */
     socket.on('input', data => {
+        console.log("input으로 들어온 유저의 아이디 : " + socket.id + " / 유저가 있는 instance id : " + instance_of_users[socket.id]);
         var user_instance = instance_of_users[socket.id];
         var user_entity = instances[user_instance].entities[socket.id];
-        console.log("input으로 들어온 유저의 아이디 : " + socket.id + " / 유저의 entity : " + user_entity);
         
         user_entity.x += data.move_dx * user_entity.speed;
         user_entity.y += data.move_dy * user_entity.speed;
