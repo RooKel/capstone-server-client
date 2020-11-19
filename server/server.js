@@ -103,6 +103,8 @@ function onConnect(socket)
         instances[instance_id].world_id = world_id;
         instances[instance_id].master_id = socket.id;
 
+        socket.emit('create-success', instance_id);
+
         /* 여기 아래부터 파싱 진행 및 오브젝트 초기화 단계 */
     });
 
