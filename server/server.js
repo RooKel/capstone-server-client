@@ -171,8 +171,8 @@ function onConnect(socket)
         
         let tempQuat =  new Quaternion();
         let mulQuat = new Quaternion();
-        mulQuat.setFromAxisAngle(new Vector3(-1,0,0), cameras[uid].y_rot);
-        tempQuat.setFromAxisAngle(new Vector3(0,1,0), cameras[uid].x_rot);
+        mulQuat.setFromAxisAngle(new Vector3(-1,0,0), user_entity.y_rot);
+        tempQuat.setFromAxisAngle(new Vector3(0,1,0), user_entity.x_rot);
         tempQuat.multiply(mulQuat);
         user_entity.quaternion.copy(tempQuat);
     });
