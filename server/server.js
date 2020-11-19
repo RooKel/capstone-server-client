@@ -77,6 +77,7 @@ var updateClock = function() {
 
         for (var entity_id in instance.entities)
         {
+            console.log(entity_id + "가" + "인스턴스 아이디:" + instance_id + "내의 모든 객체에 대한 정보를 받고 있다.");
             io.in(instance_id).emit('world-state', { 'entity_id': entity_id, 'entity_properties': instance.entities[entity_id], 'last_processed_input': last_processed_input[entity_id] });
         }
     }
@@ -160,6 +161,7 @@ function onConnect(socket)
     socket.on('input', data => {
         var user_instance = instance_of_users[socket.id];
         var user_entity = instances[user_instance].entities[socket.id];
+        console.log("input으로 들어온 유저의 아이디 : " + socket.id + " / 유저의 entity : " + user_entity);
         
         user_entity.x += data.move_dx * user_entity.speed;
         user_entity.y += data.move_dy * user_entity.speed;
