@@ -77,7 +77,6 @@ var updateClock = function() {
 
         for (var entity_id in instance.entities)
         {
-            console.log(entity_id + "가" + "인스턴스 아이디:" + instance_id + "내의 모든 객체에 대한 정보를 받고 있다.");
             io.in(instance_id).emit('world-state', { 'entity_id': entity_id, 'entity_properties': instance.entities[entity_id], 'last_processed_input': last_processed_input[entity_id] });
         }
     }
@@ -98,6 +97,7 @@ io.on('connection', onConnect);
 
 function onConnect(socket)
 {
+    console.log(socket.id + "가 접속했다");
     /* generate instance id and assign world, master id */
     socket.on('create-world', world_id => {
         var instance_id = makeUID();
@@ -146,6 +146,7 @@ function onConnect(socket)
 
     /* if disconnection happenes, send delete entity message to clients */
     socket.on('disconnect', reason => {
+        console.log(socket.id + "가 접속해제 했다 : " + instance_of_users[socket.id] + " / " + instances[instance_of_users[socket.id]]);
         var instance_id = instance_of_users[socket.id];
         var instance = instances[instance_id];
 
