@@ -3,6 +3,7 @@ import { UIPanel, UIBreak, UIText, UIButton, UIRow, UIInput } from './libs/ui.js
 import { AddScriptCommand } from './commands/AddScriptCommand.js';
 import { SetScriptValueCommand } from './commands/SetScriptValueCommand.js';
 import { RemoveScriptCommand } from './commands/RemoveScriptCommand.js';
+import * as THREE from '../../build/three.module.js';
 
 function SidebarScript( editor ) {
 
@@ -25,7 +26,23 @@ function SidebarScript( editor ) {
 	var newScript = new UIButton( strings.getKey( 'sidebar/script/new' ) );
 	newScript.onClick( function () {
 
-		var script = { name: '', source: 'function update( event ) {}' };
+		//var script = { name: '', source: 'function update( event ) {}' };
+		var script = { name: '', source:
+		'let prefabMeta = {\n' +
+				'    is_global:false,\n' +
+				'	src_user_data_id:\''+editor.selected.userData.id+'\',\n'+
+				'    src_prefab:\'\',\n' +
+				'	src_prefab_id:\''+THREE.MathUtils.generateUUID()+'\',\n'+
+				'    src_prefab_properties:{\n' +
+				'       trigger_meta_info:{\n' +
+				'          dest_user_data_id: [],\n' +
+				'          dest_prefab: \'\',\n' +
+				'          dest_prefab_properties: {\n' +
+				'          }\n' +
+				'       }\n' +
+				'    }\n' +
+				'}'
+		};
 		editor.execute( new AddScriptCommand( editor, editor.selected, script ) );
 
 	} );
@@ -109,7 +126,6 @@ function SidebarScript( editor ) {
 		if ( object !== null && editor.camera !== object ) {
 
 			container.setDisplay( 'block' );
-
 			update();
 
 		} else {

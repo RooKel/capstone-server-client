@@ -1,4 +1,4 @@
-import { UIPanel, UIDiv, UIBreak, UISelect, UIButton, UIText } from './libs/ui.js';
+import {UIPanel, UIDiv, UIBreak, UISelect, UIButton, UIText, UIInput} from './libs/ui.js';
 
 function SidebarAnimation( editor ) {
 
@@ -73,6 +73,7 @@ function SidebarAnimation( editor ) {
 	container.add( div );
 
 	var animationsSelect = new UISelect().setFontSize( '12px' );
+	//div.add( new UIInput() );
 	div.add( animationsSelect );
 	div.add( new UIButton( 'Play' ).setMarginLeft( '4px' ).onClick( playAction ) );
 	div.add( new UIButton( 'Stop' ).setMarginLeft( '4px' ).onClick( stopAction ) );

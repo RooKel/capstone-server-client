@@ -14,7 +14,7 @@ _DEFAULT_CAMERA.lookAt( new THREE.Vector3() );
 function Editor() {
 
 	var Signal = signals.Signal;
-
+	this.renderer = null;
 	this.signals = {
 
 		// script
@@ -70,6 +70,10 @@ function Editor() {
 		materialChanged: new Signal(),
 		materialRemoved: new Signal(),
 
+		animStateAdded: new Signal(),
+		animStateChanged: new Signal(),
+		animStateRemoved: new Signal(),
+
 		scriptAdded: new Signal(),
 		scriptChanged: new Signal(),
 		scriptRemoved: new Signal(),
@@ -96,6 +100,7 @@ function Editor() {
 
 	this.scene = new THREE.Scene();
 	this.scene.name = 'Scene';
+	this.scene.background = new THREE.Color(0x343D4B);
 
 	this.sceneHelpers = new THREE.Scene();
 
@@ -109,6 +114,7 @@ function Editor() {
 
 	this.skeletons = new Map();
 	this.animations = new Map();
+
 	this.mixer = new THREE.AnimationMixer( this.scene );
 
 	this.selected = null;
@@ -162,28 +168,15 @@ Editor.prototype = {
 	addObject: function ( object, parent, index ) {
 
 		var scope = this;
-
-		if(object.userData.script !== undefined)
-		{
-			for(let i = 0; i < object.userData.script.length; i++)
-			{
-				this.addScript(object, object.userData.script[i]);
-			}
-		}
-
+		scope.addUserData(object);
+		console.log(object.name);
 		object.traverse( function ( child ) {
 
 			if ( child.geometry !== undefined ) scope.addGeometry( child.geometry );
 			if ( child.material !== undefined ) scope.addMaterial( child.material );
 			if ( child.type === "SkinnedMesh" ) scope.addSkeleton( child );
 
-			if(child.userData.script !== undefined)
-			{
-				for(let i = 0; i < child.userData.script.length; i++)
-				{
-					editor.addScript(child, child.userData.script[i]);
-				}
-			}
+			scope.addUserData(child);
 
 			scope.addCamera( child );
 			scope.addHelper( child );
@@ -398,6 +391,25 @@ Editor.prototype = {
 
 		if ( animations.length > 0 ) {
 			this.animations.set(object.uuid, animations);
+		}
+
+	},
+
+	addUserData: function(object) {
+		if(object === undefined) return;
+		if(object.type === "Scene") return;
+
+		if(object.userData.id === undefined)
+		{
+			object.userData.id = THREE.MathUtils.generateUUID();
+			object.userData.name = object.name;
+			object.userData.script = [];
+			object.userData.animSet = [];
+		}
+
+		for(let i = 0; i < object.userData.script.length; i++)
+		{
+			this.addScript(object, object.userData.script[i]);
 		}
 
 	},
@@ -666,6 +678,7 @@ Editor.prototype = {
 		this.materials = {};
 		this.textures = {};
 		this.scripts = {};
+		this.scriptConnectionMap = {};
 
 		this.materialsRefCounter.clear();
 

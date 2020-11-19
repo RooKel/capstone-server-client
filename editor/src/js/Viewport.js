@@ -16,6 +16,8 @@ import { SetScaleCommand } from './commands/SetScaleCommand.js';
 
 function Viewport( editor ) {
 
+	editor.viewport = this;
+
 	var signals = editor.signals;
 
 	var container = new UIPanel();
@@ -345,7 +347,7 @@ function Viewport( editor ) {
 
 		renderer = newRenderer;
 
-		renderer.setClearColor( 0xaaaaaa );
+		renderer.setClearColor( 0x343D4B );
 
 		if ( window.matchMedia ) {
 
@@ -521,7 +523,7 @@ function Viewport( editor ) {
 
 			case 'None':
 
-				scene.background = null;
+				scene.background = new THREE.Color(0x315775);
 
 				break;
 

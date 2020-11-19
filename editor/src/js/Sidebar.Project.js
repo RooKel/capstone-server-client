@@ -170,13 +170,15 @@ function SidebarProject( editor ) {
 
 	function createRenderer() {
 
-		currentRenderer = new THREE.WebGLRenderer( { antialias: antialiasBoolean.getValue() } );
+		currentRenderer = new THREE.WebGLRenderer( { antialias: antialiasBoolean.getValue(), preserveDrawingBuffer:true } );
 		currentRenderer.outputEncoding = THREE.sRGBEncoding;
 		currentRenderer.physicallyCorrectLights = physicallyCorrectLightsBoolean.getValue();
 		currentRenderer.shadowMap.enabled = shadowsBoolean.getValue();
 		currentRenderer.shadowMap.type = parseFloat( shadowTypeSelect.getValue() );
 		currentRenderer.toneMapping = parseFloat( toneMappingSelect.getValue() );
 		currentRenderer.toneMappingExposure = toneMappingExposure.getValue();
+
+		editor.renderer = currentRenderer;
 
 		signals.rendererChanged.dispatch( currentRenderer );
 
