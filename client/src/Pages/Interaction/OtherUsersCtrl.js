@@ -14,7 +14,7 @@ const OtherUsersCtrl = (socket, uid, data, model, sigs)=>{
     //#endregion
     //#region event link event handlers
     const OnEnter = ()=>{
-        socket.on('world_state', ProcessServerMessage);
+        socket.on('instance-state', ProcessServerMessage);
     }
     const OnUpdate = (delta)=>{
         let render_timestamp = +new Date() - (1000.0/server_update_rate);
@@ -36,7 +36,7 @@ const OtherUsersCtrl = (socket, uid, data, model, sigs)=>{
         model.position.z = netw_obj.y;
     }
     const OnExit = ()=>{
-        socket.off('world_state', ProcessServerMessage);
+        socket.off('instance-state', ProcessServerMessage);
     }
     //#endregion
     const mysigs = {

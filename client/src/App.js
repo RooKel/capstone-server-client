@@ -12,7 +12,8 @@ const App = ()=>{
     const clock = new Clock();
     const renderer = new WebGLRenderer({ antialias: true });
     const sigs = {
-        change_page: new signals.Signal()
+        change_page: new signals.Signal(),
+        create_world: new signals.Signal
     }
     //#region signal event handlers
     const OnChangePage = (to)=>{
@@ -21,11 +22,21 @@ const App = ()=>{
         pages[to].sigs.enter.dispatch();
         cur_page_ind = to;
     }
+    const OnCreateSuccess = (instance_id)=>{
+        console.log(instance_id);
+        socket.emit('join-instance', instance_id);
+    }
+    const OnJoinAccept = (socket_id)=>{
+        client_data.uid = socket_id;
+        pages.push(WorldPage(socket, client_data, sigs));
+        OnChangePage(1);
+    }
+    socket.on('create-success', OnCreateSuccess);
+    socket.on('join-accept', OnJoinAccept);
     sigs.change_page.add(OnChangePage);
     //#endregion
     //#region init pages
     pages.push(StartPage(socket, client_data, sigs));
-    pages.push(WorldPage(socket, client_data, sigs));
     cur_page_ind = 0;
     pages[cur_page_ind].sigs.enter.dispatch();
     //#endregion

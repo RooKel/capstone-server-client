@@ -68,7 +68,7 @@ const WorldPage = (socket, client_data, app_sigs)=>{
         }
     }
     network_object.addFileDownloadListener(OnFileDownload);
-    network_object.requestFileDownload('gltf', 'world', '_waql4iri2');
+    network_object.requestFileDownload('gltf', 'world', '_4pqz5yppk');
     network_object.listenFileDownload();
 
     //const peer = MyPeer(socket);

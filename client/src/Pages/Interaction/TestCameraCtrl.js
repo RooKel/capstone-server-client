@@ -53,7 +53,7 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs
     //#endregion
     //#region event link event handlers
     const OnEnter = ()=>{
-        socket.on('world_state', ProcessServerMessage);
+        socket.on('instance-state', ProcessServerMessage);
         document.addEventListener('mousemove', OnMouseMove);
     }
     const OnUpdate = (delta)=>{
@@ -91,7 +91,7 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs
         //#endregion
     }
     const OnExit = ()=>{
-        socket.off('world_state', ProcessServerMessage);
+        socket.off('instance-state', ProcessServerMessage);
         document.removeEventListener('mousemove', OnMouseMove);
     }
     //#endregion

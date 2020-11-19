@@ -36,14 +36,14 @@ const UserManager = (socket, client_data, page, input_collector)=>{
     }
     //#endregion
     page.sigs.enter.add(()=>{
-        socket.on('entity_data', AddUser);
-        socket.on('other_joined', AddUser);
-        socket.on('delete_entity', RemUser);
+        socket.on('initial-entities-data', AddUser);
+        socket.on('other-join', AddUser);
+        socket.on('disconnected', RemUser);
     });
     page.sigs.exit.add(()=>{
-        socket.off('entity_data', AddUser);
-        socket.off('other_joined', AddUser);
-        socket.off('delete_entity', RemUser);
+        socket.off('initial-entities-data', AddUser);
+        socket.off('other-join', AddUser);
+        socket.off('disconnected', RemUser);
     });
 }
 

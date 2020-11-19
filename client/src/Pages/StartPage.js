@@ -17,17 +17,17 @@ const StartPage = (socket, client_data, app_sigs)=>{
     const OnLoginAccept = (uid)=>{
         //console.log('StartPage: login_accept');
         client_data.uid = uid;
-        app_sigs.change_page.dispatch(1);
+        app_sigs.create_world.dispatch('_4pqz5yppk');
     }
     //#endregion
     //#region signals event handlers
     const OnEnter = ()=>{
         //console.log('StartPage: enter');
-        socket.on('login_accept', OnLoginAccept);
+        //socket.on('login-accept', OnLoginAccept);
     }
     const OnExit = ()=>{
         //console.log('StartPage: exit');
-        socket.off('login_accept', OnLoginAccept);
+        //socket.off('login-accept', OnLoginAccept);
     }
     const OnUpdate = ()=>{
         //console.log('StartPage: update');
