@@ -146,17 +146,18 @@ function onConnect(socket)
 
     /* if disconnection happenes, send delete entity message to clients */
     socket.on('disconnect', reason => {
-        console.log(socket.id + "가 접속해제 했다 : " + instance_of_users[socket.id] + " / " + instances[instance_of_users[socket.id]]);
         var instance_id = instance_of_users[socket.id];
         var instance = instances[instance_id];
 
         // delete disconnected user entity
-        delete instance.entities[socket.id];
+        if (instance_of_users[socket.id]) {
+            delete instance.entities[socket.id];
 
-        // broadcast disconnected user id
-        socket.to(instance_id).emit('disconnected', socket.id);
-        socket.to(instance_id).emit('peer-disconnected', socket.id);
-        console.log("PEER DISCONNECT : " + socket.id);
+            // broadcast disconnected user id
+            socket.to(instance_id).emit('disconnected', socket.id);
+            socket.to(instance_id).emit('peer-disconnected', socket.id);
+            console.log("PEER DISCONNECT : " + socket.id);
+        }
     });
 
     /* process user input */
