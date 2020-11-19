@@ -54,7 +54,7 @@ SetAnimationStateValueCommand.prototype = {
 		var output = Command.prototype.toJSON.call( this );
 
 		output.objectUuid = this.object.uuid;
-		output.index = this.editor.getUserData( this.object.uuid ).animSet.indexOf( this.state );
+		output.index = this.object.userData.animSet.indexOf( this.state );
 		output.attributeName = this.attributeName;
 		output.oldValue = this.oldValue;
 		output.newValue = this.newValue;

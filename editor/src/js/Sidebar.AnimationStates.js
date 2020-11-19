@@ -41,8 +41,9 @@ function SidebarAnimationStates( editor ) {
 		var object = editor.selected;
 
 		if( object === null ) return;
-
-		var statesData = editor.getUserData(object.uuid).animSet;
+		var userData = object.userData;
+		if( userData === undefined ) return;
+		var statesData = object.userData.animSet;
 
 		if(statesData !== undefined && statesData.length > 0) {
 

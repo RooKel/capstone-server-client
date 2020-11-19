@@ -114,7 +114,6 @@ function Editor() {
 
 	this.skeletons = new Map();
 	this.animations = new Map();
-	this.userDatas = new Map();
 
 	this.mixer = new THREE.AnimationMixer( this.scene );
 
@@ -398,26 +397,21 @@ Editor.prototype = {
 
 	addUserData: function(object) {
 		if(object === undefined) return;
+		if(object.type === "Scene") return;
 
-		this.userDatas.set(object.uuid,object.userData);
-
-		if(object.userData.script !== undefined)
+		if(object.userData.id === undefined)
 		{
-			for(let i = 0; i < object.userData.script.length; i++)
-			{
-				this.addScript(object, object.userData.script[i]);
-			}
+			object.userData.id = THREE.MathUtils.generateUUID();
+			object.userData.name = object.name;
+			object.userData.script = [];
+			object.userData.animSet = [];
 		}
 
-	},
+		for(let i = 0; i < object.userData.script.length; i++)
+		{
+			this.addScript(object, object.userData.script[i]);
+		}
 
-	getUserData: function (uuid) {
-		return this.userDatas.get(uuid);
-	},
-
-	removeUserData: function(object) {
-		if(object === undefined) return;
-		this.userDatas.delete(object.uuid);
 	},
 
 	//
@@ -684,6 +678,7 @@ Editor.prototype = {
 		this.materials = {};
 		this.textures = {};
 		this.scripts = {};
+		this.scriptConnectionMap = {};
 
 		this.materialsRefCounter.clear();
 

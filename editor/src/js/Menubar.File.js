@@ -74,7 +74,6 @@ function MenubarFile(editor) {
 
                         if(x.userData === undefined)        return;
                         if(x.userData.animSet === undefined)return;
-                        if(x.userData.animSet.length === 0) return;
 
                         let getAnimSet = [];
                         for (let a = 0; a < x.userData.animSet.length; a++)
@@ -83,6 +82,10 @@ function MenubarFile(editor) {
                                 anim => anim.name === x.userData.animSet[a].animation
                             );
                             getAnimSet.push(animByName);
+                        }
+                        for (let s = 0; s < x.userData.script.length; s++)
+                        {
+                            let script = x.userData.script[s];
                         }
                         editor.addAnimation( x, getAnimSet );
                         editor.deselect();
@@ -457,25 +460,24 @@ function MenubarFile(editor) {
                 let topNode = gQ.shift();
                 let topObject = eQ.shift();
 
-                let script = editor.scripts[topObject.uuid];
-                let userData = editor.getUserData(topObject.uuid);
-                if(userData === undefined)
+                let scripts = editor.scripts[topObject.uuid];
+                let scriptMetaSet = [];
+                if(scripts !== undefined)
                 {
-                    topNode.extras ={
-                        name : topObject.name,
-                        script: [],
-                        animSet: []
+                    for (let s = 0; s < scripts.length; s++)
+                    {
+                        scriptMetaSet.push(new Function(scripts[s].source + '\nreturn prefabMeta;')());
                     }
                 }
-                else
-                {
-                    let animSet = userData.animSet;
 
-                    topNode.extras = {
-                        name  : topObject.name,
-                        script: script,
-                        animSet: animSet
-                    }
+                let userData = topObject.userData;
+
+                let animSet = userData.animSet;
+                topNode.extras = {
+                    id: topObject.userData.id,
+                    name  : topObject.name,
+                    script: scriptMetaSet,
+                    animSet: animSet
                 }
 
                 if(topNode.children !== undefined)

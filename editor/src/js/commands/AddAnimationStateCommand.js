@@ -21,11 +21,14 @@ function AddAnimationStateCommand( editor, object, state ) {
 AddAnimationStateCommand.prototype = {
 
 	execute: function () {
-		let userData = this.editor.getUserData(this.object.uuid);
+		let userData = this.object.userData;
 		if(userData.animSet === undefined){
 			userData.animSet = [];
 		}
 
+		if(this.object.userData.animSet === undefined){
+			this.object.userData.animSet = [];
+		}
 		userData.animSet.push(this.state);
 
 		this.editor.signals.animStateAdded.dispatch( this.state );
@@ -33,7 +36,7 @@ AddAnimationStateCommand.prototype = {
 	},
 
 	undo: function () {
-		let userData = this.editor.getUserData(this.object.uuid);
+		let userData = this.object.userData;
 
 		if(userData.animSet === undefined) return;
 
