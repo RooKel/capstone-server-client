@@ -1,5 +1,7 @@
 var Instance = function() {
-    this.id = "test_instance1234";
+    this.id = 0;
+    this.master_id = 0;
+    this.entities = [];
 }
 
 module.exports = Instance;

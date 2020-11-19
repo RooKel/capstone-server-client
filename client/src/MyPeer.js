@@ -1,5 +1,15 @@
-const MyPeer = (socket) => {
+import * as THREE from 'three'
+
+const MyPeer = (socket, posAudio, scene) => {
     const videoGrid = document.getElementById('video-grid')
+
+    /* AWS Ver : host link except http://
+        const myPeer = new Peer(undefined, {
+        host: '',
+        port: '3001',
+        path: '/peer'
+    })
+    */
     const myPeer = new Peer(undefined, {
         host: 'localhost',
         port: '3001',
@@ -14,8 +24,8 @@ const MyPeer = (socket) => {
         socket.emit('peer-login', id);
     });
 
-    socket.on('peer-connected', pid => {
-        connectToNewUser(pid);
+    socket.on('peer-connected', data => {
+        connectToNewUser(data.uid, data.pid);
     });
 
     myPeer.on('connection', (conn)=>{
@@ -53,8 +63,9 @@ const MyPeer = (socket) => {
     socket.on('peer-disconnected', uid => {
         if (peers[uid]) peers[uid].close()
     })
-    function connectToNewUser(userId) {
-        let conn = myPeer.connect(userId);
+
+    function connectToNewUser(uid, pid) {
+        let conn = myPeer.connect(pid);
         conn.on('data', (data)=>{
             console.log("Receive Data : " + data);
         })
@@ -63,14 +74,14 @@ const MyPeer = (socket) => {
         })
         navigator.mediaDevices.getUserMedia({video:false, audio:true})
             .then((stream)=>{
-                let call = myPeer.call(userId, stream);
+                let call = myPeer.call(pid, stream);
                 let video = document.createElement('video');
                 videoGrid.append(video);
                 call.on('stream', (userVideoStream)=>{
                     console.log("스트림에 연결됨")
                     addVideoStream(video, userVideoStream)
                 })
-                peers[userId] = call;
+                peers[uid] = call;
             })
             .catch((err)=>{
                console.log('Failed to get local stream', err);

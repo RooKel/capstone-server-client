@@ -26,25 +26,20 @@ server.listen(3000, function() { console.log("Express server has started on port
 // include component modules
 var Entity = require('./components/Entity');
 var Instance = require('./components/Instance');
-var Camera = require('./components/Camera');
 const { waitForDebugger } = require('inspector');
 
-// get uid
+// get random number to create instance id.
 const makeUID = function() { return '_' + Math.random().toString(36).substr(2, 9); }
 
-let chatUID = makeUID();
-
-// instances and entities map for processing
+// all of instances.
 var instances = [];
-var entities = [];
-var cameras = [];
+var instance_of_users = [];
 
 // last processed input for each client.
 var last_processed_input = [];
 
-// for testing
-var instance = new Instance();
-instances[instance.id] = instance;
+
+
 
 
 // ***DATABASE***
@@ -64,7 +59,6 @@ var Schema = new mongoose.Schema({
 
 var avatarModel = mongoose.model('avatar', Schema);
 var worldModel = mongoose.model('world', Schema);
-var fileDataArray = [];
 
 
 
@@ -72,83 +66,120 @@ var fileDataArray = [];
 
 
 
-
+// send updated data to client
 const fps = 12;
 var updateClock = function() {
     // gather the state of the world. In a real app, state could be filtered to avoid leaking data
-    for (var uid in entities) {
-        io.emit('world_state', { 'entity_id': uid, 'entity_properties': entities[uid], 'last_processed_input': last_processed_input[uid] });
+    for (var user_id in instance_of_users)
+    {
+        var instance_id = instance_of_users[user_id];
+        var instance = instances[instance_id];
+
+        for (var entity_id in instance.entities)
+        {
+            io.in(instance_id).emit('world-state', { 'entity_id': entity_id, 'entity_properties': instance.entities[entity_id], 'last_processed_input': last_processed_input[entity_id] });
+        }
     }
 }
 var timer = setInterval(updateClock, 1000 / fps);
+
+
+
+
+
+
+
 
 // socket part
 // socket.emit   : Sender only
 // io.emit       : All clients except sender
 io.on('connection', onConnect);
 
-function onConnect(socket) {
-    socket.on('login', function(data) {
-        // create new entity for connected user's avatar
-        var entity = new Entity();
-        var camera = new Camera();
+function onConnect(socket)
+{
+    /* generate instance id and assign world, master id */
+    socket.on('create-world', world_id => {
+        var instance_id = makeUID();
+        instances[instance_id].world_id = world_id;
+        instances[instance_id].master_id = socket.id;
+
+        /* 여기 아래부터 파싱 진행 및 오브젝트 초기화 단계 */
+    });
+
+    /* if user join instance, broadcast other-joined event */
+    socket.on('join-instance', instance_id => {
+        // user join specific socket instance
+        socket.join(instance_id);
 
         // store entity data into entities array
-        entities[socket.id] = entity;
-        cameras[socket.id] = camera;
-        entities[socket.id].quaternion = new THREE.Quaternion();
+        var instance = instances[instance_id];
+        instance.entities[socket.id] = new Entity();
+
+        // intialize user quaternion data
+        var user_entity = instance.entities[socket.id];
+        user_entity.quaternion = new THREE.Quaternion();
 
         // send login accept message to sender
-        socket.emit('login_accept', socket.id);
+        socket.emit('join-accept', socket.id);
 
         // send each entity data because socket.io doesn't support to send dictionary data
-        for (var uid in entities)
-            socket.emit('entity_data', uid, entities[uid]);
+        for (var entity_id in instance.entities)
+        {
+            socket.emit('initial-entities-data', entity_id, instance.entities[entity_id]);
+        }
 
         // sending to all clients except sender
-        socket.broadcast.emit('other_joined', socket.id, entities[socket.id]);
+        socket.to(instance_id).emit('other-join', socket.id, instance.entities[socket.id]);
     });
 
-    socket.on('peer-login', function(pid) {
+    /* peer login for audio chat */
+    socket.on('peer-login', pid => {
+        var instance_id = instance_of_users[socket.id];
+        socket.to(instance_id).emit('peer-connected', { 'uid':socket.id, 'pid':pid });
         console.log("PEER CONNECT : " + pid);
-        socket.broadcast.emit('peer-connected', pid);
-    })
-
-    // if disconnection happenes, send delete entity message to clients
-    socket.on('disconnect', function(reason) {
-        delete entities[socket.id];
-        io.emit('delete_entity', socket.id);
-        console.log("PEER DISCONNECT : " + socket.id);
-        socket.broadcast.emit('peer-disconnected', socket.id);
     });
 
-    socket.on('input', function(data) {
-        var uid = data.entity_id;
+    /* if disconnection happenes, send delete entity message to clients */
+    socket.on('disconnect', reason => {
+        var instance_id = instance_of_users[socket.id];
+        var instance = instances[instance_id];
 
-        // update the state of the entity
-        entities[uid].x += data.move_dx * entities[uid].speed;
-        entities[uid].y += data.move_dy * entities[uid].speed;
+        // delete disconnected user entity
+        delete instance.entities[socket.id];
 
-        // update rotation
-        cameras[uid].x_rot -= data.mouse_dx;
-        cameras[uid].y_rot -= data.mouse_dy;
-        let tempQuat = new Quaternion();
+        // broadcast disconnected user id
+        io.emit('disconnected', socket.id);
+        socket.to(instance_id).emit('peer-disconnected', socket.id);
+        console.log("PEER DISCONNECT : " + socket.id);
+    });
+
+    /* process user input */
+    socket.on('input', data => {
+        var user_instance = instance_of_users[socket.id];
+        var user_entity = instances[user_instance].entities[socket.id];
+        
+        user_entity.x += data.move_dx * user_entity.speed;
+        user_entity.y += data.move_dy * user_entity.speed;
+        
+        user_entity.x_rot -= data.mouse_dx;
+        user_entity.y_rot -= data.mouse_dy;
+        
+        let tempQuat =  new Quaternion();
         let mulQuat = new Quaternion();
         mulQuat.setFromAxisAngle(new Vector3(-1,0,0), cameras[uid].y_rot);
         tempQuat.setFromAxisAngle(new Vector3(0,1,0), cameras[uid].x_rot);
         tempQuat.multiply(mulQuat);
-
-        entities[uid].quaternion.copy(tempQuat);
-        last_processed_input[uid] = data.input_sequence_number;
+        user_entity.quaternion.copy(tempQuat);
     });
 
-    //  TODO : 테스트 코드니깐 꼭 지워라.
-    socket.on('file-upload', function(data) {
+    /* upload avatar or world from client */
+    socket.on('file-upload', data => {
+        // generate world id and set directory
         var uid = makeUID();
         var dir = "./data/" + uid;
 
-        //  Save GLTF file
-        let gltf = data.raw_gltf;
+        // save GLTF file
+        var gltf = data.raw_gltf;
         if(gltf !== undefined)
         {
             !fs.existsSync(dir) && fs.mkdirSync(dir);
@@ -157,16 +188,16 @@ function onConnect(socket) {
             });
         }
 
-        //  Save Thumbnail To png File...
-        let base64String = data.data_thumbnail;
-        let base64Image = base64String.split(';base64').pop();
+        // save thumbnail to png file.
+        var base64String = data.data_thumbnail;
+        var base64Image = base64String.split(';base64').pop();
 
         fs.writeFile(dir + "/thumbnail.png", base64Image, {encoding:'base64'}, function(e){
             console.log(e);
         });
 
 
-        // If it is Avatar Type
+        // if file is avatar type, update db in avatar table
         if (data.data_type === "avatar") {
             var avatar = new avatarModel();
             avatar.uid = uid;
@@ -181,7 +212,7 @@ function onConnect(socket) {
             });
         }
 
-        // If it is World Type
+        // if file is world type, update db in world table
         else if (data.data_type === "world") {
             var world = new worldModel();
             world.uid = uid;
@@ -200,7 +231,7 @@ function onConnect(socket) {
         console.log("file-upload-ack : " + uid + " " + data.data_name + " " + data.raw_gltf.length + " " + data.data_type + " " + data.data_creator);
     });
 
-    // Send File To Client
+    // send avatar or world file to client
     socket.on('rq-file-download', function(data) {
         if (data.category === "avatar") {
             sendModelData(socket, avatarModel, data.request_type, data.category, data.uid);
@@ -224,6 +255,7 @@ function sendModelData(socket, model, request_type, category, param_uid)
         file_name = "GLTF";
         file_format = ".gltf";
     }
+
 
     if (param_uid === undefined) {
         model.find({}).select('uid name creator date').exec()
@@ -254,7 +286,7 @@ function sendModelData(socket, model, request_type, category, param_uid)
                 forEachPromise(items, logItem).then(() => {
                     console.log(dataArray);
                     socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
-                    console.log("file-download message sent!");
+                    console.log("all of file data sent!");
                 });
             });
     } else {
@@ -269,7 +301,7 @@ function sendModelData(socket, model, request_type, category, param_uid)
             dataArray.push(dataTuple);
             socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
             console.log("dataArray : " + dataArray[0].uid + " " + dataArray[0].name + " " + dataArray[0].creator);
-            console.log("one file-download message sent!");
+            console.log("only one file data sent!");
         });
     }
 }
