@@ -100,6 +100,7 @@ function onConnect(socket)
     /* generate instance id and assign world, master id */
     socket.on('create-world', world_id => {
         var instance_id = makeUID();
+        instances[instance_id] = new Instance();
         instances[instance_id].world_id = world_id;
         instances[instance_id].master_id = socket.id;
 
