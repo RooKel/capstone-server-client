@@ -1,7 +1,7 @@
 // make a express and convert http to websocket
 var express = require('express');
 const { Vector3, Quaternion } = require('three');
-const { GLFTLoader } = require('./../dist/GLTFLoader');
+//const { GLFTLoader } = require('./../dist/GLTFLoader');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);

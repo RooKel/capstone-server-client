@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, page_sigs)=>{
+const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, page_sigs, anim_ctrl)=>{
     const netw_obj = data;
     let pending_inputs = [ ];
     let input_sequence_number = 0;
@@ -48,6 +48,7 @@ const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, p
         document.addEventListener('keydown', OnKeyDown);
         document.addEventListener('keyup', OnKeyUp);
     }
+    let walking = false;
     const OnUpdate = (delta)=>{
         let vertical = undefined;
         if(!(pressed[0]^pressed[2])) vertical = 0;
@@ -58,6 +59,19 @@ const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, p
         if(!(pressed[1]^pressed[3])) horizontal = 0;
         else if(pressed[3]) horizontal = 1;
         else horizontal = -1;
+
+        if(vertical !== 0 || horizontal !== 0){
+            if(!walking){
+                anim_ctrl.PlayAnim('idle');
+                walking = true;
+            }
+        }
+        else{
+            if(walking) {
+                anim_ctrl.PlayAnim('idle');
+                walking = false;
+            }
+        }
 
         //console.log(horizontal + ", " + vertical);
 

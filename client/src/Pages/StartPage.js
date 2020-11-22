@@ -28,7 +28,8 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     const pointer = Pointer(page.sigs, canvas.camera, ui_interactable);
     //#region socket event handlers
     const OnCreateSuccess = (instance_id)=>{
-        socket.emit('join-instance', instance_id);
+        //socket.emit('join-instance', instance_id);
+        console.log('create_success');
     }
     const OnJoinAccept = (socket_id)=>{
         client_data.uid = socket_id;

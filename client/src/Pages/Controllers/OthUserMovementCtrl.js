@@ -1,5 +1,5 @@
 
-const OthUserMovementCtrl = (socket, uid, data, model, page_sigs)=>{
+const OthUserMovementCtrl = (socket, uid, data, model, page_sigs, anim_ctrl)=>{
     const netw_obj = data;
     const server_update_rate = 12;
     //#region socket event handlers

@@ -20,16 +20,16 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
             init: new signals.Signal(),
             dispose: new signals.Signal()
         }});
-        AvatarCtrl(uid, group, socket, ftm, page.sigs, page.camera);
+        const anim_ctrl = AvatarCtrl(uid, group, socket, ftm, page.sigs, page.camera);
         if(uid === client_data.uid){
-            PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs);
+            PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs, anim_ctrl);
             Object.assign(page.camera, { sigs: { 
                 init: new signals.Signal(),
                 dispose: new signals.Signal(),
                 change_target: new signals.Signal()
             }});
-            const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs);
-            page.camera.sigs.change_target.dispatch(group, new Vector3(0,1,0));
+            const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs, anim_ctrl);
+            //page.camera.sigs.change_target.dispatch(group, new Vector3(0,1,0));
             page.camera.sigs.init.dispatch();
             client_data.player_obj = group;
         }
@@ -48,13 +48,13 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
     //#region signal event handlers
     const OnEnter = ()=>{
         socket.on('initial-entities-data', AddUser);
-        socket.on('other-joined', AddUser);
-        socket.on('disconnect', RemUser);
+        socket.on('other-join', AddUser);
+        socket.on('disconnected', RemUser);
     }
     const OnExit = ()=>{
         socket.off('initial-entities-data', AddUser);
-        socket.off('other-joined', AddUser);
-        socket.off('disconnect', RemUser);
+        socket.off('other-join', AddUser);
+        socket.off('disconnected', RemUser);
     }
     //#endregion
     page.sigs.enter.add(OnEnter);

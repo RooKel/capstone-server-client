@@ -26,7 +26,7 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
         STYLE.alignmentType1
     ));
     const num_list_elem = 3;
-    let list = undefined;
+    const list = [ ];
     let start_ind = 0;
     for(let i = 0; i < num_list_elem; i++){
         const list_elem = new TMUI.Block(Object.assign({},
@@ -44,56 +44,30 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
             STYLE.alignmentType1
         ));
         list_elem.add(list_elem_img, list_elem_info);
+        ui_interactable.push(list_elem);
         panel_content.add(list_elem);
     }
-    const b64 = (e)=>{
-        let t="";
-        let n=new Uint8Array(e);
-        let r=n.byteLength;
-        for(let i=0;i<r;i++)
-        {
-            t+=String.fromCharCode(n[i]);
-        }
-        return window.btoa(t);
-    }
-    const ClearImg = ()=>{
+    const UpdateListElems = ()=>{        
         panel_content.children.forEach((_, i)=>{
             if(i === 0) return;
-            if(!_.children[1].backgroundTexture.image.src) return;
-            _.children[1].backgroundTexture.dispose();
-            _.children[1].backgroundTexture.image.src = InvisiblePNG;
-            _.sigs.left_click.removeAll();
+            if(start_ind + (i-1) < list.length){
+                const info_block = _.children[2];
+                info_block.add(new TMUI.Text({ content:list[start_ind + (i-1)].id }));
+                MINT.LeftClick(_, ()=>{ 
+                    console.log(list[start_ind + (i-1)].id);
+                    socket.emit('join-instance', list[start_ind + (i-1)].id);
+                });
+            }
         });
     }
-    const UpdateImg = ()=>{
-        ClearImg();
-        
-    }
-    ftm.addFileDownloadListener((result)=>{
-        if(!panel.visible) return;
-        if(result.request_type === 'thumbnail' && result.category === 'wprld'){
-            result.data.forEach((_)=>{
-                if(!_.data) return;
-                list.push({ uid:_.uid, b64data: 'data:image/png;base64,' + b64(_.data) });
-            });
-        }
-        UpdateImg();
-    });
     panel.sigs.set_visib.add((visibility)=>{
-        if(visibility){
+        if(visibility)
             socket.emit('rq-instance-list', true);
-            ftm.requestFileDownload('thumbnail', 'world');
-        }
-        else{
-            if(list)
-                list.splice(0, list.length);
-            start_ind = 0;
-            ClearImg();
-        }
     });
     const OnInstanceList = (input)=>{
-        list = input.instances;
         console.log(input);
+        input.forEach((_)=>list.push(_));
+        UpdateListElems();
     }
     page.sigs.enter.add(()=>{
         socket.on('instance-list', OnInstanceList);
