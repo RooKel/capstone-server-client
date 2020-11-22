@@ -181,7 +181,7 @@ function onConnect(socket)
 
     /* show instance list */
     socket.on('rq-instance-list', data => {
-        socket.emit('instance-list', { type: "instance", instances : instances });
+        socket.emit('instance-list', { 'instances' : instances });
     });
 
     /* peer login for audio chat */
