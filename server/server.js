@@ -95,7 +95,41 @@ var timer = setInterval(updateClock, 1000 / fps);
 // socket.emit   : Sender only
 // io.emit       : All clients except sender
 io.on('connection', onConnect);
+function parseData(id)
+{
+    // Instantiate a loader
+    const loader = new THREE.GLTFLoader();
 
+    // Optional: Provide a DRACOLoader instance to decode compressed mesh data
+    const dracoLoader = new THREE.DRACOLoader();
+    dracoLoader.setDecoderPath( 'three/examples/jsm/loaders/' );
+    loader.setDRACOLoader( dracoLoader );
+
+    const path = id;
+    // Load a glTF resource
+    loader.load(
+        // resource URL
+        'data/' + id + '/' + 'GLTF.gltf',
+        // called when the resource is loaded
+        function ( gltf ) {
+            console.log("GLTF 로드 완료");
+            console.log(gltf);
+
+        },
+        // called while loading is progressing
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        // called when loading has errors
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+}
 function onConnect(socket)
 {
     console.log(socket.id + "가 접속했다");
@@ -109,6 +143,7 @@ function onConnect(socket)
         socket.emit('create-success', instance_id);
 
         /* 여기 아래부터 파싱 진행 및 오브젝트 초기화 단계 */
+        parseData(world_id);
     });
 
     /* if user join instance, broadcast other-joined event */
