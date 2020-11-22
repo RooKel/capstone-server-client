@@ -1,6 +1,7 @@
 // make a express and convert http to websocket
 var express = require('express');
-const { Vector3, Quaternion, GLTFLoader, DRACOLoader } = require('three');
+const { Vector3, Quaternion } = require('three');
+const { GLFTLoader } = require('./../dist/GLTFLoader');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
@@ -78,7 +79,7 @@ var updateClock = function() {
 
         for (var entity_id in instance.entities)
         {
-            io.in(instance_id).emit('world-state', { 'entity_id': entity_id, 'entity_properties': instance.entities[entity_id], 'last_processed_input': last_processed_input[entity_id] });
+            io.in(instance_id).emit('instance-state', { 'entity_id': entity_id, 'entity_properties': instance.entities[entity_id], 'last_processed_input': last_processed_input[entity_id] });
         }
     }
 }
@@ -98,7 +99,7 @@ io.on('connection', onConnect);
 function parseData(id)
 {
     // Instantiate a loader
-    const loader = new GLTFLoader();
+    var loader = new GLTFLoader();
 
     // Optional: Provide a DRACOLoader instance to decode compressed mesh data
     const dracoLoader = new DRACOLoader();
@@ -173,9 +174,26 @@ function onConnect(socket)
         socket.to(instance_id).emit('other-join', socket.id, instance.entities[socket.id]);
 
         // update avatar
-        var avatar_id = avatars[socket.id];
-        io.in(instance_id).emit('update-avatar', entity_id, avatar_id);
-        console.log("update-avatar 이벤트 호출 : " + entity_id + "의 " + avatar_id);
+        for (var entity_id in instance.entities)
+        {
+            if (avatars[entity_id]) {
+                var avatar_id = avatars[entity_id];
+                io.in(instance_id).emit('update-avatar', entity_id, avatar_id);
+                console.log("update-avatar 이벤트 호출 : " + entity_id + "의 " + avatar_id);
+            }
+        }
+    });
+
+    /* show instance list */
+    socket.on('rq-instance-list', data => {
+        var dataArray = [];
+        for (var instance_id in instances) {
+            var dataTuple = {id:undefined, instance:undefined};
+            dataTuple.id = instance_id;
+            dataTuple.instance = instances[instance_id];
+            dataArray.push(dataTuple);
+        }
+        socket.emit('instance-list', dataArray);
     });
 
     /* peer login for audio chat */

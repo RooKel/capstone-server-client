@@ -21,7 +21,7 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     //#region ui
     const canvas = Canvas(page.sigs);
     const start_panel = StartPanel(ui_interactable, socket);
-    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket);
+    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket, page);
     canvas.scene.add(start_panel, main_menu_panel);
     Object.assign(page, { canvas: canvas });
     //#endregion

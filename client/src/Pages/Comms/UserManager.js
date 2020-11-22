@@ -20,15 +20,16 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
             init: new signals.Signal(),
             dispose: new signals.Signal()
         }});
-        AvatarCtrl(uid, group, socket, ftm, page.sigs);
+        AvatarCtrl(uid, group, socket, ftm, page.sigs, page.camera);
         if(uid === client_data.uid){
             PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs);
             Object.assign(page.camera, { sigs: { 
                 init: new signals.Signal(),
-                dispose: new signals.Signal()
+                dispose: new signals.Signal(),
+                change_target: new signals.Signal()
             }});
             const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs);
-            cam_ctrl.ChangeTarget(group, new Vector3(0,1,0));
+            page.camera.sigs.change_target.dispatch(group, new Vector3(0,1,0));
             page.camera.sigs.init.dispatch();
             client_data.player_obj = group;
         }

@@ -25,7 +25,7 @@ const WorldPage = (socket, client_data, app_sigs, ftm)=>{
     const interactable = [ ];
     //#region ui
     const canvas = Canvas(page.sigs);
-    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket);
+    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket, page);
     canvas.scene.add(main_menu_panel);
     Object.assign(page, { canvas: canvas });
     //#endregion

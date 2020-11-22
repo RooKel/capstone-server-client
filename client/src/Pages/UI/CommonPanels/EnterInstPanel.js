@@ -6,7 +6,7 @@ import { SetVisibility } from '../../Interactions/SetVisibility.js'
 
 import InvisiblePNG from '../../../../assets/png/invisible.png'
 
-const EnterInstPanel = (ui_interactable, return_panel, ftm)=>{
+const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
     const panel = new TMUI.Block(Object.assign({},
         STYLE.panelType2,
         STYLE.alignmentType1,
@@ -26,7 +26,7 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm)=>{
         STYLE.alignmentType1
     ));
     const num_list_elem = 3;
-    const list = [ ];
+    let list = undefined;
     let start_ind = 0;
     for(let i = 0; i < num_list_elem; i++){
         const list_elem = new TMUI.Block(Object.assign({},
@@ -81,13 +81,25 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm)=>{
     });
     panel.sigs.set_visib.add((visibility)=>{
         if(visibility){
+            socket.emit('rq-instance-list', true);
             ftm.requestFileDownload('thumbnail', 'world');
         }
         else{
-            list.splice(0, list.length);
+            if(list)
+                list.splice(0, list.length);
             start_ind = 0;
             ClearImg();
         }
+    });
+    const OnInstanceList = (input)=>{
+        list = input.instances;
+        console.log(input);
+    }
+    page.sigs.enter.add(()=>{
+        socket.on('instance-list', OnInstanceList);
+    });
+    page.sigs.exit.add(()=>{
+        socket.off('instance-list', OnInstanceList);
     });
 
     const panel_footer = new TMUI.Block(Object.assign({},
