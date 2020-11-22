@@ -4,6 +4,7 @@ import { Page } from './Page.js'
 import { Pointer } from './Invokers/Pointer.js'
 import { UserManager } from './Comms/UserManager.js'
 import { InputCollector } from './Comms/InputCollector.js'
+import { MyPeer } from '../MyPeer.js'
 
 import { Canvas } from './UI/Canvas.js'
 import { MainMenuPanel } from './UI/WorldPage/MainMenuPanel.js'

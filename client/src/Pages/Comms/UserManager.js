@@ -11,6 +11,7 @@ const UserManager = (socket, client_data, page, input_collector)=>{
         let material = new MeshBasicMaterial({color:0xFF0000});
         let cube = new Mesh(geometry, material);
         cube.position.set(data.x, 1, data.y);
+
         Object.assign(cube, { sigs: {
             init: new signals.Signal(),
             dispose: new signals.Signal()

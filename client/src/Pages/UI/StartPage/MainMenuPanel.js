@@ -26,7 +26,7 @@ const MainMenuPanel = (ui_interactable, canvas, app_sigs, ftm, socket)=>{
         STYLE.panelType1_content,
         STYLE.alignmentType1
     ));
-    const select_avatar_panel = SelectAvatarPanel(ui_interactable, panel, ftm);
+    const select_avatar_panel = SelectAvatarPanel(ui_interactable, panel, ftm, socket);
     const enter_inst_panel = EnterInstPanel(ui_interactable, panel, ftm);
     const create_inst_panel = CreateInstPanel(ui_interactable, panel, ftm, canvas);
     canvas.scene.add(select_avatar_panel, enter_inst_panel, create_inst_panel);

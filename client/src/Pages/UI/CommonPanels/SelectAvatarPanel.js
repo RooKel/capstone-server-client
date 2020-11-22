@@ -6,7 +6,7 @@ import { SetVisibility } from '../../Interactions/SetVisibility.js'
 
 import InvisiblePNG from '../../../../assets/png/invisible.png'
 
-const SelectAvatarPanel = (ui_interactable, return_panel, ftm)=>{
+const SelectAvatarPanel = (ui_interactable, return_panel, ftm, socket)=>{
     const panel = new TMUI.Block(Object.assign({},
         STYLE.panelType2,
         STYLE.alignmentType1,
@@ -44,7 +44,11 @@ const SelectAvatarPanel = (ui_interactable, return_panel, ftm)=>{
             STYLE.alignmentType1
         ));
         list_elem.add(list_elem_img, list_elem_info);
+        MINT.LeftClick(list_elem, ()=>{
+            socket.emit('apply-avatar', list[start_ind + i].uid);
+        });
         panel_content.add(list_elem);
+        ui_interactable.push(list_elem);
     }
     const b64 = (e)=>{
         let t="";
