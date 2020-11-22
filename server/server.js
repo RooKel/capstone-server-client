@@ -144,7 +144,7 @@ function onConnect(socket)
         socket.emit('create-success', instance_id);
 
         /* 여기 아래부터 파싱 진행 및 오브젝트 초기화 단계 */
-        parseData(world_id);
+       // parseData(world_id);
     });
 
     /* if user join instance, broadcast other-joined event */
@@ -181,7 +181,7 @@ function onConnect(socket)
 
     /* show instance list */
     socket.on('rq-instance-list', data => {
-        socket.emit('instance-list', instances);
+        socket.emit('instance-list', { type: "instance", instances : instances });
     });
 
     /* peer login for audio chat */
