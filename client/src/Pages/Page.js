@@ -5,7 +5,7 @@ const Page = ()=>{
     const camera = new PerspectiveCamera(
         60,
         window.innerWidth / window.innerHeight,
-        0.1, 1000
+        .5, 1000
     );
     const sigs = {
         enter: new signals.Signal(),

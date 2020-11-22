@@ -103,10 +103,8 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
         target = _target;
         offset = _offset;
     }
+    camera.sigs.change_target.add(ChangeTarget);
     //#endregion
-    return {
-        ChangeTarget: (target, offset)=>ChangeTarget(target, offset)
-    }
 }
 
 export { CameraCtrl }
