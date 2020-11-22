@@ -26,7 +26,7 @@ const WorldPage = (socket, client_data, app_sigs, ftm)=>{
     const interactable = [ ];
     //#region ui
     const canvas = Canvas(page.sigs);
-    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm);
+    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket);
     canvas.scene.add(main_menu_panel);
     Object.assign(page, { canvas: canvas });
     //#endregion
@@ -77,7 +77,7 @@ const WorldPage = (socket, client_data, app_sigs, ftm)=>{
     const ui_pointer = Pointer(page.sigs, canvas.camera, ui_interactable);
 
     const input_collector = InputCollector(socket, client_data, page.sigs);
-    const user_manager = UserManager(socket, client_data, page, input_collector);
+    const user_manager = UserManager(socket, client_data, page, input_collector, ftm);
 
     return page;
 }

@@ -1,21 +1,24 @@
-import { BoxGeometry, MeshBasicMaterial, Mesh, Vector3 } from 'three'
+import { BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Frustum } from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 import { PlayerMovementCtrl } from '../Controllers/PlayerMovementCtrl.js'
 import { CameraCtrl } from '../Controllers/CameraCtrl.js'
 import { OthUserMovementCtrl } from '../Controllers/OthUserMovementCtrl.js'
+import { AvatarCtrl } from '../Controllers/AvatarCtrl.js'
 
-const UserManager = (socket, client_data, page, input_collector)=>{
+const UserManager = (socket, client_data, page, input_collector, ftm)=>{
+    const models = [ ];
     const users = { };
     const AddUser = (uid, data)=>{
         let geometry = new BoxGeometry(1,1,1);
         let material = new MeshBasicMaterial({color:0xFF0000});
         let cube = new Mesh(geometry, material);
         cube.position.set(data.x, 1, data.y);
-
         Object.assign(cube, { sigs: {
             init: new signals.Signal(),
             dispose: new signals.Signal()
         }});
+        AvatarCtrl(uid, cube, socket, ftm);
         if(uid === client_data.uid){
             PlayerMovementCtrl(socket, uid, data, cube, page.camera, input_collector, page.sigs);
             Object.assign(page.camera, { sigs: {
@@ -23,7 +26,7 @@ const UserManager = (socket, client_data, page, input_collector)=>{
                 dispose: new signals.Signal()
             }});
             const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs);
-            cam_ctrl.ChangeTarget(cube, new Vector3(0,1,0));
+            //cam_ctrl.ChangeTarget(cube, new Vector3(0,1,0));
             page.camera.sigs.init.dispatch();
             client_data.player_obj = cube;
         }

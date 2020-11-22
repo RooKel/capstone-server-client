@@ -44,9 +44,6 @@ const SelectAvatarPanel = (ui_interactable, return_panel, ftm, socket)=>{
             STYLE.alignmentType1
         ));
         list_elem.add(list_elem_img, list_elem_info);
-        MINT.LeftClick(list_elem, ()=>{
-            socket.emit('apply-avatar', list[start_ind + i].uid);
-        });
         panel_content.add(list_elem);
         ui_interactable.push(list_elem);
     }
@@ -80,7 +77,10 @@ const SelectAvatarPanel = (ui_interactable, return_panel, ftm, socket)=>{
                     img_block.backgroundTexture.needsUpdate = true;
                 }
                 img_block.backgroundTexture.image.src = list[start_ind + (i - 1)].b64data;
-                MINT.LeftClick(_, ()=>{ console.log(list[start_ind + (i - 1)].uid) });
+                MINT.LeftClick(_, ()=>{ 
+                    socket.emit('apply-avatar', list[start_ind + (i - 1)].uid);
+                    console.log('apply-avatar');
+                });
             }
         });
     }
