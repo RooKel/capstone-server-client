@@ -20,17 +20,16 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
     }
     //#endregion
     let mixer = undefined;
-    let getAnimSet = { };
+    let animation_action = { };
     const OnInit = ()=>{
         socket.on('update-avatar', OnUpdateAvatar);
         ftm.addFileDownloadListener((result)=>{
             if(result.request_type === 'gltf' && result.category === 'avatar'){
                 if(need_update && result.data[0].uid === avatar_id){
-                    loader.parse(result.data[0].data, '', (loaded)=>{
-                        let bbox = new THREE.Box3().setFromObject(loaded.scene.children[0]);
-                        
+                    loader.parse(result.data[0].data, '', (loaded)=>{                      
                         group.add(loaded.scene);
                         group.remove(group.children[0]);
+                        mixer = new THREE.AnimationMixer(loaded.scene);
                         loaded.scene.traverse((_)=>{
                             if(_.userData === undefined) return;
                             if(_.userData.animSet === undefined) return;
@@ -41,10 +40,11 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
                                         return anim.name === _.userData.animSet[a].animation
                                     }
                                 );
-                                getAnimSet[_.userData.animSet[a].state] = animByState;
-                                mixer = new THREE.AnimationMixer(_);
+                                animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState);
                             }
                         });
+                        animation_action['walk'].crossFadeIn(animation_action['idle'], 0.2, true);
+                        animation_action['idle'].crossFadeIn(animation_action['walk'], 0.2, true);
                     });
                     need_update = false;
                 }
@@ -60,7 +60,8 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
         if(mixer) mixer.update(delta);
     });
     const PlayAnim = (anim_name)=>{
-        mixer.clipAction(getAnimSet['idle']);
+        console.log(anim_name);
+        animation_action[anim_name].play();
     }
     return {
         PlayAnim: (anim_name)=>PlayAnim(anim_name),

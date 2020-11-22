@@ -62,7 +62,7 @@ const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, p
 
         if(vertical !== 0 || horizontal !== 0){
             if(!walking){
-                anim_ctrl.PlayAnim('idle');
+                anim_ctrl.PlayAnim('walk');
                 walking = true;
             }
         }
