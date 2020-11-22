@@ -181,9 +181,14 @@ function onConnect(socket)
 
     /* show instance list */
     socket.on('rq-instance-list', data => {
+        var dataArray = [];
         for (var instance_id in instances) {
-            socket.emit('instance-list', { 'id': instance_id, 'property' : instances[instance_id] });
+            var dataTuple = {id:undefined, instance:undefined};
+            dataTuple.id = instance_id;
+            dataTuple.instance = instances[instance_id];
+            dataArray.push(dataTuple);
         }
+        socket.emit('instance-list', dataArray);
     });
 
     /* peer login for audio chat */
