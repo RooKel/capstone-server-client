@@ -7,7 +7,7 @@ import { SelectAvatarPanel } from '../CommonPanels/SelectAvatarPanel.js'
 import { EnterInstPanel } from '../CommonPanels/EnterInstPanel.js'
 import { CreateInstPanel } from '../CommonPanels/CreateInstPanel.js'
 
-const MainMenuPanel = (ui_interactable, canvas, app_sigs, ftm)=>{
+const MainMenuPanel = (ui_interactable, canvas, app_sigs, ftm, socket)=>{
     const panel = new TMUI.Block(Object.assign({},
         STYLE.panelType2,
         STYLE.alignmentType1,
@@ -27,6 +27,7 @@ const MainMenuPanel = (ui_interactable, canvas, app_sigs, ftm)=>{
         STYLE.alignmentType1
     ));
     const select_avatar_panel = SelectAvatarPanel(ui_interactable, panel, ftm, socket);
+
     const enter_inst_panel = EnterInstPanel(ui_interactable, panel, ftm);
     const create_inst_panel = CreateInstPanel(ui_interactable, panel, ftm, canvas);
     canvas.scene.add(select_avatar_panel, enter_inst_panel, create_inst_panel);
