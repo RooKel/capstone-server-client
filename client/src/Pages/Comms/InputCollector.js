@@ -25,4 +25,4 @@ const InputCollector = (socket, client_data, sigs)=>{
     }
 }
 
-export default InputCollector
+export { InputCollector }

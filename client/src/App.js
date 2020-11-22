@@ -1,57 +1,60 @@
 import { Clock, WebGLRenderer } from 'three'
-//#region import pages
-import StartPage from './Pages/StartPage.js'
-import WorldPage from './Pages/WorldPage.js'
-//#endregion
+import { FileTransferManager } from './FileTransferManager.js'
+
+import { StartPage } from './Pages/StartPage.js'
+import { WorldPage } from './Pages/WorldPage.js'
 
 const App = ()=>{
+    const ftm = new FileTransferManager(null, 'ws://localhost:3000');
+    ftm.listenFileDownload();
     const socket = io();
-    const client_data = { uid:undefined };
-    const pages = [ ];
-    let cur_page_ind = undefined;
-    const clock = new Clock();
-    const renderer = new WebGLRenderer({ antialias: true });
+    const client_data = {
+        uid: undefined,
+        player_obj: undefined
+    }
     const sigs = {
-        change_page: new signals.Signal(),
-        create_world: new signals.Signal
+        create_inst: new signals.Signal(),
+        change_page: new signals.Signal()
     }
     //#region signal event handlers
+    const OnCreateInst = (wModel_id)=>{
+        pages.push(WorldPage(socket, client_data, sigs, ftm));
+    }
     const OnChangePage = (to)=>{
-        //console.log('App: change_page');
         pages[cur_page_ind].sigs.exit.dispatch();
         pages[to].sigs.enter.dispatch();
         cur_page_ind = to;
     }
-    const OnCreateSuccess = (instance_id)=>{
-        console.log(instance_id);
-        socket.emit('join-instance', instance_id);
-    }
-    const OnJoinAccept = (socket_id)=>{
-        client_data.uid = socket_id;
-        pages.push(WorldPage(socket, client_data, sigs));
-        OnChangePage(1);
-    }
-    socket.on('create-success', OnCreateSuccess);
-    socket.on('join-accept', OnJoinAccept);
+    //#endregion
+    sigs.create_inst.add(OnCreateInst);
     sigs.change_page.add(OnChangePage);
+    //#region input event handlers
+    const OnWindowResize = ()=>{
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        pages[cur_page_ind].sigs.resize.dispatch();
+    }
+    window.addEventListener('resize', OnWindowResize);
     //#endregion
     //#region init pages
-    pages.push(StartPage(socket, client_data, sigs));
-    cur_page_ind = 0;
+    const pages = [ StartPage(socket, client_data, sigs, ftm) ];
+    let cur_page_ind = 0;
     pages[cur_page_ind].sigs.enter.dispatch();
     //#endregion
+    const clock = new Clock();
     //#region init renderer
+    const renderer = new WebGLRenderer();
     renderer.autoClear = false;
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.domElement.setAttribute('id', 'three_canvas');
     renderer.setAnimationLoop(()=>{
         renderer.clear();
-        pages[cur_page_ind].sigs.update.dispatch(clock.getDelta());
-        renderer.render(pages[cur_page_ind].scene, pages[cur_page_ind].camera);
-        if(pages[cur_page_ind].canvas){
+        const cur_page = pages[cur_page_ind];
+        cur_page.sigs.update.dispatch(clock.getDelta());
+        renderer.render(cur_page.scene, cur_page.camera);
+        if(cur_page.canvas){
             renderer.getContext().disable(renderer.getContext().DEPTH_TEST);
-            renderer.render(pages[cur_page_ind].canvas.scene, pages[cur_page_ind].canvas.camera);
+            renderer.render(cur_page.canvas.scene, cur_page.canvas.camera);
             renderer.getContext().enable(renderer.getContext().DEPTH_TEST);
         }
     });
@@ -59,4 +62,4 @@ const App = ()=>{
     document.body.appendChild(renderer.domElement);
 }
 
-export default App
+export { App }

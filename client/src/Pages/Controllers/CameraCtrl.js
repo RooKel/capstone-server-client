@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
+const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
     let mouse_sensitivity = 50;
     const netw_obj = data;
     const sum = { x:0, y:0 };
@@ -12,7 +12,6 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs
     let pending_inputs = [ ];
     let input_sequence_number = 0;
 
-    let deltaTime = 0;
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== client_data.uid) return;
@@ -52,7 +51,7 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs
     }
     //#endregion
     //#region event link event handlers
-    const OnEnter = ()=>{
+    const OnInit = ()=>{
         socket.on('instance-state', ProcessServerMessage);
         document.addEventListener('mousemove', OnMouseMove);
     }
@@ -65,7 +64,6 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs
         //#endregion
         //#region camera rotation
         //#region post to server
-        deltaTime = delta;
         const input = {
             mouse_dx: d_mouse_pos.mouse_dx * mouse_sensitivity,
             mouse_dy: d_mouse_pos.mouse_dy * mouse_sensitivity,
@@ -90,17 +88,13 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs
         d_mouse_pos.mouse_dy = 0;
         //#endregion
     }
-    const OnExit = ()=>{
+    const OnDispose = ()=>{
         socket.off('instance-state', ProcessServerMessage);
         document.removeEventListener('mousemove', OnMouseMove);
     }
     //#endregion
-    const mysig = {
-        init: new signals.Signal(),
-        dispose: new signals.Signal()
-    }
-    mysig.init.add(OnEnter);
-    mysig.dispose.add(OnExit);
+    camera.sigs.init.add(OnInit);
+    camera.sigs.dispose.add(OnDispose);
     sigs.update.add(OnUpdate);
     //#region public funcs
     const ChangeTarget = (_target, _offset)=>{
@@ -111,9 +105,8 @@ const TestCameraCtrl = (socket, client_data, data, camera, input_collector, sigs
     }
     //#endregion
     return {
-        sigs: mysig,
         ChangeTarget: (target, offset)=>ChangeTarget(target, offset)
     }
 }
 
-export default TestCameraCtrl
+export { CameraCtrl }
