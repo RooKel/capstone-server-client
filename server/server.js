@@ -1,7 +1,7 @@
 // make a express and convert http to websocket
 var express = require('express');
 const { Vector3, Quaternion } = require('three');
-//const { GLTFLoader } = require('../node_modules/three/examples/jsm/loaders/GLTFLoader');
+const { GLFTLoader } = require('./../dist/GLTFLoader');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
@@ -79,7 +79,7 @@ var updateClock = function() {
 
         for (var entity_id in instance.entities)
         {
-            io.in(instance_id).emit('world-state', { 'entity_id': entity_id, 'entity_properties': instance.entities[entity_id], 'last_processed_input': last_processed_input[entity_id] });
+            io.in(instance_id).emit('instance-state', { 'entity_id': entity_id, 'entity_properties': instance.entities[entity_id], 'last_processed_input': last_processed_input[entity_id] });
         }
     }
 }
@@ -144,7 +144,7 @@ function onConnect(socket)
         socket.emit('create-success', instance_id);
 
         /* 여기 아래부터 파싱 진행 및 오브젝트 초기화 단계 */
-       // parseData(world_id);
+        //parseData(world_id);
     });
 
     /* if user join instance, broadcast other-joined event */
