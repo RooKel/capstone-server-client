@@ -19,7 +19,7 @@ const SelectWorldPanel = (ui_interactable, return_panel, ftm)=>{
         STYLE.panelType2_header,
         STYLE.alignmentType1
     ));
-    panel_header.add(new TMUI.Text({ content: 'Select Avatar' }));
+    panel_header.add(new TMUI.Text({ content: 'Select World' }));
 
     const panel_content = new TMUI.Block(Object.assign({},
         STYLE.panelType2_content,
