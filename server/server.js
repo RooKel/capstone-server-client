@@ -174,9 +174,14 @@ function onConnect(socket)
         socket.to(instance_id).emit('other-join', socket.id, instance.entities[socket.id]);
 
         // update avatar
-        var avatar_id = avatars[socket.id];
-        io.in(instance_id).emit('update-avatar', entity_id, avatar_id);
-        console.log("update-avatar 이벤트 호출 : " + entity_id + "의 " + avatar_id);
+        for (var entity_id in instance.entities)
+        {
+            if (avatars[entity_id]) {
+                var avatar_id = avatars[entity_id];
+                io.in(instance_id).emit('update-avatar', entity_id, avatar_id);
+                console.log("update-avatar 이벤트 호출 : " + entity_id + "의 " + avatar_id);
+            }
+        }
     });
 
     /* show instance list */
