@@ -1,6 +1,6 @@
 // make a express and convert http to websocket
 var express = require('express');
-const { Vector3, Quaternion, GLTFLoader, DRACOLoader } = require('three');
+const { Vector3, Quaternion, GLTFLoader } = require('three');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
@@ -176,6 +176,11 @@ function onConnect(socket)
         var avatar_id = avatars[socket.id];
         io.in(instance_id).emit('update-avatar', entity_id, avatar_id);
         console.log("update-avatar 이벤트 호출 : " + entity_id + "의 " + avatar_id);
+    });
+
+    /* show instance list */
+    socket.on('rq-instance-list', data => {
+        socket.emit('instance-list', { instances: instances });
     });
 
     /* peer login for audio chat */
