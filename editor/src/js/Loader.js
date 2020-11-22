@@ -232,10 +232,33 @@ function Loader( editor ) {
 
 						var scene = result.scene;
 						scene.name = filename;
+						for (let c = 0; c < scene.children.length;)
+						{
+							//  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
+							editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
+						}
+						editor.scene.traverse(x => {
 
-						editor.addAnimation( scene, result.animations );
-						editor.execute( new AddObjectCommand( editor, scene ) );
+							if(x.userData === undefined)        return;
+							if(x.userData.animSet === undefined)return;
 
+							let getAnimSet = [];
+							for (let a = 0; a < x.userData.animSet.length; a++)
+							{
+								let animByName = result.animations.find(
+									anim => anim.name === x.userData.animSet[a].animation
+								);
+								getAnimSet.push(animByName);
+							}
+							for (let s = 0; s < x.userData.script.length; s++)
+							{
+								let script = x.userData.script[s];
+							}
+							editor.addAnimation( x, getAnimSet );
+							editor.deselect();
+						});
+						/*editor.addAnimation( scene, result.animations );
+						editor.execute( new AddObjectCommand( editor, scene ) );*/
 					} );
 
 				}, false );
@@ -269,13 +292,41 @@ function Loader( editor ) {
 
 						var scene = result.scene;
 						scene.name = filename;
+						for (let c = 0; c < scene.children.length;)
+						{
+							//  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
+							editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
+						}
+						editor.scene.traverse(x => {
+
+							if(x.userData === undefined)        return;
+							if(x.userData.animSet === undefined)return;
+
+							let getAnimSet = [];
+							for (let a = 0; a < x.userData.animSet.length; a++)
+							{
+								let animByName = result.animations.find(
+									anim => anim.name === x.userData.animSet[a].animation
+								);
+								getAnimSet.push(animByName);
+							}
+							for (let s = 0; s < x.userData.script.length; s++)
+							{
+								let script = x.userData.script[s];
+							}
+							editor.addAnimation( x, getAnimSet );
+							editor.deselect();
+						});
+
+						/*var scene = result.scene;
+						scene.name = filename;
 
 						editor.addAnimation( scene, result.animations );
 						let children = scene.children;
 						for (let i = 0; i < children.length; i++)
 						{
 							editor.execute( new AddObjectCommand( editor, children[i] ) );
-						}
+						}*/
 					} );
 
 				}, false );
@@ -706,9 +757,37 @@ function Loader( editor ) {
 					loader.parse( file.asText(), '', function ( result ) {
 
 						var scene = result.scene;
+						scene.name = filename;
+						for (let c = 0; c < scene.children.length;)
+						{
+							//  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
+							editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
+						}
+						editor.scene.traverse(x => {
+
+							if(x.userData === undefined)        return;
+							if(x.userData.animSet === undefined)return;
+
+							let getAnimSet = [];
+							for (let a = 0; a < x.userData.animSet.length; a++)
+							{
+								let animByName = result.animations.find(
+									anim => anim.name === x.userData.animSet[a].animation
+								);
+								getAnimSet.push(animByName);
+							}
+							for (let s = 0; s < x.userData.script.length; s++)
+							{
+								let script = x.userData.script[s];
+							}
+							editor.addAnimation( x, getAnimSet );
+							editor.deselect();
+						});
+
+						/*var scene = result.scene;
 
 						editor.addAnimation( scene, result.animations );
-						editor.execute( new AddObjectCommand( editor, scene ) );
+						editor.execute( new AddObjectCommand( editor, scene ) );*/
 					} );
 					break;
 				case 'json':

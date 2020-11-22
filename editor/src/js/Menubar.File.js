@@ -64,7 +64,6 @@ function MenubarFile(editor) {
 
                     let scene = result.scene;
                     scene.name = result.scene.name;
-                    let childCount = scene.children.length;
                     for (let c = 0; c < scene.children.length;)
                     {
                         //  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
@@ -339,6 +338,7 @@ function MenubarFile(editor) {
                     while(skinnedMeshRoot.parent !== editor.scene)
                     {
                         skinnedMeshRoot = skinnedMeshRoot.parent;
+                        break;
                     }
                 }
             }
@@ -377,22 +377,23 @@ function MenubarFile(editor) {
                 let topNode = gQ.shift();
                 let topObject = eQ.shift();
 
-                let script = editor.scripts[topObject.uuid];
-                let anims = editor.animations.get(topObject.uuid);
-                let animSet = [];
-                if (anims !== undefined)
+                let scripts = editor.scripts[topObject.uuid];
+                let scriptMetaSet = [];
+                if(scripts !== undefined)
                 {
-                    for (let a = 0; a < anims.length; a++)
+                    for (let s = 0; s < scripts.length; s++)
                     {
-                        animSet.push({
-                            state:'idle',
-                            animation:anims[a].name
-                        });
+                        scriptMetaSet.push(new Function(scripts[s].source + '\nreturn prefabMeta;')());
                     }
                 }
+
+                let userData = topObject.userData;
+
+                let animSet = userData.animSet;
                 topNode.extras = {
+                    id: topObject.userData.id,
                     name  : topObject.name,
-                    script: script,
+                    script: scriptMetaSet,
                     animSet: animSet
                 }
 
