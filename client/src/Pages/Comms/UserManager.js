@@ -1,4 +1,4 @@
-import { BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Frustum } from 'three'
+import { BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Frustum, Group } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 import { PlayerMovementCtrl } from '../Controllers/PlayerMovementCtrl.js'
@@ -7,35 +7,37 @@ import { OthUserMovementCtrl } from '../Controllers/OthUserMovementCtrl.js'
 import { AvatarCtrl } from '../Controllers/AvatarCtrl.js'
 
 const UserManager = (socket, client_data, page, input_collector, ftm)=>{
-    const models = [ ];
     const users = { };
     const AddUser = (uid, data)=>{
+        let group = new Group();
         let geometry = new BoxGeometry(1,1,1);
         let material = new MeshBasicMaterial({color:0xFF0000});
         let cube = new Mesh(geometry, material);
-        cube.position.set(data.x, 1, data.y);
-        Object.assign(cube, { sigs: {
+        cube.name = 'default_mesh';
+        group.add(cube);
+        group.position.set(data.x, 0, data.y);
+        Object.assign(group, { sigs: { 
             init: new signals.Signal(),
             dispose: new signals.Signal()
         }});
-        AvatarCtrl(uid, cube, socket, ftm);
+        AvatarCtrl(uid, group, socket, ftm, page.sigs);
         if(uid === client_data.uid){
-            PlayerMovementCtrl(socket, uid, data, cube, page.camera, input_collector, page.sigs);
-            Object.assign(page.camera, { sigs: {
+            PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs);
+            Object.assign(page.camera, { sigs: { 
                 init: new signals.Signal(),
                 dispose: new signals.Signal()
             }});
             const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs);
-            //cam_ctrl.ChangeTarget(cube, new Vector3(0,1,0));
+            cam_ctrl.ChangeTarget(group, new Vector3(0,1,0));
             page.camera.sigs.init.dispatch();
-            client_data.player_obj = cube;
+            client_data.player_obj = group;
         }
         else{
-            OthUserMovementCtrl(socket, uid, data, cube, page.sigs);
+            OthUserMovementCtrl(socket, uid, data, group, page.sigs);
         }
-        users[uid] = cube;
+        users[uid] = group;
         users[uid].sigs.init.dispatch();
-        page.scene.add(cube);
+        page.scene.add(group);
     }
     const RemUser = (uid)=>{
         users[uid].sigs.dispose.dispatch();

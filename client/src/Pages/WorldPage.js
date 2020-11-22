@@ -21,7 +21,6 @@ const WorldPage = (socket, client_data, app_sigs, ftm)=>{
         )
     );
     page.camera.position.set(0,5,7.5);
-    page.camera.lookAt(new Vector3(0,0,0));
     const ui_interactable = [ ];
     const interactable = [ ];
     //#region ui
