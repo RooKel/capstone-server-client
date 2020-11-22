@@ -64,8 +64,8 @@ function MenubarFile(editor) {
 
                     let scene = result.scene;
                     scene.name = result.scene.name;
-
-                    for (let c = 0; c < scene.children.length; c++)
+                    let childCount = scene.children.length;
+                    for (let c = 0; c < scene.children.length;)
                     {
                         //  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
                         editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
