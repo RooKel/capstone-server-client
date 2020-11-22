@@ -1,6 +1,7 @@
 // make a express and convert http to websocket
 var express = require('express');
-const { Vector3, Quaternion, GLTFLoader } = require('three');
+const { Vector3, Quaternion } = require('three');
+//const { GLTFLoader } = require('../node_modules/three/examples/jsm/loaders/GLTFLoader');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
@@ -98,7 +99,7 @@ io.on('connection', onConnect);
 function parseData(id)
 {
     // Instantiate a loader
-    const loader = new GLTFLoader();
+    var loader = new GLTFLoader();
 
     // Optional: Provide a DRACOLoader instance to decode compressed mesh data
     const dracoLoader = new DRACOLoader();
@@ -143,7 +144,7 @@ function onConnect(socket)
         socket.emit('create-success', instance_id);
 
         /* 여기 아래부터 파싱 진행 및 오브젝트 초기화 단계 */
-        //parseData(world_id);
+        parseData(world_id);
     });
 
     /* if user join instance, broadcast other-joined event */
@@ -180,7 +181,7 @@ function onConnect(socket)
 
     /* show instance list */
     socket.on('rq-instance-list', data => {
-        socket.emit('instance-list', { instances: instances });
+        socket.emit('instance-list', instances);
     });
 
     /* peer login for audio chat */
