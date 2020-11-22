@@ -140,6 +140,7 @@ function onConnect(socket)
         // update avatar
         var avatar_id = avatars[socket.id];
         io.in(instance_id).emit('update-avatar', entity_id, avatar_id);
+        console.log("update-avatar 이벤트 호출 : " + entity_id + "의 " + avatar_id);
     });
 
     /* peer login for audio chat */
@@ -187,6 +188,7 @@ function onConnect(socket)
     /* apply avatar */
     socket.on('apply-avatar', avatar_id => {
         avatars[socket.id] = avatar_id;
+        console.log(socket.id + "유저의 아바타 갱신 : " + avatar_id);
     })
 
     /* upload avatar or world from client */
