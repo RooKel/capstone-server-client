@@ -34,6 +34,7 @@ const makeUID = function() { return '_' + Math.random().toString(36).substr(2, 9
 // all of instances.
 var instances = [];
 var instance_of_users = [];
+var avatars = [];
 
 // last processed input for each client.
 var last_processed_input = [];
@@ -135,6 +136,10 @@ function onConnect(socket)
 
         // sending to all clients except sender
         socket.to(instance_id).emit('other-join', socket.id, instance.entities[socket.id]);
+
+        // update avatar
+        var avatar_id = avatars[socket.id];
+        io.in(instance_id).emit('update-avatar', entity_id, avatar_id);
     });
 
     /* peer login for audio chat */
@@ -178,6 +183,11 @@ function onConnect(socket)
         tempQuat.multiply(mulQuat);
         user_entity.quaternion.copy(tempQuat);
     });
+
+    /* apply avatar */
+    socket.on('apply-avatar', avatar_id => {
+        avatars[socket.id] = avatar_id;
+    })
 
     /* upload avatar or world from client */
     socket.on('file-upload', data => {
