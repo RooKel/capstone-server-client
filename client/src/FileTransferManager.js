@@ -3,7 +3,8 @@ function FileTransferManager(editor, socket_url)
     var Signal = signals.Signal;
 
     this.signals = {
-        file_download: new Signal()
+        file_download: new Signal(),
+        file_upload_ack: new Signal()
     }
     this.socket = io.connect(socket_url);
 }
@@ -11,6 +12,15 @@ function FileTransferManager(editor, socket_url)
 FileTransferManager.prototype={
 
     requestFileDownload: function (request_type, category, uid){
+        function resolveAfterEmit(socket, request_tuple){
+            return new Promise(resolve=>{
+                socket.emit('rq-file-download', request_tuple);
+                resolve('resolved');
+            })
+        }
+        async function asyncCall(socket, request_tuple){
+            await resolveAfterEmit(socket,request_tuple);
+        }
         /*  Request Data Structure
         *   --request_type      : 'thumbnail', 'gltf' 두가지 종류로 분기
         *   --category          : 'world', 'avatar' 중 어떤 카테고리를 요청할지 결정
@@ -20,9 +30,18 @@ FileTransferManager.prototype={
             category: category,
             uid: uid
         }
-        this.socket.emit('rq-file-download', request_tuple);
+        asyncCall(this.socket, request_tuple).then(r => console.log(r));
     },
     requestFileUpload: function (dataStream){
+        function resolveAfterEmit(socket, dataStream){
+            return new Promise(resolve=>{
+                socket.emit('file-upload', dataStream);
+                resolve('resolved');
+            })
+        }
+        async function asyncCall(socket, dataStream){
+            await resolveAfterEmit(socket, dataStream);
+        }
         /*  DataStream Structure
         *   --data_name         : 업로드하는 파일이름
         *   --data_creator      : 작성자 이름
@@ -30,10 +49,23 @@ FileTransferManager.prototype={
         *   --data_thumbnail    : base64 형식의 png raw data
         *   --raw_gltf          : gltf 파일이다.
         * */
-        this.socket.emit('file-upload', dataStream);
+        asyncCall(this.socket, dataStream)
+            .then(r=>console.log(r))
+            .catch(err => {
+            console.log("ERR : " + err);
+        });
     },
     addFileDownloadListener: function (callback){
         this.signals.file_download.add(callback);
+    },
+    addFileUploadAckListener: function (callback){
+        this.signals.file_upload_ack.add(callback);
+    },
+    listenFileUploadAck: function (){
+        this.socket.on('file-upload-ack', (response)=>{
+            console.log("File-Upload-Ack");
+            this.signals.file_upload_ack.dispatch(response);
+        });
     },
     listenFileDownload: function (){
         this.socket.on('file-download',(response)=>{

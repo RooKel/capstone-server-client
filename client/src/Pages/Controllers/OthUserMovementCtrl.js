@@ -1,5 +1,5 @@
 
-const OtherUsersCtrl = (socket, uid, data, model, sigs)=>{
+const OthUserMovementCtrl = (socket, uid, data, model, page_sigs)=>{
     const netw_obj = data;
     const server_update_rate = 12;
     //#region socket event handlers
@@ -13,7 +13,7 @@ const OtherUsersCtrl = (socket, uid, data, model, sigs)=>{
     }
     //#endregion
     //#region event link event handlers
-    const OnEnter = ()=>{
+    const OnInit = ()=>{
         socket.on('instance-state', ProcessServerMessage);
     }
     const OnUpdate = (delta)=>{
@@ -35,20 +35,13 @@ const OtherUsersCtrl = (socket, uid, data, model, sigs)=>{
         model.position.x = netw_obj.x;
         model.position.z = netw_obj.y;
     }
-    const OnExit = ()=>{
+    const OnDispose = ()=>{
         socket.off('instance-state', ProcessServerMessage);
     }
     //#endregion
-    const mysigs = {
-        init: new signals.Signal(),
-        dispose: new signals.Signal()
-    }
-    mysigs.init.add(OnEnter);
-    mysigs.dispose.add(OnExit);
-    sigs.update.add(OnUpdate);
-    return {
-        sigs: mysigs
-    }
+    page_sigs.update.add(OnUpdate);
+    model.sigs.init.add(OnInit);
+    model.sigs.dispose.add(OnDispose);
 }
 
-export default OtherUsersCtrl
+export { OthUserMovementCtrl }

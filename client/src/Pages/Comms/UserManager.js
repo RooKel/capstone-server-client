@@ -1,50 +1,57 @@
 import { BoxGeometry, MeshBasicMaterial, Mesh, Vector3 } from 'three'
-import OtherUsersCtrl from '../Interaction/OtherUsersCtrl';
-import PlayerCtrl from '../Interaction/PlayerCtrl';
-import TestCameraCtrl from '../Interaction/TestCameraCtrl.js'
+
+import { PlayerMovementCtrl } from '../Controllers/PlayerMovementCtrl.js'
+import { CameraCtrl } from '../Controllers/CameraCtrl.js'
+import { OthUserMovementCtrl } from '../Controllers/OthUserMovementCtrl.js'
 
 const UserManager = (socket, client_data, page, input_collector)=>{
     const users = { };
-    //#region signal event handlers
     const AddUser = (uid, data)=>{
-        //console.log('UserManager: add_user');
         let geometry = new BoxGeometry(1,1,1);
         let material = new MeshBasicMaterial({color:0xFF0000});
         let cube = new Mesh(geometry, material);
         cube.position.set(data.x, 1, data.y);
-        users[uid] = cube;
-
-        let temp = undefined;
+        Object.assign(cube, { sigs: {
+            init: new signals.Signal(),
+            dispose: new signals.Signal()
+        }});
         if(uid === client_data.uid){
-            temp = PlayerCtrl(socket, uid, data, cube, page.camera, input_collector, page.sigs);
-            const camera_ctrl = TestCameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs);
-            camera_ctrl.sigs.init.dispatch();
-            camera_ctrl.ChangeTarget(cube, new Vector3(0,1,0));
+            PlayerMovementCtrl(socket, uid, data, cube, page.camera, input_collector, page.sigs);
+            Object.assign(page.camera, { sigs: {
+                init: new signals.Signal(),
+                dispose: new signals.Signal()
+            }});
+            const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs);
+            cam_ctrl.ChangeTarget(cube, new Vector3(0,1,0));
+            page.camera.sigs.init.dispatch();
+            client_data.player_obj = cube;
         }
-        else
-            temp = OtherUsersCtrl(socket, uid, data, cube, page.sigs);
-        temp.sigs.init.dispatch();
-        Object.assign(cube, temp);
-        
+        else{
+            OthUserMovementCtrl(socket, uid, data, cube, page.sigs);
+        }
+        users[uid] = cube;
+        users[uid].sigs.init.dispatch();
         page.scene.add(cube);
     }
     const RemUser = (uid)=>{
-        //console.log('UserManager: rem_user');
         users[uid].sigs.dispose.dispatch();
         page.scene.remove(users[uid]);
         delete users[uid];
     }
-    //#endregion
-    page.sigs.enter.add(()=>{
+    //#region signal event handlers
+    const OnEnter = ()=>{
         socket.on('initial-entities-data', AddUser);
-        socket.on('other-join', AddUser);
-        socket.on('disconnected', RemUser);
-    });
-    page.sigs.exit.add(()=>{
+        socket.on('other-joined', AddUser);
+        socket.on('disconnect', RemUser);
+    }
+    const OnExit = ()=>{
         socket.off('initial-entities-data', AddUser);
-        socket.off('other-join', AddUser);
-        socket.off('disconnected', RemUser);
-    });
+        socket.off('other-joined', AddUser);
+        socket.off('disconnect', RemUser);
+    }
+    //#endregion
+    page.sigs.enter.add(OnEnter);
+    page.sigs.exit.add(OnExit);
 }
 
-export default UserManager
+export { UserManager }

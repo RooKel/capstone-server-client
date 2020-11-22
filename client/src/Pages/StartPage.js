@@ -1,42 +1,56 @@
-import Page from './Page.js'
-import Canvas from './UI/Canvas.js'
-import StartPgMainMenu from './UI/StartPgMainMenu.js'
-import Pointer from './Pointer.js'
-import { Color } from 'three'
+import { Color, LineSegments, LineBasicMaterial } from 'three'
+import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js'
+import { Page } from './Page.js'
+import { Pointer } from './Invokers/Pointer.js'
 
-const StartPage = (socket, client_data, app_sigs)=>{
+import { Canvas } from './UI/Canvas.js'
+import { StartPanel } from './UI/StartPage/StartPanel.js'
+import { MainMenuPanel } from './UI/StartPage/MainMenuPanel.js'
+
+const StartPage = (socket, client_data, app_sigs, ftm)=>{
     const page = Page();
     page.scene.background = new Color(0xFFFFFF);
-    const objs_to_test = [ ];
-    const canvas = Canvas(page.sigs.update);
-    const start_pg_main_menu = StartPgMainMenu(objs_to_test, socket);
-    canvas.scene.add(start_pg_main_menu);
+    page.scene.add(
+        new LineSegments(
+            new BoxLineGeometry(10, 10, 10, 10, 10, 10).translate(0, 5, 0),
+            new LineBasicMaterial({ color: 0x000000 })
+        )
+    );
+    page.camera.position.set(0,1,4);
+    const ui_interactable = [ ];
+    //#region ui
+    const canvas = Canvas(page.sigs);
+    const start_panel = StartPanel(ui_interactable, socket);
+    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket);
+    canvas.scene.add(start_panel, main_menu_panel);
     Object.assign(page, { canvas: canvas });
-    const pointer = Pointer(page.sigs, page.camera, objs_to_test);
+    //#endregion
+    const pointer = Pointer(page.sigs, canvas.camera, ui_interactable);
     //#region socket event handlers
-    const OnLoginAccept = (uid)=>{
-        //console.log('StartPage: login_accept');
-        client_data.uid = uid;
-        app_sigs.create_world.dispatch('_4pqz5yppk');
+    const OnCreateSuccess = (instance_id)=>{
+        socket.emit('join-instance', instance_id);
+    }
+    const OnJoinAccept = (socket_id)=>{
+        client_data.uid = socket_id;
+        app_sigs.create_inst.dispatch();
+        app_sigs.change_page.dispatch(1);
     }
     //#endregion
-    //#region signals event handlers
+    //#region signal event handlers
     const OnEnter = ()=>{
-        //console.log('StartPage: enter');
-        //socket.on('login-accept', OnLoginAccept);
+        socket.on('create-success', OnCreateSuccess);
+        socket.on('join-accept', OnJoinAccept);
+        //main_menu_panel.sigs.set_visib.dispatch(false);
+        start_panel.sigs.set_visib.dispatch(false);
     }
     const OnExit = ()=>{
-        //console.log('StartPage: exit');
-        //socket.off('login-accept', OnLoginAccept);
-    }
-    const OnUpdate = ()=>{
-        //console.log('StartPage: update');
+        socket.off('create-success', OnCreateSuccess);
+        socket.on('join-accept', OnJoinAccept);
     }
     //#endregion
     page.sigs.enter.add(OnEnter);
     page.sigs.exit.add(OnExit);
-    page.sigs.update.add(OnUpdate);
     return page;
 }
 
-export default StartPage
+export { StartPage }

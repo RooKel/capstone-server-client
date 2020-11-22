@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-const PlayerCtrl = (socket, uid, data, model, camera, input_collector, sigs)=>{
+const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, page_sigs)=>{
     const netw_obj = data;
     let pending_inputs = [ ];
     let input_sequence_number = 0;
@@ -13,7 +13,6 @@ const PlayerCtrl = (socket, uid, data, model, camera, input_collector, sigs)=>{
     };
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
-        console.log(msg);
         if(msg.entity_id !== uid) return;
         netw_obj.x = msg.entity_properties.x;
         netw_obj.y = msg.entity_properties.y;
@@ -44,8 +43,7 @@ const PlayerCtrl = (socket, uid, data, model, camera, input_collector, sigs)=>{
     }
     //#endregion
     //#region event link event handlers
-    const OnEnter = ()=>{
-        console.log('PlayerCtrl: enter');
+    const OnInit = ()=>{
         socket.on('instance-state', ProcessServerMessage);
         document.addEventListener('keydown', OnKeyDown);
         document.addEventListener('keyup', OnKeyUp);
@@ -84,22 +82,15 @@ const PlayerCtrl = (socket, uid, data, model, camera, input_collector, sigs)=>{
         model.position.x += input.move_dx * netw_obj.speed;
         model.position.z += input.move_dy * netw_obj.speed;
     }
-    const OnExit = ()=>{
+    const OnDispose = ()=>{
         socket.off('instance-state', ProcessServerMessage);
         document.removeEventListener('keydown', OnKeyDown);
         document.removeEventListener('keyup', OnKeyUp);
     }
     //#endregion
-    sigs.update.add(OnUpdate);
-    const mysigs = {
-        init: new signals.Signal(),
-        dispose: new signals.Signal()
-    }
-    mysigs.init.add(OnEnter);
-    mysigs.dispose.add(OnExit);
-    return {
-        sigs: mysigs
-    }
+    page_sigs.update.add(OnUpdate);
+    model.sigs.init.add(OnInit);
+    model.sigs.dispose.add(OnDispose);
 }
 
-export default PlayerCtrl
+export { PlayerMovementCtrl }
