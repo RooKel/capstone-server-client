@@ -7,7 +7,7 @@ import { SetVisibility } from '../../Interactions/SetVisibility.js'
 import { SelectWorldPanel } from './SelectWorldPanel.js'
 import { TextInputPanel } from './TextInputPanel.js'
 
-const CreateInstPanel = (ui_interactable, return_panel, ftm, canvas)=>{
+const CreateInstPanel = (ui_interactable, return_panel, ftm, canvas, page)=>{
     const panel = new TMUI.Block(Object.assign({},
         STYLE.panelType2,
         STYLE.alignmentType1,
@@ -26,6 +26,7 @@ const CreateInstPanel = (ui_interactable, return_panel, ftm, canvas)=>{
         STYLE.panelType2_content,
         STYLE.alignmentType1
     ));
+    
     const select_world_panel = SelectWorldPanel(ui_interactable, panel, ftm);
     canvas.scene.add(select_world_panel);
     select_world_panel.sigs.set_visib.dispatch(false);
@@ -38,6 +39,7 @@ const CreateInstPanel = (ui_interactable, return_panel, ftm, canvas)=>{
         panel.sigs.set_visib.dispatch(false);
         select_world_panel.sigs.set_visib.dispatch(true);
     });
+    
     ui_interactable.push(select_world_panel_btn);
     panel_content.add(select_world_panel_btn);
 

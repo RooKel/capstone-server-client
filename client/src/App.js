@@ -1,4 +1,4 @@
-import { Clock, WebGLRenderer } from 'three'
+import { Clock, WebGLRenderer, CullFaceBack } from 'three'
 import { FileTransferManager } from './FileTransferManager.js'
 
 import { StartPage } from './Pages/StartPage.js'
@@ -42,8 +42,10 @@ const App = ()=>{
     //#endregion
     const clock = new Clock();
     //#region init renderer
-    const renderer = new WebGLRenderer();
+    const renderer = new WebGLRenderer({ antialias: true });
     renderer.autoClear = false;
+    renderer.getContext().enable(renderer.getContext().CULL_FACE);
+    renderer.getContext().cullFace(CullFaceBack);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.domElement.setAttribute('id', 'three_canvas');

@@ -2,7 +2,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import * as THREE from 'three'
 
-const AvatarCtrl = (id, group, socket, ftm, page_sigs)=>{
+const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
     let avatar_id = undefined;
     let need_update = false;
 
@@ -27,7 +27,8 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs)=>{
             if(result.request_type === 'gltf' && result.category === 'avatar'){
                 if(need_update && result.data[0].uid === avatar_id){
                     loader.parse(result.data[0].data, '', (loaded)=>{
-                        console.log(loaded.scene.children[0].children[0]);
+                        let bbox = new THREE.Box3().setFromObject(loaded.scene.children[0]);
+                        camera.sigs.change_target.dispatch(group, new THREE.Vector3(0,bbox.max.y,0));
                         
                         group.add(loaded.scene);
                         group.remove(group.children[0]);
