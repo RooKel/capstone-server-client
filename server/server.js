@@ -1,6 +1,6 @@
 // make a express and convert http to websocket
 var express = require('express');
-const { Vector3, Quaternion } = require('three');
+const { Vector3, Quaternion, GLTFLoader, DRACOLoader } = require('three');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
@@ -98,10 +98,10 @@ io.on('connection', onConnect);
 function parseData(id)
 {
     // Instantiate a loader
-    const loader = new THREE.GLTFLoader();
+    const loader = new GLTFLoader();
 
     // Optional: Provide a DRACOLoader instance to decode compressed mesh data
-    const dracoLoader = new THREE.DRACOLoader();
+    const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath( 'three/examples/jsm/loaders/' );
     loader.setDRACOLoader( dracoLoader );
 
