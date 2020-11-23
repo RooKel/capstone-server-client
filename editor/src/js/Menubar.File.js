@@ -470,17 +470,18 @@ function MenubarFile(editor) {
                             scriptMetaSet.push(new Function(scripts[s].source + '\nreturn prefabMeta;')());
                         }
                     }
+                    let userData = topObject.userData;
+
+                    let animSet = userData.animSet;
+                    topNode.extras = {
+                        id: topObject.userData.id,
+                        name  : topObject.name,
+                        script: scriptMetaSet,
+                        animSet: animSet
+                    }
                 }
 
-                let userData = topObject.userData;
 
-                let animSet = userData.animSet;
-                topNode.extras = {
-                    id: topObject.userData.id,
-                    name  : topObject.name,
-                    script: scriptMetaSet,
-                    animSet: animSet
-                }
 
                 if(topNode.children !== undefined)
                 {
