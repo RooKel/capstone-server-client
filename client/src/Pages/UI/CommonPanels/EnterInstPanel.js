@@ -43,6 +43,7 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
             STYLE.panelType2_content_listElem_info,
             STYLE.alignmentType1
         ));
+        list_elem_info.add(new TMUI.Text({content:''}));
         list_elem.add(list_elem_img, list_elem_info);
         ui_interactable.push(list_elem);
         panel_content.add(list_elem);
@@ -52,7 +53,7 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
             if(i === 0) return;
             if(start_ind + (i-1) < list.length){
                 const info_block = _.children[2];
-                info_block.add(new TMUI.Text({ content:list[start_ind + (i-1)].id }));
+                info_block.children[1].set({ content: list[start_ind + (i-1)].id });
                 MINT.LeftClick(_, ()=>{ 
                     console.log(list[start_ind + (i-1)].id);
                     socket.emit('rq-exit-instance', true);
