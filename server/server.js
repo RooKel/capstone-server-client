@@ -162,7 +162,7 @@ function onConnect(socket)
         user_entity.quaternion = new THREE.Quaternion();
 
         // send login accept message to sender
-        socket.emit('join-accept', socket.id);
+        socket.emit('join-accept', instances[instance_id].world_id);
 
         // send each entity data because socket.io doesn't support to send dictionary data
         for (var entity_id in instance.entities)
