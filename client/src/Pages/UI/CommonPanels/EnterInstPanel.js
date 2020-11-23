@@ -55,7 +55,6 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
                 const info_block = _.children[2];
                 info_block.children[1].set({ content: list[start_ind + (i-1)].id });
                 MINT.LeftClick(_, ()=>{ 
-                    console.log(list[start_ind + (i-1)].id);
                     socket.emit('rq-exit-instance', true);
                     socket.emit('join-instance', list[start_ind + (i-1)].id);
                 });

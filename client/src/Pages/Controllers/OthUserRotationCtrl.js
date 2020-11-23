@@ -1,12 +1,11 @@
 
 
-const OthUserRotationCtrl = (page_sigs, socket, model, data)=>{
+const OthUserRotationCtrl = (page_sigs, socket, model, data, uid)=>{
     const netw_obj = data;
 
     const ProcessServerMessage = (msg)=>{
-        console.log(msg.entity_properties.quaternion);
-        console.log(model);
-        model.quaternion.copy(
+        if(msg.entity_id !== uid) return;
+        model.quaternion.set(
             msg.entity_properties.quaternion._x,
             msg.entity_properties.quaternion._y,
             msg.entity_properties.quaternion._z,

@@ -1,4 +1,4 @@
-import { BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Frustum, Group } from 'three'
+import { BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Frustum, Group, Quaternion } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 import { PlayerMovementCtrl } from '../Controllers/PlayerMovementCtrl.js'
@@ -18,7 +18,13 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
         cube.name = 'default_mesh';
         group.add(cube);
         group.position.set(data.x, 0, data.y);
-        console.log(data);
+        group.quaternion.set(
+            data.quaternion._x,
+            data.quaternion._y,
+            data.quaternion._z,
+            data.quaternion._w
+        );
+        console.log(group);
         Object.assign(group, { sigs: { 
             init: new signals.Signal(),
             dispose: new signals.Signal()
