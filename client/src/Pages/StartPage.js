@@ -1,4 +1,4 @@
-import {Color, LineSegments, LineBasicMaterial, AnimationMixer, MathUtils} from 'three'
+import {Color, LineSegments, LineBasicMaterial, AnimationMixer, MathUtils, MeshToonMaterial} from 'three'
 import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js'
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -61,10 +61,20 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
             astro.translateY(-10);
             astro.translateZ(-2);
             astro.traverseVisible(_ =>{
-                if(_.isMaterial)
+                if(_.isMesh)
                 {
                     let curMat = _.material;
-                    console.log(curMat);
+                    let toonMat = new MeshToonMaterial({
+                        color:curMat.color,
+                        emissive:curMat.emissive,
+                        skinning:curMat.skinning,
+                        map:curMat.map,
+                        emissiveMap:curMat.emissiveMap,
+                        side:curMat.side,
+                        depthTest:curMat.depthTest,
+                        depthWrite:curMat.depthWrite
+                    });
+                    _.material = toonMat;
                 }
             })
             console.log(astro);
