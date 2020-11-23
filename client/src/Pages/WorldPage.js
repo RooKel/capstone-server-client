@@ -9,18 +9,34 @@ import { MyPeer } from '../MyPeer.js'
 import { Canvas } from './UI/Canvas.js'
 import { MainMenuPanel } from './UI/WorldPage/MainMenuPanel.js'
 
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+
 const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
-    console.log(client_data.uid);
     const three_canvas = document.getElementById('three_canvas');
     
     const page = Page();
     page.scene.background = new Color(0xFFFFFF);
-    page.scene.add(
-        new LineSegments(
-            new BoxLineGeometry(10, 10, 10, 10, 10, 10).translate(0, 5, 0),
-            new LineBasicMaterial({ color: 0x000000 })
-        )
-    );
+    // page.scene.add(
+    //     new LineSegments(
+    //         new BoxLineGeometry(10, 10, 10, 10, 10, 10).translate(0, 5, 0),
+    //         new LineBasicMaterial({ color: 0x000000 })
+    //     )
+    // );
+    let dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader( dracoLoader );
+
+    ftm.addFileDownloadListener((result)=>{
+        if(result.request_type === 'gltf' && result.category === 'world'){
+            loader.parse(result.data[0].data, '', (loaded)=>{
+                page.scene.add(loaded.scene);
+            });
+        }
+    });
+    ftm.requestFileDownload('gltf', 'world', world_id);
+
     page.camera.position.set(0,5,7.5);
     const ui_interactable = [ ];
     const interactable = [ ];
@@ -51,14 +67,26 @@ const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
         }
     }
     //#endregion
+    const OnCreateSuccess = (instance_id)=>{
+        console.log('create_success');
+    }
+    const OnJoinAccept = (world_id)=>{
+        client_data.uid = socket.id;
+        console.log(client_data.uid);
+        app_sigs.change_page.dispatch(1, world_id);
+    }
     //#region signal event handlers
     const OnEnter = ()=>{
+        socket.on('create-success', OnCreateSuccess);
+        socket.on('join-accept', OnJoinAccept);
         main_menu_panel.sigs.set_visib.dispatch(false);
         ui_pointer.sigs.active.dispatch(false);
 
         document.addEventListener('keydown', OnKeyDown);
     }
     const OnExit = ()=>{
+        socket.off('create-success', OnCreateSuccess);
+        socket.off('join-accept', OnJoinAccept);
         document.removeEventListener('keydown', OnKeyDown);
     }
     //#endregion
