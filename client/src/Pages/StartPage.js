@@ -3,7 +3,8 @@ import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.j
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import RobotGLTF from '../../assets/models/Robot.gltf'
-import GhostsGLTF from '../../assets/models/Ghosts.gltf'
+import StartSceneGLTF from '../../assets/models/Start_Scene.gltf'
+import BackgroundPNG from '../../assets/png/CartoonSpace01.png';
 
 import { Page } from './Page.js'
 import { Pointer } from './Invokers/Pointer.js'
@@ -14,6 +15,7 @@ import { SetVisibility } from './Interactions/SetVisibility.js'
 import { Canvas } from './UI/Canvas.js'
 import { StartPanel } from './UI/StartPage/StartPanel.js'
 import { MainMenuPanel } from './UI/StartPage/MainMenuPanel.js'
+import {TextureLoader} from "../../../editor/build/three.module";
 
 const StartPage = (socket, client_data, app_sigs, ftm)=>{
     const page = Page();
@@ -41,11 +43,25 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     let mixer = undefined;
     const animation_action = [ ];
     const loader = new GLTFLoader();
+    const texLoader = new TextureLoader();
+    texLoader.load(BackgroundPNG, function(texture){
+        page.scene.background = texture;
+    });
+
     loader.load(
-        GhostsGLTF, 
+        StartSceneGLTF,
         (loaded)=>{
-            loaded.scene.position.set(0,-2.5,-10);
+            let loadedScene = loaded.scene;
+            loadedScene.scale.set(1.5, 1.5, 1.5);
+            loadedScene.position.set(-15,-5,0);
+            loadedScene.rotation.set(0.1,0,0);
+            let astro = loaded.scene.children[0];
+            let debri = loaded.scene.children[1];
+            let light = loaded.scene.children[2];
+
+            light.position.set(5, 10, 11.379);
             page.scene.add(loaded.scene);
+
             mixer = new AnimationMixer(loaded.scene);
             loaded.animations.forEach((_)=>{
                 animation_action.push(mixer.clipAction(_));
@@ -58,14 +74,15 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
             //PROGRESS BAR
         }
     );
-
-    page.camera.position.set(0,1,4);
+    page.camera.fov = 50;
+    page.camera.position.set(6.6,7.2,35);
     const ui_interactable = [ ];
     //#region ui
     const canvas = Canvas(page.sigs);
     const start_panel = StartPanel(ui_interactable, socket);
     const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket, page);
-    console.log(main_menu_panel);
+    main_menu_panel.set({ backgroundOpacity: 0 });
+    main_menu_panel.position.set(0,0,-1);
     canvas.scene.add(start_panel, main_menu_panel, loading_panel);
     Object.assign(page, { canvas: canvas });
     //#endregion
