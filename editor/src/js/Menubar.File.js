@@ -462,13 +462,13 @@ function MenubarFile(editor) {
                 let topNode = gQ.shift();
                 let topObject = eQ.shift();
 
-                let scripts = editor.scripts[topObject.uuid];
-                let scriptMetaSet = [];
-                if(scripts !== undefined)
-                {
-                    for (let s = 0; s < scripts.length; s++)
-                    {
-                        scriptMetaSet.push(new Function(scripts[s].source + '\nreturn prefabMeta;')());
+                if(topObject.uuid != undefined) {
+                    let scripts = editor.scripts[topObject.uuid];
+                    let scriptMetaSet = [];
+                    if (scripts !== undefined) {
+                        for (let s = 0; s < scripts.length; s++) {
+                            scriptMetaSet.push(new Function(scripts[s].source + '\nreturn prefabMeta;')());
+                        }
                     }
                 }
 
