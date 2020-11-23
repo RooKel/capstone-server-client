@@ -1,4 +1,4 @@
-
+import { Vector3, Quaternion, Euler } from "three";
 
 const OthUserRotationCtrl = (page_sigs, socket, model, data, uid)=>{
     const netw_obj = data;
@@ -11,6 +11,9 @@ const OthUserRotationCtrl = (page_sigs, socket, model, data, uid)=>{
             msg.entity_properties.quaternion._z,
             msg.entity_properties.quaternion._w
         );
+        const tempQuatEuler = new Euler().setFromQuaternion(tempQuat);
+        tempQuatEuler.x = 0;
+        tempQuatEuler.z = 0;
         target_quat.copy(tempQuat);
     }
     const OnInit = ()=>{

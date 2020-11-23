@@ -1,19 +1,25 @@
 import { Vector3, Quaternion } from "three";
 
-
 const PlayerRotationCtrl = (page_sigs, socket, model, data, uid, camera)=>{
     const netw_obj = data;
     let target_quat = new Quaternion();
 
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== uid) return;
-        const tempQuat = new Quaternion(
+        const inputQuat = new Quaternion(
             msg.entity_properties.quaternion._x,
             msg.entity_properties.quaternion._y,
             msg.entity_properties.quaternion._z,
             msg.entity_properties.quaternion._w
         );
-        target_quat.copy(tempQuat);
+        
+        let tempQuat = new THREE.Quaternion();
+        let mulQuat = new THREE.Quaternion();
+        mulQuat.setFromAxisAngle(new THREE.Vector3(-1,0,0), msg.y_rot);
+        tempQuat.setFromAxisAngle(new THREE.Vector3(0,1,0), msg.x_rot);
+        tempQuat.multiply(mulQuat);
+
+        target_quat = tempQuat;
     }
     const OnInit = ()=>{
         socket.on('instance-state', ProcessServerMessage);
