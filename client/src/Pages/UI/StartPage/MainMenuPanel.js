@@ -12,7 +12,6 @@ const MainMenuPanel = (ui_interactable, canvas, app_sigs, ftm, socket, page)=>{
         STYLE.panelType2,
         STYLE.alignmentType1,
         STYLE.font_roboto,
-
     ));
     SetVisibility(panel);
     panel.position.z = -1;
@@ -78,18 +77,6 @@ const MainMenuPanel = (ui_interactable, canvas, app_sigs, ftm, socket, page)=>{
 
     panel.add(panel_header, panel_content);
 
-    const half = (_)=>{
-        if(_ instanceof TMUI.Block){
-            _.set({
-                width: _.width * .6,
-                //height: _.height * 0.5,
-            });
-        }
-    }
-    panel.traverse((_)=>half(_));
-    select_avatar_panel.traverse((_)=>half(_));
-    enter_inst_panel.traverse((_)=>half(_));
-    create_inst_panel.traverse((_)=>half(_));
     return panel;
 }
 

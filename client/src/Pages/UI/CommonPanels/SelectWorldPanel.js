@@ -79,6 +79,8 @@ const SelectWorldPanel = (ui_interactable, return_panel, ftm, socket)=>{
                 img_block.backgroundTexture.image.src = list[start_ind + (i - 1)].b64data;
                 MINT.LeftClick(_, ()=>{
                     socket.emit('create-world', list[start_ind + (i - 1)].uid);
+                    panel.sigs.set_visib.dispatch(false);
+                    return_panel.sigs.set_visib.dispatch(true);
                 });
             }
         });
@@ -128,10 +130,16 @@ const SelectWorldPanel = (ui_interactable, return_panel, ftm, socket)=>{
         return_panel.sigs.set_visib.dispatch(true);
     });
     MINT.LeftClick(prev_btn, ()=>{ 
-        
+        let new_start_ind = start_ind - 3;
+        if(new_start_ind < 0) return;
+        start_ind = new_start_ind;
+        UpdateImg();
     });
     MINT.LeftClick(next_btn, ()=>{ 
-        
+        let new_start_ind = start_ind + 3;
+        if(new_start_ind > list.length) return;
+        start_ind = new_start_ind;
+        UpdateImg();
     });
     ui_interactable.push(close_btn, prev_btn, next_btn);
     panel_footer.add(prev_btn, close_btn, next_btn);
