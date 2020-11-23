@@ -9,7 +9,7 @@ import { MyPeer } from '../MyPeer.js'
 import { Canvas } from './UI/Canvas.js'
 import { MainMenuPanel } from './UI/WorldPage/MainMenuPanel.js'
 
-const WorldPage = (socket, client_data, app_sigs, ftm)=>{
+const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
     const three_canvas = document.getElementById('three_canvas');
     
     const page = Page();

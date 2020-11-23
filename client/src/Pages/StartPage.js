@@ -1,5 +1,10 @@
-import { Color, LineSegments, LineBasicMaterial } from 'three'
+import { Color, LineSegments, LineBasicMaterial, AnimationMixer } from 'three'
 import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js'
+
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import RobotGLTF from '../../assets/models/Robot.gltf'
+import GhostsGLTF from '../../assets/models/Ghosts.gltf'
+
 import { Page } from './Page.js'
 import { Pointer } from './Invokers/Pointer.js'
 
@@ -10,18 +15,40 @@ import { MainMenuPanel } from './UI/StartPage/MainMenuPanel.js'
 const StartPage = (socket, client_data, app_sigs, ftm)=>{
     const page = Page();
     page.scene.background = new Color(0xFFFFFF);
-    page.scene.add(
-        new LineSegments(
-            new BoxLineGeometry(10, 10, 10, 10, 10, 10).translate(0, 5, 0),
-            new LineBasicMaterial({ color: 0x000000 })
-        )
+    // page.scene.add(
+    //     new LineSegments(
+    //         new BoxLineGeometry(10, 10, 10, 10, 10, 10).translate(0, 5, 0),
+    //         new LineBasicMaterial({ color: 0x000000 })
+    //     )
+    // );
+
+    let mixer = undefined;
+    const animation_action = [ ];
+    const loader = new GLTFLoader();
+    loader.load(
+        GhostsGLTF, 
+        (loaded)=>{
+            loaded.scene.position.set(0,-2.5,-10);
+            page.scene.add(loaded.scene);
+            mixer = new AnimationMixer(loaded.scene);
+            loaded.animations.forEach((_)=>{
+                animation_action.push(mixer.clipAction(_));
+            });
+            main_menu_panel.sigs.set_visib.dispatch(true);
+            animation_action[0].play();
+        },
+        (xhr)=>{
+            //PROGRESS BAR
+        }
     );
+
     page.camera.position.set(0,1,4);
     const ui_interactable = [ ];
     //#region ui
     const canvas = Canvas(page.sigs);
     const start_panel = StartPanel(ui_interactable, socket);
     const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket, page);
+    main_menu_panel.set({ backgroundOpacity: 0 });
     canvas.scene.add(start_panel, main_menu_panel);
     Object.assign(page, { canvas: canvas });
     //#endregion
@@ -40,16 +67,20 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     const OnEnter = ()=>{
         socket.on('create-success', OnCreateSuccess);
         socket.on('join-accept', OnJoinAccept);
-        //main_menu_panel.sigs.set_visib.dispatch(false);
+        main_menu_panel.sigs.set_visib.dispatch(false);
         start_panel.sigs.set_visib.dispatch(false);
     }
     const OnExit = ()=>{
         socket.off('create-success', OnCreateSuccess);
         socket.on('join-accept', OnJoinAccept);
     }
+    const OnUpdate = (delta)=>{
+        if(mixer) mixer.update(delta);
+    }
     //#endregion
     page.sigs.enter.add(OnEnter);
     page.sigs.exit.add(OnExit);
+    page.sigs.update.add(OnUpdate);
     return page;
 }
 

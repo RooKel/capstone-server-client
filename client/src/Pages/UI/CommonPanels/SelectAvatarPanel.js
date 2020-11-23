@@ -78,6 +78,7 @@ const SelectAvatarPanel = (ui_interactable, return_panel, ftm, socket)=>{
                 }
                 img_block.backgroundTexture.image.src = list[start_ind + (i - 1)].b64data;
                 MINT.LeftClick(_, ()=>{ 
+                    console.log('apply-avatar');
                     socket.emit('apply-avatar', list[start_ind + (i - 1)].uid);
                 });
             }
