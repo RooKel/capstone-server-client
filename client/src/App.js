@@ -13,20 +13,19 @@ const App = ()=>{
         player_obj: undefined
     }
     const sigs = {
-        create_inst: new signals.Signal(),
         change_page: new signals.Signal()
     }
     //#region signal event handlers
-    const OnCreateInst = (wModel_id)=>{
-        pages.push(WorldPage(socket, client_data, sigs, ftm));
-    }
     const OnChangePage = (to)=>{
+        if(to === 1){
+            if(pages[1]) pages[1] = WorldPage(socket, client_data, sigs, ftm);
+            else pages.push(WorldPage(socket, client_data, sigs, ftm));
+        }
         pages[cur_page_ind].sigs.exit.dispatch();
         pages[to].sigs.enter.dispatch();
         cur_page_ind = to;
     }
     //#endregion
-    sigs.create_inst.add(OnCreateInst);
     sigs.change_page.add(OnChangePage);
     //#region input event handlers
     const OnWindowResize = ()=>{
@@ -45,7 +44,6 @@ const App = ()=>{
     const renderer = new WebGLRenderer({ antialias: true });
     renderer.autoClear = false;
     renderer.getContext().enable(renderer.getContext().CULL_FACE);
-    renderer.getContext().cullFace(CullFaceBack);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.domElement.setAttribute('id', 'three_canvas');
