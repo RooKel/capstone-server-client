@@ -33,7 +33,6 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     }
     const OnJoinAccept = (socket_id)=>{
         client_data.uid = socket_id;
-        app_sigs.create_inst.dispatch();
         app_sigs.change_page.dispatch(1);
     }
     //#endregion

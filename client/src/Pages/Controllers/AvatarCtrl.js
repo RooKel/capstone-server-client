@@ -40,11 +40,9 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
                                         return anim.name === _.userData.animSet[a].animation
                                     }
                                 );
-                                animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState);
+                                animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
                             }
                         });
-                        animation_action['walk'].crossFadeIn(animation_action['idle'], 0.2, true);
-                        animation_action['idle'].crossFadeIn(animation_action['walk'], 0.2, true);
                     });
                     need_update = false;
                 }
@@ -60,7 +58,10 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
         if(mixer) mixer.update(delta);
     });
     const PlayAnim = (anim_name)=>{
-        console.log(anim_name);
+        if(!animation_action[anim_name]) return;
+        for(let i in animation_action){
+            animation_action[i].stop();
+        }
         animation_action[anim_name].play();
     }
     return {

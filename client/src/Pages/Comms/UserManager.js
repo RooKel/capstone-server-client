@@ -2,8 +2,8 @@ import { BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Frustum, Group } from 't
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 import { PlayerMovementCtrl } from '../Controllers/PlayerMovementCtrl.js'
-import { CameraCtrl } from '../Controllers/CameraCtrl.js'
 import { OthUserMovementCtrl } from '../Controllers/OthUserMovementCtrl.js'
+import { CameraCtrl } from '../Controllers/CameraCtrl.js'
 import { AvatarCtrl } from '../Controllers/AvatarCtrl.js'
 
 const UserManager = (socket, client_data, page, input_collector, ftm)=>{
@@ -28,13 +28,13 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
                 dispose: new signals.Signal(),
                 change_target: new signals.Signal()
             }});
-            const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs, anim_ctrl);
-            //page.camera.sigs.change_target.dispatch(group, new Vector3(0,1,0));
+            const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs);
+            page.camera.sigs.change_target.dispatch(group, new Vector3(0,1,0));
             page.camera.sigs.init.dispatch();
             client_data.player_obj = group;
         }
         else{
-            OthUserMovementCtrl(socket, uid, data, group, page.sigs);
+            OthUserMovementCtrl(socket, uid, data, group, page.sigs, anim_ctrl);
         }
         users[uid] = group;
         users[uid].sigs.init.dispatch();

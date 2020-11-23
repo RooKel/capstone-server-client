@@ -55,6 +55,7 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
                 info_block.add(new TMUI.Text({ content:list[start_ind + (i-1)].id }));
                 MINT.LeftClick(_, ()=>{ 
                     console.log(list[start_ind + (i-1)].id);
+                    socket.emit('exit_instance');
                     socket.emit('join-instance', list[start_ind + (i-1)].id);
                 });
             }
@@ -65,7 +66,6 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
             socket.emit('rq-instance-list', true);
     });
     const OnInstanceList = (input)=>{
-        console.log(input);
         input.forEach((_)=>list.push(_));
         UpdateListElems();
     }
