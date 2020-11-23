@@ -3,11 +3,14 @@ import { FileTransferManager } from './FileTransferManager.js'
 import { StartPage } from './Pages/StartPage.js'
 import { WorldPage } from './Pages/WorldPage.js'
 import * as THREE from 'three';
+import MyPeer from './MyPeer.js';
 
 const App = ()=>{
     const ftm = new FileTransferManager(null, 'ws://localhost:3000');
     ftm.listenFileDownload();
     const socket = io();
+    const myPeer = MyPeer(socket, null, null);
+
     const client_data = {
         uid: undefined,
         player_obj: undefined
