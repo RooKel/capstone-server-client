@@ -232,11 +232,10 @@ function Loader( editor ) {
 
 						var scene = result.scene;
 						scene.name = filename;
-						for (let c = 0; c < scene.children.length;)
-						{
-							//  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
-							editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
-						}
+
+						editor.addAnimation( scene, result.animations );
+						editor.execute( new AddObjectCommand( editor, scene ) );
+
 						editor.scene.traverse(x => {
 
 							if(x.userData === undefined)        return;
@@ -257,8 +256,7 @@ function Loader( editor ) {
 							editor.addAnimation( x, getAnimSet );
 							editor.deselect();
 						});
-						/*editor.addAnimation( scene, result.animations );
-						editor.execute( new AddObjectCommand( editor, scene ) );*/
+
 					} );
 
 				}, false );
@@ -292,11 +290,10 @@ function Loader( editor ) {
 
 						var scene = result.scene;
 						scene.name = filename;
-						for (let c = 0; c < scene.children.length;)
-						{
-							//  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
-							editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
-						}
+
+						editor.addAnimation( scene, result.animations );
+						editor.execute( new AddObjectCommand( editor, scene ) );
+
 						editor.scene.traverse(x => {
 
 							if(x.userData === undefined)        return;
@@ -757,12 +754,10 @@ function Loader( editor ) {
 					loader.parse( file.asText(), '', function ( result ) {
 
 						var scene = result.scene;
-						scene.name = filename;
-						for (let c = 0; c < scene.children.length;)
-						{
-							//  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
-							editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
-						}
+
+						editor.addAnimation( scene, result.animations );
+						editor.execute( new AddObjectCommand( editor, scene ) );
+
 						editor.scene.traverse(x => {
 
 							if(x.userData === undefined)        return;
@@ -785,8 +780,6 @@ function Loader( editor ) {
 						});
 
 						/*var scene = result.scene;
-
-						editor.addAnimation( scene, result.animations );
 						editor.execute( new AddObjectCommand( editor, scene ) );*/
 					} );
 					break;

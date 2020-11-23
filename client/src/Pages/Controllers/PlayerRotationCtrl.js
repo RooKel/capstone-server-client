@@ -1,24 +1,40 @@
-import * as THREE from 'three'
+import { Vector3, Quaternion,Euler } from "three";
+import {MathUtils} from "three";
 
-const PlayerRotationCtrl = (socket, uid, data, model, camera, page_sigs)=>{
+const PlayerRotationCtrl = (page_sigs, socket, model, data, uid, camera)=>{
+    const netw_obj = data;
+    let target_quat = new Quaternion();
+
+    let rot = new Quaternion(0,0,0,1);
+    let euler = new Euler(0,0,0);
     const ProcessServerMessage = (msg)=>{
-        if(msg.entity_id !== client_data.uid) return;
-        
+        if(msg.entity_id !== uid) return;
+        const inputQuat = new Quaternion(
+            msg.entity_properties.quaternion._x,
+            msg.entity_properties.quaternion._y,
+            msg.entity_properties.quaternion._z,
+            msg.entity_properties.quaternion._w
+        );
+        rot = new Quaternion(0,inputQuat.y, 0, inputQuat.w);
+        euler = euler.setFromQuaternion(rot);
+        euler.y += MathUtils.degToRad(180);
+        //rot = inputQuat;
     }
     const OnInit = ()=>{
-        //socket.on('instance-state', ProcessServerMessage)
+        socket.on('instance-state', ProcessServerMessage);
     }
     const OnDispose = ()=>{
-        //socket.off('instance-state', ProcessServerMessage)
+        socket.off('instance-state', ProcessServerMessage);
     }
-    const OnUpdate = ()=>{
-        let look_dir = new THREE.Vector3();
-        camera.getWorldDirection(look_dir);
-        console.log(look_dir);
-        let right_dir = new THREE.Vector3();
-        right_dir.crossVectors(look_dir, new THREE.Vector3(0,1,0));
-        let forward_dir = new THREE.Vector3();
-        forward_dir.crossVectors(right_dir, new THREE.Vector3(0,1,0));
+    let tempQuat = new Quaternion(0,0,0,1);
+    const OnUpdate = (delta)=>{
+        if(!rot) return;
+
+        model.rotation.copy(euler);
+        //model.quaternion.copy(rot);
+        console.log(model);
+        console.log(model.quaternion);
+        //model.quaternion.slerp(target_quat, 0.5);
     }
     page_sigs.update.add(OnUpdate);
     model.sigs.init.add(OnInit);
