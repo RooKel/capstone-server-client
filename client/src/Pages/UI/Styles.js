@@ -12,6 +12,11 @@ const panelType1 = {
     padding: 0.03, margin: 0.01,
     backgroundOpacity: 0
 }
+const startPanelType = {
+    width: 30, height: 20,
+    padding: 0, margin: 0,
+    backgroundOpacity: 1
+}
 const panelType1_header = {
     width: 1.1, height: 0.1,
     padding: 0.03, margin: 0.01
@@ -83,6 +88,7 @@ const alignmentType4 = {
 
 export {
     font_roboto,
+    startPanelType,
     panelType1, panelType1_header, panelType1_content,
     panelType2, panelType2_header, panelType2_content, panelType2_footer,
     panelType2_content_listElem, panelType2_content_listElem_img, panelType2_content_listElem_info,

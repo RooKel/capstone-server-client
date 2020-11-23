@@ -1,4 +1,4 @@
-import { Color, LineSegments, LineBasicMaterial, AnimationMixer } from 'three'
+import {Color, LineSegments, LineBasicMaterial, AnimationMixer, MathUtils, MeshToonMaterial} from 'three'
 import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js'
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -16,6 +16,7 @@ import { Canvas } from './UI/Canvas.js'
 import { StartPanel } from './UI/StartPage/StartPanel.js'
 import { MainMenuPanel } from './UI/StartPage/MainMenuPanel.js'
 import {TextureLoader} from "../../../editor/build/three.module";
+import {Euler, Vector3} from "../../../editor/build/three";
 
 const StartPage = (socket, client_data, app_sigs, ftm)=>{
     const page = Page();
@@ -28,7 +29,7 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     // );
 
     const loading_panel = new TMUI.Block(Object.assign({},
-        STYLE.panelType1,
+        STYLE.startPanelType,
         STYLE.font_roboto,
         {
             alignContent: 'center',
@@ -46,20 +47,47 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     const texLoader = new TextureLoader();
     texLoader.load(BackgroundPNG, function(texture){
         page.scene.background = texture;
+        page.scene.environment = texture;
     });
 
     loader.load(
         StartSceneGLTF,
         (loaded)=>{
             let loadedScene = loaded.scene;
-            loadedScene.scale.set(1.5, 1.5, 1.5);
-            loadedScene.position.set(-15,-5,0);
-            loadedScene.rotation.set(0.1,0,0);
+            loadedScene.scale.set(1.25, 1.25, 1.25);
+            //loadedScene.rotation.set(0.1,0,0);
             let astro = loaded.scene.children[0];
-            let debri = loaded.scene.children[1];
-            let light = loaded.scene.children[2];
+            astro.translateX(-8);
+            astro.translateY(-10);
+            astro.translateZ(-2);
+            astro.traverseVisible(_ =>{
+                if(_.isMesh)
+                {
+                    let curMat = _.material;
+                    let toonMat = new MeshToonMaterial({
+                        color:curMat.color,
+                        emissive:curMat.emissive,
+                        skinning:curMat.skinning,
+                        map:curMat.map,
+                        emissiveMap:curMat.emissiveMap,
+                        side:curMat.side,
+                        depthTest:curMat.depthTest,
+                        depthWrite:curMat.depthWrite
+                    });
+                    _.material = toonMat;
+                }
+            })
+            console.log(astro);
 
-            light.position.set(5, 10, 11.379);
+            let debri = loaded.scene.children[1];
+            debri.translateX(-8);
+            debri.translateY(-10);
+
+            let light = loaded.scene.children[2];
+            light.position.set(5, 14, 13.379);
+            light.lookAt(debri.position);
+            light.intensity = 1.5;
+
             page.scene.add(loaded.scene);
 
             mixer = new AnimationMixer(loaded.scene);
@@ -75,7 +103,13 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
         }
     );
     page.camera.fov = 50;
-    page.camera.position.set(6.6,7.2,35);
+    page.camera.position.set(-2.114,8.763,33.020);
+    let camRot = new Euler(0,0,0);
+    camRot.x = MathUtils.degToRad(-16.13);
+    camRot.y = MathUtils.degToRad(-17.84);
+    camRot.z = MathUtils.degToRad(-5.06);
+    page.camera.rotation.set(camRot.x,camRot.y,camRot.z);
+
     const ui_interactable = [ ];
     //#region ui
     const canvas = Canvas(page.sigs);
