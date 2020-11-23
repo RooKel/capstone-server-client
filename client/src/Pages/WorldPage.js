@@ -1,4 +1,4 @@
-import { Color, LineSegments, LineBasicMaterial, Vector3 } from 'three'
+import { Color, LineSegments, LineBasicMaterial, Vector3, DirectionalLight } from 'three'
 import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js'
 import { Page } from './Page.js'
 import { Pointer } from './Invokers/Pointer.js'
@@ -17,6 +17,9 @@ const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
     
     const page = Page();
     page.scene.background = new Color(0xFFFFFF);
+    const dir_light = new DirectionalLight(0xFFFFFF, 1);
+    dir_light.position.set(5,12,-18);
+    page.scene.add(dir_light);
     // page.scene.add(
     //     new LineSegments(
     //         new BoxLineGeometry(10, 10, 10, 10, 10, 10).translate(0, 5, 0),
@@ -49,7 +52,7 @@ const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
     //#region input event handlers
     let main_menu_panel_visibility = false;
     const OnKeyDown = (e)=>{
-        if(e.code === 'KeyQ'){
+        if(e.code === 'Escape'){
             main_menu_panel_visibility = !main_menu_panel_visibility;
             main_menu_panel.sigs.set_visib.dispatch(main_menu_panel_visibility);
             if(main_menu_panel_visibility){

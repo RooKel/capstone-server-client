@@ -64,6 +64,10 @@ const EnterInstPanel = (ui_interactable, return_panel, ftm, socket, page)=>{
     panel.sigs.set_visib.add((visibility)=>{
         if(visibility)
             socket.emit('rq-instance-list', true);
+        else{
+            list.splice(0, list.length);
+            start_ind = 0;
+        }
     });
     const OnInstanceList = (input)=>{
         input.forEach((_)=>list.push(_));
