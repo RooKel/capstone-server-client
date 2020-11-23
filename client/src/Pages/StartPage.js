@@ -29,7 +29,7 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     // );
 
     const loading_panel = new TMUI.Block(Object.assign({},
-        STYLE.panelType1,
+        STYLE.startPanelType,
         STYLE.font_roboto,
         {
             alignContent: 'center',
