@@ -32,7 +32,7 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
         const anim_ctrl = AvatarCtrl(uid, group, socket, ftm, page.sigs, page.camera);
         if(uid === client_data.uid){
             PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs, anim_ctrl);
-            PlayerRotationCtrl(page.sigs, socket, group, data);
+            PlayerRotationCtrl(page.sigs, socket, group, data, uid, page.camera);
             Object.assign(page.camera, { sigs: { 
                 init: new signals.Signal(),
                 dispose: new signals.Signal(),
@@ -45,7 +45,7 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
         }
         else{
             OthUserMovementCtrl(socket, uid, data, group, page.sigs, anim_ctrl);
-            OthUserRotationCtrl(page.sigs, socket, group, data);
+            OthUserRotationCtrl(page.sigs, socket, group, data, uid);
         }
         users[uid] = group;
         users[uid].sigs.init.dispatch();
