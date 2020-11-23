@@ -1,20 +1,18 @@
-import { Vector3, Quaternion, Euler } from "three";
+import { Vector3, Quaternion } from "three";
 
 const OthUserRotationCtrl = (page_sigs, socket, model, data, uid)=>{
     const netw_obj = data;
+    let target_quat = new Quaternion();
 
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== uid) return;
-        const tempQuat = new Quaternion(
+        const inputQuat = new Quaternion(
             msg.entity_properties.quaternion._x,
             msg.entity_properties.quaternion._y,
             msg.entity_properties.quaternion._z,
             msg.entity_properties.quaternion._w
         );
-        const tempQuatEuler = new Euler().setFromQuaternion(tempQuat);
-        tempQuatEuler.x = 0;
-        tempQuatEuler.z = 0;
-        target_quat.copy(tempQuat);
+        target_quat = inputQuat;
     }
     const OnInit = ()=>{
         socket.on('instance-state', ProcessServerMessage);

@@ -12,14 +12,7 @@ const PlayerRotationCtrl = (page_sigs, socket, model, data, uid, camera)=>{
             msg.entity_properties.quaternion._z,
             msg.entity_properties.quaternion._w
         );
-        
-        let tempQuat = new THREE.Quaternion();
-        let mulQuat = new THREE.Quaternion();
-        mulQuat.setFromAxisAngle(new THREE.Vector3(-1,0,0), msg.y_rot);
-        tempQuat.setFromAxisAngle(new THREE.Vector3(0,1,0), msg.x_rot);
-        tempQuat.multiply(mulQuat);
-
-        target_quat = tempQuat;
+        target_quat = inputQuat;
     }
     const OnInit = ()=>{
         socket.on('instance-state', ProcessServerMessage);
