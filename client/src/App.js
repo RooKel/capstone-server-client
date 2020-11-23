@@ -1,8 +1,8 @@
 import { Clock, WebGLRenderer, CullFaceBack } from 'three'
 import { FileTransferManager } from './FileTransferManager.js'
-
 import { StartPage } from './Pages/StartPage.js'
 import { WorldPage } from './Pages/WorldPage.js'
+import * as THREE from 'three';
 
 const App = ()=>{
     const ftm = new FileTransferManager(null, 'ws://localhost:3000');
@@ -44,6 +44,11 @@ const App = ()=>{
     const renderer = new WebGLRenderer({ antialias: true });
     renderer.autoClear = false;
     renderer.getContext().enable(renderer.getContext().CULL_FACE);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = 0;
+    renderer.toneMappingExposure = 1;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = 1;
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.domElement.setAttribute('id', 'three_canvas');
