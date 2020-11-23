@@ -8,6 +8,9 @@ import GhostsGLTF from '../../assets/models/Ghosts.gltf'
 import { Page } from './Page.js'
 import { Pointer } from './Invokers/Pointer.js'
 
+import * as TMUI from 'three-mesh-ui'
+import * as STYLE from './UI/Styles.js'
+import { SetVisibility } from './Interactions/SetVisibility.js'
 import { Canvas } from './UI/Canvas.js'
 import { StartPanel } from './UI/StartPage/StartPanel.js'
 import { MainMenuPanel } from './UI/StartPage/MainMenuPanel.js'
@@ -22,6 +25,18 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     //     )
     // );
 
+    const loading_panel = new TMUI.Block(Object.assign({},
+        STYLE.panelType1,
+        STYLE.font_roboto,
+        {
+            alignContent: 'center',
+            justifyContent: 'center',
+        }
+    ));
+    loading_panel.add(new TMUI.Text({ content: 'Loading' }));
+    loading_panel.position.z = -1;
+    SetVisibility(loading_panel);
+
     let mixer = undefined;
     const animation_action = [ ];
     const loader = new GLTFLoader();
@@ -34,6 +49,7 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
             loaded.animations.forEach((_)=>{
                 animation_action.push(mixer.clipAction(_));
             });
+            loading_panel.sigs.set_visib.dispatch(false);
             main_menu_panel.sigs.set_visib.dispatch(true);
             animation_action[0].play();
         },
@@ -49,7 +65,7 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     const start_panel = StartPanel(ui_interactable, socket);
     const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket, page);
     main_menu_panel.set({ backgroundOpacity: 0 });
-    canvas.scene.add(start_panel, main_menu_panel);
+    canvas.scene.add(start_panel, main_menu_panel, loading_panel);
     Object.assign(page, { canvas: canvas });
     //#endregion
     const pointer = Pointer(page.sigs, canvas.camera, ui_interactable);
@@ -69,6 +85,7 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
         socket.on('join-accept', OnJoinAccept);
         main_menu_panel.sigs.set_visib.dispatch(false);
         start_panel.sigs.set_visib.dispatch(false);
+        loading_panel.sigs.set_visib.dispatch(true);
     }
     const OnExit = ()=>{
         socket.off('create-success', OnCreateSuccess);
