@@ -31,7 +31,6 @@ const OthUserRotationCtrl = (page_sigs, socket, model, data, uid)=>{
         if(!rot) return;
         model.rotation.copy(euler);
         //model.quaternion.copy(rot);
-        console.log(model);
         //model.quaternion.slerp(target_quat, 0.5);
     }
     page_sigs.update.add(OnUpdate);

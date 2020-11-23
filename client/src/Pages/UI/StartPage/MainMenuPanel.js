@@ -29,7 +29,7 @@ const MainMenuPanel = (ui_interactable, canvas, app_sigs, ftm, socket, page)=>{
     ));
     const select_avatar_panel = SelectAvatarPanel(ui_interactable, panel, ftm, socket);
     const enter_inst_panel = EnterInstPanel(ui_interactable, panel, ftm, socket, page);
-    const create_inst_panel = CreateInstPanel(ui_interactable, panel, ftm, canvas);
+    const create_inst_panel = CreateInstPanel(ui_interactable, panel, ftm, canvas, socket);
     canvas.scene.add(select_avatar_panel, enter_inst_panel, create_inst_panel);
     select_avatar_panel.sigs.set_visib.dispatch(false);
     enter_inst_panel.sigs.set_visib.dispatch(false);
@@ -65,16 +65,16 @@ const MainMenuPanel = (ui_interactable, canvas, app_sigs, ftm, socket, page)=>{
     panel_content.add(select_avatar_panel_btn, enter_inst_panel_btn, create_inst_panel_btn);
 
     //TEST
-    const test_btn = new TMUI.Block(Object.assign({},
-        STYLE.btnType2,
-        STYLE.alignmentType1 
-    ));
-    test_btn.add(new TMUI.Text({ content: 'TEST' }));
-    MINT.LeftClick(test_btn, ()=>{
-        socket.emit('create-world', '_4pqz5yppk');
-    });
-    ui_interactable.push(test_btn);
-    panel_content.add(test_btn);
+    // const test_btn = new TMUI.Block(Object.assign({},
+    //     STYLE.btnType2,
+    //     STYLE.alignmentType1 
+    // ));
+    // test_btn.add(new TMUI.Text({ content: 'TEST' }));
+    // MINT.LeftClick(test_btn, ()=>{
+    //     socket.emit('create-world', '_4pqz5yppk');
+    // });
+    // ui_interactable.push(test_btn);
+    // panel_content.add(test_btn);
 
     panel.add(panel_header, panel_content);
 

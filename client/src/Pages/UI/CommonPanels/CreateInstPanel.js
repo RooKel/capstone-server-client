@@ -5,9 +5,8 @@ import * as MINT from '../../Interactions/MouseInteractions.js'
 import { SetVisibility } from '../../Interactions/SetVisibility.js'
 
 import { SelectWorldPanel } from './SelectWorldPanel.js'
-import { TextInputPanel } from './TextInputPanel.js'
 
-const CreateInstPanel = (ui_interactable, return_panel, ftm, canvas, page)=>{
+const CreateInstPanel = (ui_interactable, return_panel, ftm, canvas, socket)=>{
     const panel = new TMUI.Block(Object.assign({},
         STYLE.panelType2,
         STYLE.alignmentType1,
@@ -27,7 +26,7 @@ const CreateInstPanel = (ui_interactable, return_panel, ftm, canvas, page)=>{
         STYLE.alignmentType1
     ));
     
-    const select_world_panel = SelectWorldPanel(ui_interactable, panel, ftm);
+    const select_world_panel = SelectWorldPanel(ui_interactable, panel, ftm, socket);
     canvas.scene.add(select_world_panel);
     select_world_panel.sigs.set_visib.dispatch(false);
     const select_world_panel_btn = new TMUI.Block(Object.assign({},

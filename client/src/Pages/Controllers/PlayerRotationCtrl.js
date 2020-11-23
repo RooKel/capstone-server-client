@@ -32,8 +32,6 @@ const PlayerRotationCtrl = (page_sigs, socket, model, data, uid, camera)=>{
 
         model.rotation.copy(euler);
         //model.quaternion.copy(rot);
-        console.log(model);
-        console.log(model.quaternion);
         //model.quaternion.slerp(target_quat, 0.5);
     }
     page_sigs.update.add(OnUpdate);

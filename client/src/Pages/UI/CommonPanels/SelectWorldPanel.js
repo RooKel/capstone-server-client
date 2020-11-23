@@ -6,7 +6,7 @@ import { SetVisibility } from '../../Interactions/SetVisibility.js'
 
 import InvisiblePNG from '../../../../assets/png/invisible.png'
 
-const SelectWorldPanel = (ui_interactable, return_panel, ftm)=>{
+const SelectWorldPanel = (ui_interactable, return_panel, ftm, socket)=>{
     const panel = new TMUI.Block(Object.assign({},
         STYLE.panelType2,
         STYLE.alignmentType1,
@@ -44,6 +44,7 @@ const SelectWorldPanel = (ui_interactable, return_panel, ftm)=>{
             STYLE.alignmentType1
         ));
         list_elem.add(list_elem_img, list_elem_info);
+        ui_interactable.push(list_elem);
         panel_content.add(list_elem);
     }
     const b64 = (e)=>{
@@ -76,7 +77,9 @@ const SelectWorldPanel = (ui_interactable, return_panel, ftm)=>{
                     img_block.backgroundTexture.needsUpdate = true;
                 }
                 img_block.backgroundTexture.image.src = list[start_ind + (i - 1)].b64data;
-                MINT.LeftClick(_, ()=>{ console.log(list[start_ind + (i - 1)].uid) });
+                MINT.LeftClick(_, ()=>{
+                    socket.emit('create-world', list[start_ind + (i - 1)].uid);
+                });
             }
         });
     }

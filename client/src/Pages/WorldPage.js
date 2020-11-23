@@ -10,6 +10,7 @@ import { Canvas } from './UI/Canvas.js'
 import { MainMenuPanel } from './UI/WorldPage/MainMenuPanel.js'
 
 const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
+    console.log(client_data.uid);
     const three_canvas = document.getElementById('three_canvas');
     
     const page = Page();
@@ -49,12 +50,6 @@ const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
             }
         }
     }
-    const OnMouseDown = (e)=>{
-        
-    }
-    const OnPointerLockChanged = ()=>{
-        
-    }
     //#endregion
     //#region signal event handlers
     const OnEnter = ()=>{
@@ -62,11 +57,9 @@ const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
         ui_pointer.sigs.active.dispatch(false);
 
         document.addEventListener('keydown', OnKeyDown);
-        document.addEventListener('mousedown', OnMouseDown);
     }
     const OnExit = ()=>{
         document.removeEventListener('keydown', OnKeyDown);
-        document.removeEventListener('mousedown', OnMouseDown);
     }
     //#endregion
     page.sigs.enter.add(OnEnter);
