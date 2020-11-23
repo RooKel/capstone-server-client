@@ -9,7 +9,8 @@ const font_roboto = {
 
 const panelType1 = {
     width: 1.2, height: 1,
-    padding: 0.03, margin: 0.01
+    padding: 0.03, margin: 0.01,
+    backgroundOpacity: 0
 }
 const panelType1_header = {
     width: 1.1, height: 0.1,
@@ -22,7 +23,8 @@ const panelType1_content = {
 
 const panelType2 = {
     width: 1.2, height: 1,
-    padding: 0.03, margin: 0.01
+    padding: 0.03, margin: 0.01,
+    backgroundOpacity: 0
 }
 const panelType2_header = {
     width: 1.1, height: 0.1,

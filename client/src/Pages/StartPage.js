@@ -36,6 +36,7 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
             justifyContent: 'center',
         }
     ));
+    loading_panel.set({ backgroundOpacity:0.5 });
     loading_panel.add(new TMUI.Text({ content: 'Loading' }));
     loading_panel.position.z = -1;
     SetVisibility(loading_panel);
