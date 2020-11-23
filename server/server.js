@@ -36,6 +36,7 @@ const makeUID = function() { return '_' + Math.random().toString(36).substr(2, 9
 var instances = [];
 var instance_of_users = [];
 var avatars = [];
+var peers = [];
 
 // last processed input for each client.
 var last_processed_input = [];
@@ -153,6 +154,9 @@ function onConnect(socket)
         socket.join(instance_id);
         instance_of_users[socket.id] = instance_id;
 
+        socket.to(instance_id).emit('peer-connected', { 'uid':socket.id, 'pid':peers[socket.id] });
+        console.log("PEER CONNECT : " + peers[socket.id]);
+
         // store entity data into entities array
         var instance = instances[instance_id];
         instance.entities[socket.id] = new Entity();
@@ -198,9 +202,7 @@ function onConnect(socket)
 
     /* peer login for audio chat */
     socket.on('peer-login', pid => {
-        var instance_id = instance_of_users[socket.id];
-        socket.to(instance_id).emit('peer-connected', { 'uid':socket.id, 'pid':pid });
-        console.log("PEER CONNECT : " + pid);
+        peers[socket.id] = pid;
     });
 
     /* exit instance */
@@ -211,6 +213,7 @@ function onConnect(socket)
         // delete disconnected user entity
         if (instance_of_users[socket.id]) {
             socket.leave(instance_id);
+            delete peers[socket.id];
             delete instance_of_users[socket.id];
             delete instance.entities[socket.id];
 
@@ -228,6 +231,8 @@ function onConnect(socket)
 
         // delete disconnected user entity
         if (instance_of_users[socket.id]) {
+            delete peers[socket.id];
+            delete instance_of_users[socket.id];
             delete instance.entities[socket.id];
 
             // broadcast disconnected user id
