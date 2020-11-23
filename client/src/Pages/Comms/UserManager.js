@@ -24,7 +24,6 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
             data.quaternion._z,
             data.quaternion._w
         );
-        console.log(group);
         Object.assign(group, { sigs: { 
             init: new signals.Signal(),
             dispose: new signals.Signal()

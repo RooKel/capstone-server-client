@@ -162,7 +162,7 @@ function onConnect(socket)
         user_entity.quaternion = new THREE.Quaternion();
 
         // send login accept message to sender
-        socket.emit('join-accept', socket.id);
+        socket.emit('join-accept', instances[instance_id].world_id);
 
         // send each entity data because socket.io doesn't support to send dictionary data
         for (var entity_id in instance.entities)
@@ -242,18 +242,20 @@ function onConnect(socket)
         var user_instance = instance_of_users[socket.id];
         var user_entity = instances[user_instance].entities[socket.id];
         
-        user_entity.x += data.move_dx * user_entity.speed;
-        user_entity.y += data.move_dy * user_entity.speed;
-        
-        user_entity.x_rot -= data.mouse_dx;
-        user_entity.y_rot -= data.mouse_dy;
-        
-        let tempQuat =  new Quaternion();
-        let mulQuat = new Quaternion();
-        mulQuat.setFromAxisAngle(new Vector3(-1,0,0), user_entity.y_rot);
-        tempQuat.setFromAxisAngle(new Vector3(0,1,0), user_entity.x_rot);
-        tempQuat.multiply(mulQuat);
-        user_entity.quaternion.copy(tempQuat);
+        if (user_instance) {
+            user_entity.x += data.move_dx * user_entity.speed;
+            user_entity.y += data.move_dy * user_entity.speed;
+            
+            user_entity.x_rot -= data.mouse_dx;
+            user_entity.y_rot -= data.mouse_dy;
+            
+            let tempQuat =  new Quaternion();
+            let mulQuat = new Quaternion();
+            mulQuat.setFromAxisAngle(new Vector3(-1,0,0), user_entity.y_rot);
+            tempQuat.setFromAxisAngle(new Vector3(0,1,0), user_entity.x_rot);
+            tempQuat.multiply(mulQuat);
+            user_entity.quaternion.copy(tempQuat);
+        }
     });
 
     /* apply avatar */

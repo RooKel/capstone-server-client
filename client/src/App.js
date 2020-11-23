@@ -16,10 +16,10 @@ const App = ()=>{
         change_page: new signals.Signal()
     }
     //#region signal event handlers
-    const OnChangePage = (to)=>{
+    const OnChangePage = (to, world_id)=>{
         if(to === 1){
-            if(pages[1]) pages[1] = WorldPage(socket, client_data, sigs, ftm);
-            else pages.push(WorldPage(socket, client_data, sigs, ftm));
+            if(pages[1]) pages[1] = WorldPage(socket, client_data, sigs, ftm, world_id);
+            else pages.push(WorldPage(socket, client_data, sigs, ftm, world_id));
         }
         pages[cur_page_ind].sigs.exit.dispatch();
         pages[to].sigs.enter.dispatch();
