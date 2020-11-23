@@ -261,7 +261,7 @@ function onConnect(socket)
         avatars[socket.id] = avatar_id;
 
         if (instance_of_users[socket.id]) {
-            var instance = instance_of_users[socket.id];
+            var instance_id = instance_of_users[socket.id];
             io.in(instance_id).emit('update-avatar', entity_id, avatar_id);
         }
         console.log(socket.id + "유저의 아바타 갱신 : " + avatar_id);
