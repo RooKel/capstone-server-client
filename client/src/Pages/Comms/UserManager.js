@@ -5,6 +5,8 @@ import { PlayerMovementCtrl } from '../Controllers/PlayerMovementCtrl.js'
 import { OthUserMovementCtrl } from '../Controllers/OthUserMovementCtrl.js'
 import { CameraCtrl } from '../Controllers/CameraCtrl.js'
 import { AvatarCtrl } from '../Controllers/AvatarCtrl.js'
+import { PlayerRotationCtrl } from '../Controllers/PlayerRotationCtrl.js'
+import { OthUserRotationCtrl } from '../Controllers/OthUserRotationCtrl.js'
 
 const UserManager = (socket, client_data, page, input_collector, ftm)=>{
     const users = { };
@@ -16,6 +18,7 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
         cube.name = 'default_mesh';
         group.add(cube);
         group.position.set(data.x, 0, data.y);
+        console.log(data);
         Object.assign(group, { sigs: { 
             init: new signals.Signal(),
             dispose: new signals.Signal()
@@ -23,6 +26,7 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
         const anim_ctrl = AvatarCtrl(uid, group, socket, ftm, page.sigs, page.camera);
         if(uid === client_data.uid){
             PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs, anim_ctrl);
+            PlayerRotationCtrl(page.sigs, socket, group, data);
             Object.assign(page.camera, { sigs: { 
                 init: new signals.Signal(),
                 dispose: new signals.Signal(),
@@ -35,6 +39,7 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
         }
         else{
             OthUserMovementCtrl(socket, uid, data, group, page.sigs, anim_ctrl);
+            OthUserRotationCtrl(page.sigs, socket, group, data);
         }
         users[uid] = group;
         users[uid].sigs.init.dispatch();
@@ -55,6 +60,10 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
         socket.off('initial-entities-data', AddUser);
         socket.off('other-join', AddUser);
         socket.off('disconnected', RemUser);
+        for(let i in users){
+            users[i].sigs.dispose.dispatch();
+            delete users[i];
+        }
     }
     //#endregion
     page.sigs.enter.add(OnEnter);

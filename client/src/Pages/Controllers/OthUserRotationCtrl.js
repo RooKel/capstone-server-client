@@ -1,6 +1,6 @@
 
 
-const PlayerRotationCtrl = (page_sigs, socket, model, data)=>{
+const OthUserRotationCtrl = (page_sigs, socket, model, data)=>{
     const netw_obj = data;
 
     const ProcessServerMessage = (msg)=>{
@@ -27,4 +27,4 @@ const PlayerRotationCtrl = (page_sigs, socket, model, data)=>{
     model.sigs.dispose.add(OnDispose);
 }
 
-export { PlayerRotationCtrl }
+export { OthUserRotationCtrl }
