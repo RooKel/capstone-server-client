@@ -1,7 +1,9 @@
+import { Vector3 } from "three";
 
-const OthUserMovementCtrl = (socket, uid, data, model, page_sigs)=>{
+const OthUserMovementCtrl = (socket, uid, data, model, page_sigs, anim_ctrl)=>{
     const netw_obj = data;
     const server_update_rate = 12;
+    let prev_model_pos = new Vector3(data.x, 0, data.y);
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== uid) return;
@@ -16,6 +18,7 @@ const OthUserMovementCtrl = (socket, uid, data, model, page_sigs)=>{
     const OnInit = ()=>{
         socket.on('instance-state', ProcessServerMessage);
     }
+    let walking = false;
     const OnUpdate = (delta)=>{
         let render_timestamp = +new Date() - (1000.0/server_update_rate);
 
@@ -34,6 +37,17 @@ const OthUserMovementCtrl = (socket, uid, data, model, page_sigs)=>{
 
         model.position.x = netw_obj.x;
         model.position.z = netw_obj.y;
+        if(anim_ctrl) {
+            if(!walking && (prev_model_pos.x !== model.position.x || prev_model_pos.z !== model.position.z)){
+                anim_ctrl.PlayAnim('walk');
+                walking = true;
+            }
+            else if(walking && (prev_model_pos.x === model.position.x && prev_model_pos.z === model.position.z)){
+                anim_ctrl.PlayAnim('idle');
+                walking = false;
+            }
+            prev_model_pos.copy(model.position);
+        }
     }
     const OnDispose = ()=>{
         socket.off('instance-state', ProcessServerMessage);

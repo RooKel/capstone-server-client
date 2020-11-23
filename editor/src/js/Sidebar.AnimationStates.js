@@ -56,8 +56,6 @@ function SidebarAnimationStates( editor ) {
 			{
 				for (var animation of animations) {
 
-					if(firstAnimation === undefined) firstAnimation = animation.name;
-
 					animationSelectOptions[animation.name] = animation.name;
 
 				}
@@ -67,6 +65,9 @@ function SidebarAnimationStates( editor ) {
 			{
 				( function ( object, stateData ) {
 
+					firstAnimation = stateData.animation;
+					if(firstAnimation == 0)
+						firstAnimation =  animations[0].name;
 					var stateInput = new UIInput( stateData.state ).setWidth( '80px' ).setFontSize( '12px' );
 					stateInput.onChange( function () {
 

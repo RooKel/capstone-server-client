@@ -20,29 +20,27 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
     }
     //#endregion
     let mixer = undefined;
-    let getAnimSet = [ ];
+    let animation_action = { };
     const OnInit = ()=>{
         socket.on('update-avatar', OnUpdateAvatar);
         ftm.addFileDownloadListener((result)=>{
             if(result.request_type === 'gltf' && result.category === 'avatar'){
                 if(need_update && result.data[0].uid === avatar_id){
-                    loader.parse(result.data[0].data, '', (loaded)=>{
-                        let bbox = new THREE.Box3().setFromObject(loaded.scene.children[0]);
-                        camera.sigs.change_target.dispatch(group, new THREE.Vector3(0,bbox.max.y,0));
-                        
+                    loader.parse(result.data[0].data, '', (loaded)=>{                      
                         group.add(loaded.scene);
                         group.remove(group.children[0]);
+                        mixer = new THREE.AnimationMixer(loaded.scene);
                         loaded.scene.traverse((_)=>{
                             if(_.userData === undefined) return;
                             if(_.userData.animSet === undefined) return;
                             if(_.userData.animSet.length === 0) return;
                             for(let a = 0; a < _.userData.animSet.length; a++){
-                                let animByName = loaded.animations.find(
-                                    anim=>anim.name == _.userData.animSet[a].animation
+                                let animByState = loaded.animations.find(
+                                    (anim)=>{
+                                        return anim.name === _.userData.animSet[a].animation
+                                    }
                                 );
-                                getAnimSet.push(animByName);
-                                mixer = new THREE.AnimationMixer(_);
-                                mixer.clipAction(getAnimSet[0], _).play();
+                                animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
                             }
                         });
                     });
@@ -59,6 +57,16 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
     page_sigs.update.add((delta)=>{
         if(mixer) mixer.update(delta);
     });
+    const PlayAnim = (anim_name)=>{
+        if(!animation_action[anim_name]) return;
+        for(let i in animation_action){
+            animation_action[i].stop();
+        }
+        animation_action[anim_name].play();
+    }
+    return {
+        PlayAnim: (anim_name)=>PlayAnim(anim_name),
+    }
 }
 
 export { AvatarCtrl }
