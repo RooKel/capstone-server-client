@@ -9,6 +9,7 @@ var Entity = function() {
     this.speed = 2;
     this.color = 0;
     this.position_buffer = [];
+    this.quaternion_buffer = [];
 }
 
 module.exports = Entity;
