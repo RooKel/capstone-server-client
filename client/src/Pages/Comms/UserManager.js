@@ -10,6 +10,8 @@ import { OthUserRotationCtrl } from '../Controllers/OthUserRotationCtrl.js'
 
 const UserManager = (socket, client_data, page, input_collector, ftm)=>{
     const users = { };
+    console.log('myid: ' + client_data.uid);
+
     const AddUser = (uid, data)=>{
         let group = new Group();
         let geometry = new BoxGeometry(1,1,1);
@@ -28,7 +30,7 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
             init: new signals.Signal(),
             dispose: new signals.Signal()
         }});
-        const anim_ctrl = AvatarCtrl(uid, group, socket, ftm, page.sigs, page.camera);
+        let anim_ctrl = AvatarCtrl(uid, group, socket, ftm, page.sigs, page.camera);
         if(uid === client_data.uid){
             PlayerMovementCtrl(socket, uid, Object.assign({}, data), group, page.camera, input_collector, page.sigs, anim_ctrl);
             PlayerRotationCtrl(page.sigs, socket, group, Object.assign({}, data), uid, page.camera);

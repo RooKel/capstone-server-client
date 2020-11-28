@@ -3,6 +3,8 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import * as THREE from 'three'
 
 const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
+    console.log(id);
+
     let avatar_id = undefined;
     let need_update = false;
 
@@ -13,7 +15,7 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
 
     //#region socket event handlers
     const OnUpdateAvatar = (uid, _avatar_id)=>{
-        console.log(uid + ', ' + _avatar_id);
+        console.log(id + ', ' + uid);
         if(id !== uid) return;
         ftm.requestFileDownload('gltf', 'avatar', _avatar_id);
         avatar_id = _avatar_id;
@@ -24,8 +26,10 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
     let animation_action = { };
     let avatar_cont = undefined;
     const OnCheck = (ack_res)=>{
+        console.log(ack_res.result);
         if(ack_res.uid === id && ack_res.result){
             //#region loading
+            if(!avatar_cont) return;
             loader.parse(avatar_cont, '', (loaded)=>{                      
                 group.add(loaded.scene);
                 group.remove(group.children[0]);
@@ -46,9 +50,6 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
             });
             //#endregion
         }
-        else{
-            console.log('ignored');
-        }
         avatar_cont = undefined;
     }
     socket.on('check-avatar-id-ack', OnCheck);
@@ -58,12 +59,15 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
             if(result.request_type === 'gltf' && result.category === 'avatar'){
                 if(need_update && result.data[0].uid === avatar_id){
                     socket.emit('check-avatar-id', {  uid:id, avatar_id:result.data[0].uid });
+                    console.log({  uid:id, avatar_id:result.data[0].uid });
                     avatar_cont = result.data[0].data;
+                    need_update = false;
                 }
             }
         });
     }
     const OnDispose = ()=>{
+        console.log('disposed?');
         socket.off('update-avatar', OnUpdateAvatar);
     }
     group.sigs.init.add(OnInit);
@@ -80,6 +84,7 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
     }
     return {
         PlayAnim: (anim_name)=>PlayAnim(anim_name),
+        id: id
     }
 }
 

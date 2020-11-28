@@ -78,13 +78,13 @@ const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
             if(main_menu_panel_visibility){
                 ui_pointer.sigs.active.dispatch(true);
                 pointer.sigs.active.dispatch(false);
-                client_data.player_obj.sigs.dispose.dispatch();
+                //client_data.player_obj.sigs.dispose.dispatch();
                 page.camera.sigs.dispose.dispatch();
             }
             else{
                 ui_pointer.sigs.active.dispatch(false);
                 pointer.sigs.active.dispatch(true);
-                client_data.player_obj.sigs.init.dispatch();
+                //client_data.player_obj.sigs.init.dispatch();
                 page.camera.sigs.init.dispatch();
             }
         }
