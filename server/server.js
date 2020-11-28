@@ -227,9 +227,9 @@ function onConnect(socket)
     /* check current avatar id of user in the server */
     socket.on('check-avatar-id', data => {
         if (avatars[data.uid] === data.avatar_id)
-            socket.emit("check-avatar-id-ack", { result: true });
+            socket.emit("check-avatar-id-ack", { result: true, uid: data.uid });
         else
-            socket.emit("check-avatar-id-ack", { result: false });
+            socket.emit("check-avatar-id-ack", { result: false, uid: data.uid });
     });
 
     /* if disconnection happenes, send delete entity message to clients */
@@ -268,6 +268,8 @@ function onConnect(socket)
             tempQuat.setFromAxisAngle(new Vector3(0,1,0), user_entity.x_rot);
             tempQuat.multiply(mulQuat);
             user_entity.quaternion.copy(tempQuat);
+
+            last_processed_input[socket.id] = data.input_sequence_number; 
         }
     });
 
