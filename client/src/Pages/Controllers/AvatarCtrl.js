@@ -13,6 +13,7 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
 
     //#region socket event handlers
     const OnUpdateAvatar = (uid, _avatar_id)=>{
+        console.log(uid + ', ' + _avatar_id);
         if(id !== uid) return;
         ftm.requestFileDownload('gltf', 'avatar', _avatar_id);
         avatar_id = _avatar_id;
@@ -21,30 +22,43 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
     //#endregion
     let mixer = undefined;
     let animation_action = { };
+    let avatar_cont = undefined;
+    const OnCheck = (ack_res)=>{
+        if(ack_res.uid === id && ack_res.result){
+            //#region loading
+            loader.parse(avatar_cont, '', (loaded)=>{                      
+                group.add(loaded.scene);
+                group.remove(group.children[0]);
+                mixer = new THREE.AnimationMixer(loaded.scene);
+                loaded.scene.traverse((_)=>{
+                    if(_.userData === undefined) return;
+                    if(_.userData.animSet === undefined) return;
+                    if(_.userData.animSet.length === 0) return;
+                    for(let a = 0; a < _.userData.animSet.length; a++){
+                        let animByState = loaded.animations.find(
+                            (anim)=>{
+                                return anim.name === _.userData.animSet[a].animation
+                            }
+                        );
+                        animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
+                    }
+                });
+            });
+            //#endregion
+        }
+        else{
+            console.log('ignored');
+        }
+        avatar_cont = undefined;
+    }
+    socket.on('check-avatar-id-ack', OnCheck);
     const OnInit = ()=>{
         socket.on('update-avatar', OnUpdateAvatar);
         ftm.addFileDownloadListener((result)=>{
             if(result.request_type === 'gltf' && result.category === 'avatar'){
                 if(need_update && result.data[0].uid === avatar_id){
-                    loader.parse(result.data[0].data, '', (loaded)=>{                      
-                        group.add(loaded.scene);
-                        group.remove(group.children[0]);
-                        mixer = new THREE.AnimationMixer(loaded.scene);
-                        loaded.scene.traverse((_)=>{
-                            if(_.userData === undefined) return;
-                            if(_.userData.animSet === undefined) return;
-                            if(_.userData.animSet.length === 0) return;
-                            for(let a = 0; a < _.userData.animSet.length; a++){
-                                let animByState = loaded.animations.find(
-                                    (anim)=>{
-                                        return anim.name === _.userData.animSet[a].animation
-                                    }
-                                );
-                                animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
-                            }
-                        });
-                    });
-                    need_update = false;
+                    socket.emit('check-avatar-id', {  uid:id, avatar_id:result.data[0].uid });
+                    avatar_cont = result.data[0].data;
                 }
             }
         });
