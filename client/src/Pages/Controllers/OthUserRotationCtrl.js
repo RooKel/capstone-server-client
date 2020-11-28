@@ -3,7 +3,6 @@ import {Vector3, Quaternion, MathUtils, Euler} from "three";
 const OthUserRotationCtrl = (page_sigs, socket, model, data, uid)=>{
     const netw_obj = data;
     const server_update_rate = 12;
-    var net_quat = new Quaternion();
 
     const ProcessServerMessage = (msg)=>{
 
@@ -49,13 +48,12 @@ const OthUserRotationCtrl = (page_sigs, socket, model, data, uid)=>{
         if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
             let t0 = buffer[0][0]; let t1 = buffer[1][0];
             let quat0 = buffer[0][1]; let quat1 = buffer[1][1];
-            //netw_obj.quaternion.x = quat0._x + (quat1._x - quat0._x) * (render_timestamp - t0) / (t1 - t0);
+            netw_obj.quaternion.x = quat0.x + (quat1.x - quat0.x) * (render_timestamp - t0) / (t1 - t0);
             netw_obj.quaternion.y = quat0.y + (quat1.y - quat0.y) * (render_timestamp - t0) / (t1 - t0);
-            //netw_obj.quaternion.z = quat0._z + (quat1._z - quat0._z) * (render_timestamp - t0) / (t1 - t0);
-            //netw_obj.quaternion.w = quat0._w + (quat1._w - quat0._w) * (render_timestamp - t0) / (t1 - t0);
-            net_quat.copy(netw_obj);
+            netw_obj.quaternion.z = quat0.z + (quat1.z - quat0.z) * (render_timestamp - t0) / (t1 - t0);
+            netw_obj.quaternion.w = quat0.w + (quat1.w - quat0.w) * (render_timestamp - t0) / (t1 - t0);
         }
-        model.quaternion.copy(net_quat);
+        model.quaternion.copy(netw_obj.quaternion);
 
     }
     page_sigs.update.add(OnUpdate);
