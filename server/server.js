@@ -224,6 +224,14 @@ function onConnect(socket)
         }
     });
 
+    /* check current avatar id of user in the server */
+    socket.on('check-avatar-id', data => {
+        if (avatars[data.uid] === data.avatar_id)
+            socket.emit("check-avatar-id-ack", { result: true });
+        else
+            socket.emit("check-avatar-id-ack", { result: false });
+    });
+
     /* if disconnection happenes, send delete entity message to clients */
     socket.on('disconnect', reason => {
         var instance_id = instance_of_users[socket.id];
