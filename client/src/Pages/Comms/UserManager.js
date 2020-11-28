@@ -30,21 +30,21 @@ const UserManager = (socket, client_data, page, input_collector, ftm)=>{
         }});
         const anim_ctrl = AvatarCtrl(uid, group, socket, ftm, page.sigs, page.camera);
         if(uid === client_data.uid){
-            PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs, anim_ctrl);
-            PlayerRotationCtrl(page.sigs, socket, group, data, uid, page.camera);
+            PlayerMovementCtrl(socket, uid, Object.assign({}, data), group, page.camera, input_collector, page.sigs, anim_ctrl);
+            PlayerRotationCtrl(page.sigs, socket, group, Object.assign({}, data), uid, page.camera);
             Object.assign(page.camera, { sigs: { 
                 init: new signals.Signal(),
                 dispose: new signals.Signal(),
                 change_target: new signals.Signal()
             }});
-            const cam_ctrl = CameraCtrl(socket, client_data, data, page.camera, input_collector, page.sigs);
+            const cam_ctrl = CameraCtrl(socket, client_data, Object.assign({}, data), page.camera, input_collector, page.sigs);
             page.camera.sigs.change_target.dispatch(group, new Vector3(0,1,0));
             page.camera.sigs.init.dispatch();
             client_data.player_obj = group;
         }
         else{
-            OthUserMovementCtrl(socket, uid, data, group, page.sigs, anim_ctrl);
-            OthUserRotationCtrl(page.sigs, socket, group, data, uid);
+            OthUserMovementCtrl(socket, uid, Object.assign({}, data), group, page.sigs, anim_ctrl);
+            OthUserRotationCtrl(page.sigs, socket, group, Object.assign({}, data), uid);
         }
         users[uid] = group;
         users[uid].sigs.init.dispatch();
