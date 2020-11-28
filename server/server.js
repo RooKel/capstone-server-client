@@ -346,14 +346,14 @@ function onConnect(socket)
     // send avatar or world file to client
     socket.on('rq-file-download', function(data) {
         if (data.category === "avatar") {
-            sendModelData(socket, avatarModel, data.request_type, data.category, data.uid);
+            sendModelData(socket, avatarModel, data.request_type, data.category, data.uid, data.target_id);
         } else if (data.category === "world") {
-            sendModelData(socket, worldModel, data.request_type, data.category, data.uid);
+            sendModelData(socket, worldModel, data.request_type, data.category, data.uid, data_target.id);
         }
     });
 }
 
-function sendModelData(socket, model, request_type, category, param_uid)
+function sendModelData(socket, model, request_type, category, param_uid, target_id)
 {
     var dataArray = [];
 
@@ -397,7 +397,7 @@ function sendModelData(socket, model, request_type, category, param_uid)
                 }
                 forEachPromise(items, logItem).then(() => {
                     console.log(dataArray);
-                    socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
+                    socket.emit("file-download", { request_type: request_type, category: category, data: dataArray, target_id: target_id });
                     console.log("all of file data sent!");
                 });
             });
@@ -411,7 +411,7 @@ function sendModelData(socket, model, request_type, category, param_uid)
             dataTuple.date = item.date;
             dataTuple.data = fs.readFileSync("./data/" + item.uid + "/" + file_name + file_format);
             dataArray.push(dataTuple);
-            socket.emit("file-download", { request_type: request_type, category: category, data: dataArray });
+            socket.emit("file-download", { request_type: request_type, category: category, data: dataArray, target_id: target_id });
             console.log("dataArray : " + dataArray[0].uid + " " + dataArray[0].name + " " + dataArray[0].creator);
             console.log("only one file data sent!");
         });
