@@ -254,22 +254,24 @@ function onConnect(socket)
     socket.on('input', data => {
         var user_instance = instance_of_users[socket.id];
         var user_entity = instances[user_instance].entities[socket.id];
-        
+
         if (user_instance) {
             user_entity.x += data.move_dx * user_entity.speed;
             user_entity.y += data.move_dy * user_entity.speed;
-            
+
             user_entity.x_rot -= data.mouse_dx;
             user_entity.y_rot -= data.mouse_dy;
-            
+
             let tempQuat =  new Quaternion();
             let mulQuat = new Quaternion();
             mulQuat.setFromAxisAngle(new Vector3(-1,0,0), user_entity.y_rot);
             tempQuat.setFromAxisAngle(new Vector3(0,1,0), user_entity.x_rot);
+            user_entity.model_quaternion.copy(tempQuat);
+
             tempQuat.multiply(mulQuat);
             user_entity.quaternion.copy(tempQuat);
 
-            last_processed_input[socket.id] = data.input_sequence_number; 
+            last_processed_input[socket.id] = data.input_sequence_number;
         }
     });
 
@@ -348,7 +350,7 @@ function onConnect(socket)
         if (data.category === "avatar") {
             sendModelData(socket, avatarModel, data.request_type, data.category, data.uid, data.target_id);
         } else if (data.category === "world") {
-            sendModelData(socket, worldModel, data.request_type, data.category, data.uid, data_target.id);
+            sendModelData(socket, worldModel, data.request_type, data.category, data.uid, data.target_id);
         }
     });
 }
