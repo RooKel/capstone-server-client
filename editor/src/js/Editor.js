@@ -5,6 +5,7 @@ import { Loader } from './Loader.js';
 import { History as _History } from './History.js';
 import { Strings } from './Strings.js';
 import { Storage as _Storage } from './Storage.js';
+import {FileTransferManager} from "./FileTransferManager.js";
 
 var _DEFAULT_CAMERA = new THREE.PerspectiveCamera( 50, 1, 0.01, 1000 );
 _DEFAULT_CAMERA.name = 'Camera';
@@ -15,6 +16,7 @@ function Editor() {
 
 	var Signal = signals.Signal;
 	this.renderer = null;
+	this.ftm = new FileTransferManager(this, "ws://localhost:3000");
 	this.signals = {
 
 		// script
@@ -110,6 +112,10 @@ function Editor() {
 	this.textures = {};
 	this.scripts = {};
 
+	this.audioBufferSet = new Map();
+	this.audioSet = {};
+	this.audioListeners = {};
+
 	this.materialsRefCounter = new Map(); // tracks how often is a material used by a 3D object
 
 	this.skeletons = new Map();
@@ -163,6 +169,32 @@ Editor.prototype = {
 
 	},
 
+	//
+
+	//
+
+	addAudioBuffer: function (fileName, audioBuffer) {
+		this.audioBufferSet.set(fileName, audioBuffer);
+	},
+	addAudioToObject: function(object, audioBuffer){
+		var context = THREE.AudioContext.getContext();
+		context.decodeAudioData(audioBuffer, function (audioBuffer){
+			if(this.audioListeners[object.uuid] === undefined)
+			{
+				let listener = new THREE.AudioListener();
+				let sound = new THREE.Audio(listener);
+				sound.setBuffer(audioBuffer);
+				object.add(listener);
+				this.audioListeners[object.uuid] = listener;
+				this.audioSet[object.uuid] = sound;
+			}
+			else
+			{
+				let sound = this.audioSet[object.uuid];
+				sound.setBuffer(audioBuffer);
+			}
+		});
+	},
 	//
 
 	addObject: function ( object, parent, index ) {

@@ -1,4 +1,4 @@
-.grid-container {
+.upload-grid-container {
     display: grid;
     width: 100%;
     height: 100%;
@@ -11,7 +11,7 @@
     "Preview-Area Preview-Area Content-Outline Content-Outline Content-Outline"
     "Preview-File Preview-File Submit-Area Submit-Area Submit-Area";
 }
-.grid-container div {
+.upload-grid-container div {
     display: flex;
     align-items: center;
     text-transform: uppercase;
@@ -22,13 +22,13 @@
     font-family: "test";
     src:url("./fonts/Mark Simonson - Proxima Nova Alt Condensed Semibold.otf");
 }
-.grid-container input{
+.upload-grid-container input{
     width: 90%;
     height: 28px;
     font-size: 16px;
 }
 
-.grid-container button {
+.upload-grid-container button {
     width: 40%;
     height: 60%;
     margin-right: -2%;

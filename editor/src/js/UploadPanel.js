@@ -20,7 +20,7 @@ function UploadPanel(contents, panelOptions, uploadCallback)
     };
 
     let panelContent =
-        '<div class="grid-container">\n' +
+        '<div class="upload-grid-container">\n' +
         '  <div class="Preview-Area">\n' +
         '       <img id="'+img_thumbnail_id+'" src="">\n' +
         '  </div>\n' +

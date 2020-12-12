@@ -1,14 +1,13 @@
 import * as THREE from '../../build/three.module.js';
 import {GLTFExporter} from '../../examples/jsm/exporters/GLTFExporter.js';
 import {JSZip} from '../../examples/jsm/libs/jszip.module.min.js';
+import ('./libs/jszip-utils/jszip-utils.min.js');
 import {UIPanel, UIRow, UIHorizontalRule} from './libs/ui.js';
 import {GridPanel} from "./GridPanel.js";
 import {UploadPanel} from "./UploadPanel.js";
-import {FileTransferManager} from "./FileTransferManager.js";
 import {DRACOLoader} from "../../examples/jsm/loaders/DRACOLoader.js";
 import {GLTFLoader} from "../../examples/jsm/loaders/GLTFLoader.js";
 import {AddObjectCommand} from "./commands/AddObjectCommand.js";
-import {AnimationClip} from '../../build/three.module.js';
 
 function b64(e){
     let t="";
@@ -21,7 +20,7 @@ function b64(e){
     return window.btoa(t)
 }
 function MenubarFile(editor) {
-    var networkObject = new FileTransferManager(editor, "ws://localhost:3000");
+    let ftm = editor.ftm;
     function onFileUploadAck(res)
     {
         console.log(res.uid + " : " + res.data_name);
@@ -96,11 +95,11 @@ function MenubarFile(editor) {
         }
     }
 
-    networkObject.addFileUploadAckListener(onFileUploadAck);
-    networkObject.addFileDownloadListener(onFileDownloaded);
+    ftm.addFileUploadAckListener(onFileUploadAck);
+    ftm.addFileDownloadListener(onFileDownloaded);
 
-    networkObject.listenFileUploadAck();
-    networkObject.listenFileDownload();
+    ftm.listenFileUploadAck();
+    ftm.listenFileDownload();
 
     this.htmlEvents = {
         clickNewSceneOption: () => {
@@ -123,7 +122,7 @@ function MenubarFile(editor) {
                 editor.signals.loadStateChanged.dispatch("open");
                 getAvatarJson(editor.scene, function(avatarJson){
                     dataStream.raw_gltf = avatarJson;
-                    networkObject.requestFileUpload(dataStream);
+                    ftm.requestFileUpload(dataStream);
                     editor.floatingPanels.upload_avatar.close();
                 }, function(err){
                     editor.floatingPanels.upload_avatar.close();
@@ -146,14 +145,14 @@ function MenubarFile(editor) {
                 editor.signals.loadStateChanged.dispatch("open");
                 getWorldJson(editor.scene, function(sceneJson){
                     dataStream.raw_gltf = sceneJson;
-                    networkObject.requestFileUpload(dataStream);
+                    ftm.requestFileUpload(dataStream);
                     editor.floatingPanels.upload_world.close();
                 });
             });
         },
         clickDownloadAvatarPanel: () => {
             editor.signals.loadStateChanged.dispatch("open");
-            networkObject.requestFileDownload('thumbnail','avatar');
+            ftm.requestFileDownload('thumbnail','avatar');
 
             let elements = [];
 
@@ -171,14 +170,14 @@ function MenubarFile(editor) {
                     let panel = editor.floatingPanels.download_avatar;
                     let panelElement = panel.htmlPanelElementMap[event.currentTarget.dataset.uid];
                     editor.signals.loadStateChanged.dispatch("open");
-                    networkObject.requestFileDownload('gltf', 'avatar', panelElement.uid);
+                    ftm.requestFileDownload('gltf', 'avatar', panelElement.uid);
                 }
             });
             editor.floatingPanels.download_avatar = tmpGrid;
         },
         clickDownloadWorldPanel: () => {
             editor.signals.loadStateChanged.dispatch("open");
-            networkObject.requestFileDownload('thumbnail','world');
+            ftm.requestFileDownload('thumbnail','world');
 
             let elements = [];
             if (editor.floatingPanels.download_world !== undefined) {
@@ -197,7 +196,7 @@ function MenubarFile(editor) {
                     let panel = editor.floatingPanels.download_world;
                     let panelElement = panel.htmlPanelElementMap[event.currentTarget.dataset.uid];
                     editor.signals.loadStateChanged.dispatch("open");
-                    networkObject.requestFileDownload('gltf', 'world', panelElement.uid);
+                    ftm.requestFileDownload('gltf', 'world', panelElement.uid);
                 }
             });
         }
@@ -481,8 +480,6 @@ function MenubarFile(editor) {
                     }
                 }
 
-
-
                 if(topNode.children !== undefined)
                 {
                     //  TODO Handle 자식있을 때
@@ -506,9 +503,21 @@ function MenubarFile(editor) {
 
             zip.file('world.gltf', sceneJson);
 
-            let title = config.getKey('project/title');
-            save(zip.generate({type: 'blob'}), (title !== '' ? title : 'World') + '.zip');
+            editor.audioBufferSet.forEach((value, key, map)=>{
+                let audioBlob = new Blob([value], {type:'application/octet-stream'});
+                let uri = URL.createObjectURL(audioBlob);
+                JSZipUtils.getBinaryContent(uri, function (err, data){
+                    if(err){
+                        throw err;
+                    }
+                    zip.file(key, data, {binary:true});
 
+                    let title = config.getKey('project/title');
+                    save(zip.generate({type: 'blob'}), (title !== '' ? title : 'World') + '.zip');
+
+                });
+
+            });
         });
     }
 

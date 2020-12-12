@@ -1,5 +1,9 @@
 function Chat(window, type, sender, context, thumbnail){
     this.msgContainer = undefined;
+    this.type = type;
+    this.sender = sender;
+    this.context = context;
+    this.thumbnail = thumbnail;
     if(type === 'remote')
     {
         this.msgContainer =

@@ -1,6 +1,6 @@
 import {jsPanel} from "./libs/jspanel/es6module/jspanel.js";
 import {GridPanelElement} from "./GridPanelElement.js";
-import("./libs/muuri.js");
+import ("./libs/muuri.js");
 
 let gridPanelCount = 0;
 
