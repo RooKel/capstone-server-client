@@ -1,4 +1,6 @@
 // make a express and convert http to websocket
+var JSZip = require("jszip");
+
 var express = require('express');
 const { Vector3, Quaternion } = require('three');
 //const { GLFTLoader } = require('./../dist/GLTFLoader');
@@ -294,6 +296,7 @@ function onConnect(socket)
 
         // save GLTF file
         var gltf = data.raw_gltf;
+        var zip = data.raw_zip;
         if(gltf !== undefined)
         {
             !fs.existsSync(dir) && fs.mkdirSync(dir);
@@ -301,7 +304,16 @@ function onConnect(socket)
                 console.log(e);
             });
         }
-
+        if(zip !== undefined)
+        {
+            !fs.existsSync(dir) && fs.mkdirSync(dir);
+            fs.writeFile(dir + "/WORLD.zip", zip, 'binary',function(e){
+                console.log(e);
+            });
+            /*fs.writeFile(dir + "/GLTF.gltf", gltf, function(e){
+                console.log(e);
+            });*/
+        }
         // save thumbnail to png file.
         var base64String = data.data_thumbnail;
         var base64Image = base64String.split(';base64').pop();
@@ -341,8 +353,8 @@ function onConnect(socket)
             });
         }
 
-        socket.emit("file-upload-ack", { uid: uid, data_name: data.data_name, data_size: data.raw_gltf.length, data_type: data.data_type, data_creator:data.data_creator });
-        console.log("file-upload-ack : " + uid + " " + data.data_name + " " + data.raw_gltf.length + " " + data.data_type + " " + data.data_creator);
+        socket.emit("file-upload-ack", { uid: uid, data_name: data.data_name, data_size: 200, data_type: data.data_type, data_creator:data.data_creator });
+        console.log("file-upload-ack : " + uid + " " + data.data_name + " " + 200 + " " + data.data_type + " " + data.data_creator);
     });
 
     // send avatar or world file to client
@@ -369,6 +381,13 @@ function sendModelData(socket, model, request_type, category, param_uid, target_
         file_name = "GLTF";
         file_format = ".gltf";
     }
+    else if (request_type === "zip")
+    {
+        file_name = "WORLD";
+        file_format = '.zip'
+    }
+
+    console.log("Request Download : " + request_type + ", " + category);
 
 
     if (param_uid === undefined) {
@@ -416,6 +435,7 @@ function sendModelData(socket, model, request_type, category, param_uid, target_
             socket.emit("file-download", { request_type: request_type, category: category, data: dataArray, target_id: target_id });
             console.log("dataArray : " + dataArray[0].uid + " " + dataArray[0].name + " " + dataArray[0].creator);
             console.log("only one file data sent!");
+            console.log("Request Download : " + request_type + ", " + category);
         });
     }
 }

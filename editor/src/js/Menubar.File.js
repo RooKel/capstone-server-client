@@ -8,6 +8,8 @@ import {UploadPanel} from "./UploadPanel.js";
 import {DRACOLoader} from "../../examples/jsm/loaders/DRACOLoader.js";
 import {GLTFLoader} from "../../examples/jsm/loaders/GLTFLoader.js";
 import {AddObjectCommand} from "./commands/AddObjectCommand.js";
+import {LoaderUtils} from "./LoaderUtils.js";
+import {AudioData} from "./AudioData.js";
 
 function b64(e){
     let t="";
@@ -54,44 +56,38 @@ function MenubarFile(editor) {
             for (let c = 0; c < models.length; c++)
             {
                 let model = models[c];
-                let dracoLoader = new DRACOLoader();
-                dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
-
-                let loader = new GLTFLoader();
-                loader.setDRACOLoader( dracoLoader );
-                loader.parse( model.data, '', function ( result ) {
-
-                    let scene = result.scene;
-                    scene.name = result.scene.name;
-                    for (let c = 0; c < scene.children.length;)
-                    {
-                        //  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
-                        editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
-                    }
-
-                    editor.scene.traverse(x => {
-
-                        if(x.userData === undefined)        return;
-                        if(x.userData.animSet === undefined)return;
-
-                        let getAnimSet = [];
-                        for (let a = 0; a < x.userData.animSet.length; a++)
-                        {
-                            let animByName = result.animations.find(
-                                anim => anim.name === x.userData.animSet[a].animation
-                            );
-                            getAnimSet.push(animByName);
-                        }
-                        for (let s = 0; s < x.userData.script.length; s++)
-                        {
-                            let script = x.userData.script[s];
-                        }
-                        editor.addAnimation( x, getAnimSet );
-                        editor.deselect();
-                    });
-                    editor.signals.loadStateChanged.dispatch("close");
-                } );
+                loadModelFileToEditor(model.data);
             }
+        }
+        else if(res.request_type === 'zip')
+        {
+            let zip = new JSZip(res.data[0].data);
+            let files = {
+                gltf : undefined,
+                audioFiles : [],
+                audioMetaInfo : undefined
+            };
+            zip.filter(function(path,file){
+                var extension = file.name.split( '.' ).pop().toLowerCase();
+                console.log(file.name);
+                switch (extension)
+                {
+                    case 'gltf':
+                        files.gltf = file;
+                        break;
+                    case 'mp3':
+                        files.audioFiles.push(file);
+                        break;
+                    case 'json':
+                        files.audioMetaInfo = JSON.parse(file.asText());
+                        break;
+                }
+            });
+
+            loadModelFileToEditor(files.gltf);
+            loadAudioFilesToEditor(files.audioMetaInfo, files.audioFiles);
+
+            editor.signals.loadStateChanged.dispatch("close");
         }
     }
 
@@ -122,8 +118,10 @@ function MenubarFile(editor) {
                 editor.signals.loadStateChanged.dispatch("open");
                 getAvatarJson(editor.scene, function(avatarJson){
                     dataStream.raw_gltf = avatarJson;
-                    ftm.requestFileUpload(dataStream);
-                    editor.floatingPanels.upload_avatar.close();
+                    createWorldZip(editor, avatarJson, (zip)=>{
+                        ftm.requestFileUpload(dataStream);
+                        editor.floatingPanels.upload_world.close();
+                    });
                 }, function(err){
                     editor.floatingPanels.upload_avatar.close();
                     editor.signals.loadStateChanged.dispatch("close");
@@ -145,8 +143,11 @@ function MenubarFile(editor) {
                 editor.signals.loadStateChanged.dispatch("open");
                 getWorldJson(editor.scene, function(sceneJson){
                     dataStream.raw_gltf = sceneJson;
-                    ftm.requestFileUpload(dataStream);
-                    editor.floatingPanels.upload_world.close();
+                    createWorldZip(editor, sceneJson, (zip)=>{
+                        dataStream.raw_zip = zip.generate({type: 'blob'});
+                        ftm.requestFileUpload(dataStream);
+                        editor.floatingPanels.upload_world.close();
+                    });
                 });
             });
         },
@@ -196,7 +197,7 @@ function MenubarFile(editor) {
                     let panel = editor.floatingPanels.download_world;
                     let panelElement = panel.htmlPanelElementMap[event.currentTarget.dataset.uid];
                     editor.signals.loadStateChanged.dispatch("open");
-                    ftm.requestFileDownload('gltf', 'world', panelElement.uid);
+                    ftm.requestFileDownload('zip', 'world', panelElement.uid);
                 }
             });
         }
@@ -482,6 +483,115 @@ function MenubarFile(editor) {
             completeCallback(JSON.stringify(result, null, 2));
 		}, { animations: animations });
 	}
+	function createWorldZip(_editor, _gltf, onCreate){
+        let zip = new JSZip();
+        zip.file('world.gltf', _gltf);
+        let count = _editor.audioBufferSet.size;
+
+        let audioMetaWrapper = {
+            audioMetaInfo:[]
+        };
+        _editor.audioBufferSet.forEach((value, key, map)=>{
+            let audioBlob = new Blob([value], {type:'application/octet-stream'});
+            let uri = URL.createObjectURL(audioBlob);
+            JSZipUtils.getBinaryContent(uri, function (err, data){
+                if(err){
+                    throw err;
+                }
+
+                let audioPath = key + ".mp3";
+                zip.file(audioPath, data);
+
+                let metaInfo = {
+                    audioID:key,
+                    audioPath:audioPath,
+                    audioName:editor.audioDataSet.get(key).fileName
+                };
+                audioMetaWrapper.audioMetaInfo.push(metaInfo);
+                if(--count === 0) {
+                    zip.file("metaAudioTable.json", JSON.stringify(audioMetaWrapper,null,2));
+                    onCreate(zip);
+                }
+            });
+        });
+    }
+    function loadModelFileToEditor(gltfFile)
+    {
+        let dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
+
+        let loader = new GLTFLoader();
+        loader.setDRACOLoader( dracoLoader );
+        loader.parse( gltfFile.asText(), '', function ( result ) {
+
+            let scene = result.scene;
+            scene.name = result.scene.name;
+            for (let c = 0; c < scene.children.length;)
+            {
+                //  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
+                editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
+            }
+
+            editor.scene.traverse(x => {
+
+                if(x.userData === undefined)        return;
+                if(x.userData.animSet === undefined)return;
+
+                let getAnimSet = [];
+                for (let a = 0; a < x.userData.animSet.length; a++)
+                {
+                    let animByName = result.animations.find(
+                        anim => anim.name === x.userData.animSet[a].animation
+                    );
+                    getAnimSet.push(animByName);
+                }
+                for (let s = 0; s < x.userData.script.length; s++)
+                {
+                    let script = x.userData.script[s];
+                }
+                editor.addAnimation( x, getAnimSet );
+                editor.deselect();
+            });
+            editor.signals.loadStateChanged.dispatch("close");
+        } );
+    }
+    function loadAudioFilesToEditor(metaFile, files)
+    {
+        let filesMap = LoaderUtils.createFilesMap(files);
+
+        let manager = new THREE.LoadingManager();
+        manager.setURLModifier( function ( url ) {
+
+            let file = filesMap[ url ];
+
+            if ( file ) {
+
+                console.log( 'Loading', url );
+
+                return URL.createObjectURL( file );
+
+            }
+            return url;
+        } );
+        for (let i = 0; i < files.length; i++)
+        {
+            var file = files[i];
+            var metaInfo = metaFile.audioMetaInfo.find(element=>element.audioPath === file.name);
+            var filename = metaInfo.audioName;
+            var audioID = metaInfo.audioID;
+            var extension = filename.split( '.' ).pop().toLowerCase();
+
+
+            file.lastModifiedDate = file.date;
+            file.type = "audio/mpeg";
+            let blob = new Blob([file.asArrayBuffer()], {type:'application/octet-stream'});
+
+            let data = new AudioData(audioID, filename, blob, (_data)=>{
+                editor.addAudioBuffer(_data.audioID, _data.dataBuffer);
+                editor.addAudioData(_data.audioID, _data);
+            });
+        }
+    }
     function exportWorld() {
 
         let zip = new JSZip();
@@ -504,11 +614,12 @@ function MenubarFile(editor) {
                     }
 
                     let audioPath = key + ".mp3";
-                    zip.file(audioPath, data, {binary:true});
+                    zip.file(audioPath, data);
 
                     let metaInfo = {
+                        audioID:key,
                         audioPath:audioPath,
-                        audioID:key
+                        audioName:editor.audioDataSet[key].fileName
                     };
                     audioMetaWrapper.audioMetaInfo.push(metaInfo);
                     if(--count === 0) {

@@ -2,9 +2,10 @@ import * as THREE from "../../build/three.module.js";
 
 var ID3 = window.ID3;
 
-function AudioData (_fileName, _audioFile, _callback)
+function AudioData (_audioID, _fileName, _audioFile, _callback)
 {
-    this.audioID = "";
+    if(!_audioID) this.audioID = THREE.MathUtils.generateUUID();
+    else this.audioID = _audioID;
     this.fileName = _fileName;
     this.artist = "";
     this.coverImage = undefined;
@@ -12,7 +13,6 @@ function AudioData (_fileName, _audioFile, _callback)
 
     var scope = this;
 
-    this.audioID = THREE.MathUtils.generateUUID();
     parseBuffer(_audioFile);
 
     function parseBuffer(file){
@@ -38,5 +38,4 @@ function AudioData (_fileName, _audioFile, _callback)
     }
 
 }
-
 export {AudioData};

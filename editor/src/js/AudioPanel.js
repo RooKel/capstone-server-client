@@ -195,7 +195,7 @@ AudioPanel.prototype ={
     {
         let scope = this;
         const itemElem = document.importNode(this.itemTemplate.content.children[0], true);
-        let data = new AudioData(filename, new Blob([audioBuffer],{type:'application/octet-stream'}),(_data)=>{
+        let data = new AudioData(undefined, filename, new Blob([audioBuffer],{type:'application/octet-stream'}),(_data)=>{
             fillElement(itemElem, _data);
             this.editor.addAudioBuffer(_data.audioID, _data.dataBuffer);
             this.editor.addAudioData(_data.audioID, _data);
