@@ -34,6 +34,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     const navigate = { };
     const main_panel = MainPanel(ui_interactable, socket, ftm, navigate, client_data);
     const return_to_start_button = ButtonType1('Return', ()=>{
+        socket.emit('rq-exit-instance', true);
         app_sigs.change_page.dispatch('start');
         main_panel.sigs.toggle_off.dispatch(false);
     });
@@ -137,29 +138,16 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     }
     //#endregion
     const user_manager = UserManager(socket, ftm, client_data, page);
-    let effect_composer = undefined;
-    let bloom_pass = undefined;
     page.sigs.enter.add(()=>{
         document.addEventListener('keyup', OnKeyUp);
         ftm.requestFileDownload('gltf', 'world', world_id);
         socket.on('join-accept', OnJoinAccept);
-        page.sigs.render.addOnce((renderer)=>{
-            console.log('once');
-            bloom_pass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            effect_composer = new EffectComposer(renderer);
-            const render_scene = new RenderPass(page.scene, page.camera);
-            effect_composer.addPass(render_scene);
-            effect_composer.addPass(bloom_pass);
-        }, null, 4);
     });
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
-        socket.emit('rq-exit-instance', true);
+        
     });
-    page.sigs.render.add((renderer)=>{
-        effect_composer.render();
-    }, null, 1);
     return page;
 }
 

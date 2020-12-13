@@ -65,6 +65,7 @@ const UserManager = (socket, ftm, client_data, page)=>{
         socket.off('initial-entities-data', AddUser);
         socket.off('other-join', AddUser);
         socket.off('disconnected', RemUser);
+        input_collector.Active(false);
         for(let i in users){
             users[i].sigs.dispose.dispatch();
             delete users[i];

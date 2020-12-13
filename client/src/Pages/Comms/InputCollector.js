@@ -1,8 +1,10 @@
 
 const InputCollector = (socket, client_data, sigs)=>{
     const batches = [ ];
+    let active = true;
     //#region signal event handlers
     const OnUpdate = (delta)=>{
+        if(!active) return;
         batches.forEach((_)=>{
             Object.assign(_.batch, {entity_id:client_data.uid});
             socket.emit(_.name, _.batch);
@@ -21,7 +23,8 @@ const InputCollector = (socket, client_data, sigs)=>{
     }
     //#endregion
     return {
-        AddMsg: (batch_name, msg)=>AddMsg(batch_name, msg)
+        AddMsg: (batch_name, msg)=>AddMsg(batch_name, msg),
+        Active: (input)=>active=input,
     }
 }
 
