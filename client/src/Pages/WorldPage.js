@@ -12,12 +12,12 @@ import {Color, DirectionalLight, AudioListener, PositionalAudio, AudioLoader, Ve
 import {UserManager} from './Comms/UserManager.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 
-import {UnrealBloomPass} from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
-import {EffectComposer} from 'three/examples/jsm/postprocessing/EffectComposer.js'
-import {RenderPass} from 'three/examples/jsm/postprocessing/RenderPass.js'
+import {ColorSetter} from './Prefabs/ColorSetter.js'
+import {ToggleVisibility} from './Prefabs/ToggleVisibility.js'
+import {Inspector} from './Prefabs/Inspector.js'
+import {DisplayText} from './Prefabs/DisplayText.js'
 
 import * as MINT from './Interaction/MouseInteraction.js'
-import {PrefabMap} from './Prefabs/PrefabMap.js'
 
 const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     const page = Page();
@@ -112,7 +112,30 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                         }
                     });
                     //#endregion
-                    const prefab = PrefabMap(components[0].src_prefab_properties.trigger_meta_info.dest_prefab);
+                    let prefab = undefined;
+                    const params = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties;
+                    switch(components[0].src_prefab_properties.trigger_meta_info.dest_prefab){
+                        case 'color_setter':
+                            prefab = ColorSetter;
+                            break;
+                        case 'toggle_visibility':
+                            prefab = ToggleVisibility;
+                            break;
+                        case 'inspector':
+                            prefab = Inspector;
+                            params['canvas'] = canvas;
+                            params['camera'] = page.camera;
+                            params['pointer'] = pointer;
+                            params['call_menu'] = OnKeyUp;
+                            break;
+                        case 'display_text':
+                            prefab = DisplayText;
+                            params['canvas'] = canvas;
+                            params['camera'] = page.camera;
+                            params['pointer'] = pointer;
+                            params['call_menu'] = OnKeyUp;
+                            break;
+                    }
                     switch(components[0].src_prefab){
                         case 'hover':
                             MINT.Hover(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
