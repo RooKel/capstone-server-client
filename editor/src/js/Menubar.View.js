@@ -33,7 +33,9 @@ function MenubarView( editor ) {
 	option.setTextContent("Audio View");
 	option.onClick(function () {
 
-		var panel = new AudioPanel(editor,{
+		if(editor.floatingPanels.audio !== undefined)
+			editor.floatingPanels.audio.close();
+		editor.floatingPanels.audio = new AudioPanel(editor,{
 			theme 		: 'dark filleddark',
 			headerTitle	: 'Audio Source View'
 		});

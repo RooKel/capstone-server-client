@@ -771,10 +771,7 @@ function Loader( editor ) {
 								);
 								getAnimSet.push(animByName);
 							}
-							for (let s = 0; s < x.userData.script.length; s++)
-							{
-								let script = x.userData.script[s];
-							}
+
 							editor.addAnimation( x, getAnimSet );
 							editor.deselect();
 						});

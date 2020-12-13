@@ -463,19 +463,12 @@ function MenubarFile(editor) {
 
                 if(topObject.uuid != undefined) {
                     let scripts = editor.scripts[topObject.uuid];
-                    let scriptMetaSet = [];
-                    if (scripts !== undefined) {
-                        for (let s = 0; s < scripts.length; s++) {
-                            scriptMetaSet.push(new Function(scripts[s].source + '\nreturn prefabMeta;')());
-                        }
-                    }
                     let userData = topObject.userData;
-
                     let animSet = userData.animSet;
                     topNode.extras = {
                         id: topObject.userData.id,
                         name  : topObject.name,
-                        script: scriptMetaSet,
+                        script: scripts,
                         animSet: animSet
                     }
                 }

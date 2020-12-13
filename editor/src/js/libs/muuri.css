@@ -215,21 +215,27 @@ select.grid-control-field::-ms-expand {
     flex-direction: row;
     align-items: center;
     justify-content: left;
-    width: 100%;
+    width: 160px;
     height: 24px;
     background-color: #A5A5A5;
 }
 
 .grid-item-content-title {
-    width: 100%;
-    height: 100%;
+    width: 110px;
+    height: 24px;
     font-size: 16px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .grid-item-content-creator {
-    width: 100%;
-    height: 100%;
+    width: 50px;
+    height: 24px;
     font-size: 16px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .grid-item-content-body {
@@ -244,8 +250,8 @@ select.grid-control-field::-ms-expand {
 }
 
 .grid-item-preview-img {
-    width: 100%;
-    height: 100%;
+    width: 150px;
+    height: auto;
     background-color: inherit;
 }
 .grid-card {

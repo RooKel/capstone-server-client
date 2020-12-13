@@ -1,6 +1,6 @@
 var ID3 = window.ID3;
 
-function AudioData (audioFile)
+function AudioData (audioFile, callback)
 {
     this.fileName = "";
     this.duration = 0;
@@ -15,9 +15,9 @@ function AudioData (audioFile)
         ID3.loadTags("filename.mp3", function(){
             var tags = window.ID3.getAllTags("filename.mp3");
             scope.fileName = tags.title;
-            console.log(tags);
-            console.log(tags.PIC);
-            console.log(tags.APIC);
+            scope.coverImage = tags.picture;
+            if(callback !== undefined)
+                callback(scope);
         },{
             dataReader: ID3.FileAPIReader(file)
         });

@@ -23,7 +23,7 @@
 		<script src="js/libs/esprima.js"></script>
 		<script src="js/libs/jsonlint.js"></script>
 
-		<script src="js/libs/JavaScript-ID3-Reader/dist/id3-minimized.js"></script>
+		<script src="js/libs/JavaScript-ID3-Reader/dist-src/id3-minimized.js"></script>
 
 		<script src="js/libs/socket.io-client/public/socket.io.js"></script>
 
@@ -246,7 +246,7 @@
 
 				try {
 
-					navigator.serviceWorker.register( 'sw.js' );
+					//navigator.serviceWorker.register( 'sw.js' );
 
 				} catch ( error ) {
 
@@ -255,5 +255,6 @@
 			}
 
 		</script>
+		<img id="preview-music" src="./images/default-music.png" style="display:none;" />
 	</body>
 </html>

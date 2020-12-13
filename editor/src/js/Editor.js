@@ -113,6 +113,7 @@ function Editor() {
 	this.scripts = {};
 
 	this.audioBufferSet = new Map();
+	this.audioDataSet = {};
 	this.audioSet = {};
 	this.audioListeners = {};
 
@@ -134,6 +135,7 @@ function Editor() {
 		download_world:undefined,
 		upload_avatar:undefined,
 		upload_world:undefined,
+		audio:undefined,
 		material:undefined
 	};
 

@@ -7,6 +7,8 @@ import ("./libs/muuri.js");
 function AudioPanel(editor, panelOptions)
 {
     var scope = this;
+    this.clickCallback = undefined;
+
     function loadAudioFiles(files){
         let filesMap = LoaderUtils.createFilesMap( files );
 
@@ -41,7 +43,6 @@ function AudioPanel(editor, panelOptions)
 
             } );
             reader.addEventListener('load', function(event){
-
                 var contents = event.target.result;
                 editor.addAudioBuffer(filename, contents);
 
@@ -51,6 +52,7 @@ function AudioPanel(editor, panelOptions)
             reader.readAsArrayBuffer(file);
         }
     }
+
     var form = document.createElement('form');
     form.style.display = 'none';
     document.body.appendChild(form);
@@ -119,22 +121,32 @@ AudioPanel.prototype ={
     },
     createItemElement: function(filename, audioBuffer)
     {
-        let data = new AudioData(new Blob([audioBuffer],{type:'application/octet-stream'}));
+        let scope = this;
         const itemElem = document.importNode(this.itemTemplate.content.children[0], true);
+        let data = new AudioData(new Blob([audioBuffer],{type:'application/octet-stream'}),(_data)=>{
+            fillElement(itemElem, _data);
+        });
 
-        itemElem.classList.add('h'+100, 'w' + 100);
-        itemElem.setAttribute('data-title', filename);
-        itemElem.setAttribute('data-uid', "test");
-        itemElem.querySelector('.grid-item-content-title').innerHTML = filename;
-        itemElem.querySelector('.grid-item-content-duration').innerHTML = "creator";
 
-        this.grid.add(itemElem);
-        return itemElem;
+        function fillElement(_elem,_data){
+            _elem.classList.add('h'+100, 'w' + 100);
+            _elem.setAttribute('data-title', _data.fileName);
+            _elem.setAttribute('data-uid', "test");
+            _elem.querySelector('.grid-item-content-title').innerHTML = _data.fileName;
+            _elem.querySelector('.grid-item-content-duration').innerHTML = "creator";
+
+            if(_data.coverImage === undefined)
+                _elem.querySelector('.grid-item-preview-img').src = document.getElementById('preview-music').src;
+            else
+                _elem.querySelector('.grid-item-preview-img').src = _data.coverImage;
+            scope.grid.add(_elem);
+        }
     },
     close: function()
     {
-        this.panel.close();
         this.panel.contentRemove();
+        this.panel.close();
+        this.grid.destroy(true);
     }
 };
 export {AudioPanel};
