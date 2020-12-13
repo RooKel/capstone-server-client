@@ -8,17 +8,16 @@ import {EnterInstPanel} from './UI/Panels/EnterInstPanel.js'
 import {CreateInstPanel} from './UI/Panels/CreateInstPanel.js'
 import {SelectWorldPanel} from './UI/Panels/SelectWorldPanel.js'
 import {ButtonType1} from './UI/Templates.js'
-import {Color, DirectionalLight} from 'three'
+import {Color, DirectionalLight, AudioListener, PositionalAudio, AudioLoader} from 'three'
 import {UserManager} from './Comms/UserManager.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 import * as MINT from './Interaction/MouseInteraction.js'
+import {PrefabMap} from './Prefabs/PrefabMap.js'
 
 const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     const page = Page();
     page.scene.background = new Color(0xF0F0F0);
-    page.scene.add(new DirectionalLight(0xFFFFFF, 1));
-    page.camera.position.set(0,1,5);
     const loader = new GLTFLoader();
     const interactable = [ ];
     const pointer = Pointer(page.sigs, page.camera, interactable);
@@ -95,18 +94,24 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                         const temp_func = new Function(__.source + '\nreturn prefabMeta;');
                         components.push(temp_func());
                     });
-                    MINT.LeftClick(_, ()=>{
-                        const target_uuid = components[0].src_prefab_properties.trigger_meta_info.dest_user_data_id;
-                        let target = undefined;
-                        loaded.scene.traverse((__)=>{
-                            if(!__.userData) return;
-                            if('' + __.userData.id === '' + target_uuid){
-                                target = __;
-                            }
-                        });
-                        const param = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties.color;
-                        target.material.color = new Color(param);
+                    if(components.length <= 0) return;
+                    const target_uuid = components[0].src_prefab_properties.trigger_meta_info.dest_user_data_id;
+                    let target = undefined;
+                    loaded.scene.traverse((__)=>{
+                        if(!__.userData) return;
+                        if('' + __.userData.id === '' + target_uuid){
+                            target = __;
+                        }
                     });
+                    const prefab = PrefabMap(components[0].src_prefab_properties.trigger_meta_info.dest_prefab);
+                    switch(components[0].src_prefab){
+                        case 'hover':
+                            MINT.Hover(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                            break;
+                        case 'left_click':
+                            MINT.LeftClick(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                            break;
+                    }
                     interactable.push(_);
                 });
             });
