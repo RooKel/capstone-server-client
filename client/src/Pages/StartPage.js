@@ -121,7 +121,7 @@ const StartPage = (socket, ftm, client_data, app_sigs)=>{
             renderer.toneMappingExposure = 1;
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = 1;
-        }, null, 2);
+        }, null, 3);
     });
     page.sigs.exit.add(()=>{
         socket.off('join-accept', OnJoinAccept);

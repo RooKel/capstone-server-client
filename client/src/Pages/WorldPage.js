@@ -8,9 +8,13 @@ import {EnterInstPanel} from './UI/Panels/EnterInstPanel.js'
 import {CreateInstPanel} from './UI/Panels/CreateInstPanel.js'
 import {SelectWorldPanel} from './UI/Panels/SelectWorldPanel.js'
 import {ButtonType1} from './UI/Templates.js'
-import {Color, DirectionalLight, AudioListener, PositionalAudio, AudioLoader} from 'three'
+import {Color, DirectionalLight, AudioListener, PositionalAudio, AudioLoader, Vector2} from 'three'
 import {UserManager} from './Comms/UserManager.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+import {UnrealBloomPass} from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import {EffectComposer} from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import {RenderPass} from 'three/examples/jsm/postprocessing/RenderPass.js'
 
 import * as MINT from './Interaction/MouseInteraction.js'
 import {PrefabMap} from './Prefabs/PrefabMap.js'
@@ -18,6 +22,8 @@ import {PrefabMap} from './Prefabs/PrefabMap.js'
 const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     const page = Page();
     page.scene.background = new Color(0xF0F0F0);
+    const listener = new AudioListener();
+    page.camera.add(listener);
     const loader = new GLTFLoader();
     const interactable = [ ];
     const pointer = Pointer(page.sigs, page.camera, interactable);
@@ -95,6 +101,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                         components.push(temp_func());
                     });
                     if(components.length <= 0) return;
+                    //#region find targets
                     const target_uuid = components[0].src_prefab_properties.trigger_meta_info.dest_user_data_id;
                     let target = undefined;
                     loaded.scene.traverse((__)=>{
@@ -103,6 +110,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                             target = __;
                         }
                     });
+                    //#endregion
                     const prefab = PrefabMap(components[0].src_prefab_properties.trigger_meta_info.dest_prefab);
                     switch(components[0].src_prefab){
                         case 'hover':
@@ -110,6 +118,9 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                             break;
                         case 'left_click':
                             MINT.LeftClick(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                            break;
+                        case 'idle':
+                            MINT.Idle(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
                             break;
                     }
                     interactable.push(_);
@@ -126,15 +137,29 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     }
     //#endregion
     const user_manager = UserManager(socket, ftm, client_data, page);
+    let effect_composer = undefined;
+    let bloom_pass = undefined;
     page.sigs.enter.add(()=>{
         document.addEventListener('keyup', OnKeyUp);
         ftm.requestFileDownload('gltf', 'world', world_id);
         socket.on('join-accept', OnJoinAccept);
+        page.sigs.render.addOnce((renderer)=>{
+            console.log('once');
+            bloom_pass = new UnrealBloomPass(new Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            effect_composer = new EffectComposer(renderer);
+            const render_scene = new RenderPass(page.scene, page.camera);
+            effect_composer.addPass(render_scene);
+            effect_composer.addPass(bloom_pass);
+        }, null, 4);
     });
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
+        socket.emit('rq-exit-instance', true);
     });
+    page.sigs.render.add((renderer)=>{
+        effect_composer.render();
+    }, null, 1);
     return page;
 }
 

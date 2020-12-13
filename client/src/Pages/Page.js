@@ -16,7 +16,7 @@ const Page = ()=>{
     });
     sigs.render.add((renderer)=>{
         renderer.render(scene, camera)
-    }, null, 1);
+    }, null, 2);
     return {
         scene:  scene,
         camera: camera,

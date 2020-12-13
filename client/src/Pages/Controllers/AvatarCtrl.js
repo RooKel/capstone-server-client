@@ -1,5 +1,6 @@
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {AnimationMixer} from 'three'
+
 import {Block, Text} from 'three-mesh-ui'
 import {Nameplate} from './Nameplate.js'
 import {Vector3, Box3} from 'three'
@@ -46,12 +47,6 @@ const AvatarCtrl = (group, socket, uid, ftm, page, client_data)=>{
                         animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
                     }
                 });
-                const name_plate = new Block({
-                    width: 1.0, height: 0.25,
-                });
-                let bbox = new Box3().setFromObject(loaded.scene.children[0]);
-                Nameplate(group, client_data, name_plate, new Vector3(0,bbox.max.y,0), page);
-                page.scene.add(name_plate);
             });
         }
     }
