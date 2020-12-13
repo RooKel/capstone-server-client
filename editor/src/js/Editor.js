@@ -202,8 +202,6 @@ Editor.prototype = {
 	addObject: function ( object, parent, index ) {
 
 		var scope = this;
-		scope.addUserData(object);
-		console.log(object.name);
 		object.traverse( function ( child ) {
 
 			if ( child.geometry !== undefined ) scope.addGeometry( child.geometry );

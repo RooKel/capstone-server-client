@@ -377,14 +377,7 @@ function MenubarFile(editor) {
                 let topObject = eQ.shift();
 
                 let scripts = editor.scripts[topObject.uuid];
-                let scriptMetaSet = [];
-                if(scripts !== undefined)
-                {
-                    for (let s = 0; s < scripts.length; s++)
-                    {
-                        scriptMetaSet.push(new Function(scripts[s].source + '\nreturn prefabMeta;')());
-                    }
-                }
+                if(scripts === undefined) scripts = [];
 
                 let userData = topObject.userData;
 
@@ -392,7 +385,7 @@ function MenubarFile(editor) {
                 topNode.extras = {
                     id: topObject.userData.id,
                     name  : topObject.name,
-                    script: scriptMetaSet,
+                    script: scripts,
                     animSet: animSet
                 }
 
@@ -463,6 +456,7 @@ function MenubarFile(editor) {
 
                 if(topObject.uuid != undefined) {
                     let scripts = editor.scripts[topObject.uuid];
+                    if(scripts === undefined) scripts = [];
                     let userData = topObject.userData;
                     let animSet = userData.animSet;
                     topNode.extras = {
