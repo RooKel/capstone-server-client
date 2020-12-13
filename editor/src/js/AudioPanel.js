@@ -126,7 +126,7 @@ function AudioPanel(editor, panelOptions)
                     '	src_prefab_id:\''+THREE.MathUtils.generateUUID()+'\',\n'+
                     '    src_prefab_properties:{\n' +
                     '       trigger_meta_info:{\n' +
-                    '          dest_user_data_id: ['+editor.selected.userData.id+'],\n' +
+                    '          dest_user_data_id: [\''+editor.selected.userData.id+'\'],\n' +
                     '          dest_prefab: \'audio_player\',\n' +
                     '          dest_prefab_properties: {\n' +
                     '               audioID: \''+_audioData.audioID +'\',\n'+
