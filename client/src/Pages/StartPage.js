@@ -1,46 +1,23 @@
-import {Color, LineSegments, LineBasicMaterial, AnimationMixer, MathUtils, MeshToonMaterial} from 'three'
-import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js'
+import {Page} from './Page.js'
+import {Pointer} from './Invoker/Pointer.js'
+import {Canvas} from './UI/Canvas.js'
+import {StartPanel} from './UI/Panels/StartPanel.js'
+import {MainPanel} from './UI/Panels/MainPanel.js'
+import {UserDataPanel} from './UI/Panels/UserDataPanel.js'
+import {SelectAvatarPanel} from './UI/Panels/SelectAvatarPanel.js'
+import {EnterInstPanel} from './UI/Panels/EnterInstPanel.js'
+import {CreateInstPanel} from './UI/Panels/CreateInstPanel.js'
+import {SelectWorldPanel} from './UI/Panels/SelectWorldPanel.js'
+import {Color, AnimationMixer, Euler, MathUtils, MeshToonMaterial, sRGBEncoding} from 'three'
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
+import {TextureLoader} from '../../../editor/build/three.module'
+import BackgroundPNG from '../../assets/Img/CartoonSpace01.png'
+import StartSceneGLTF from '../../assets/Models/Start_Scene.gltf'
 
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import RobotGLTF from '../../assets/models/Robot.gltf'
-import StartSceneGLTF from '../../assets/models/Start_Scene.gltf'
-import BackgroundPNG from '../../assets/png/CartoonSpace01.png';
-
-import { Page } from './Page.js'
-import { Pointer } from './Invokers/Pointer.js'
-
-import * as TMUI from 'three-mesh-ui'
-import * as STYLE from './UI/Styles.js'
-import { SetVisibility } from './Interactions/SetVisibility.js'
-import { Canvas } from './UI/Canvas.js'
-import { StartPanel } from './UI/StartPage/StartPanel.js'
-import { MainMenuPanel } from './UI/StartPage/MainMenuPanel.js'
-import {TextureLoader} from "../../../editor/build/three.module";
-import {Euler, Vector3} from "../../../editor/build/three";
-
-const StartPage = (socket, client_data, app_sigs, ftm)=>{
+const StartPage = (socket, ftm, client_data, app_sigs)=>{
     const page = Page();
-    page.scene.background = new Color(0xFFFFFF);
-    // page.scene.add(
-    //     new LineSegments(
-    //         new BoxLineGeometry(10, 10, 10, 10, 10, 10).translate(0, 5, 0),
-    //         new LineBasicMaterial({ color: 0x000000 })
-    //     )
-    // );
-
-    const loading_panel = new TMUI.Block(Object.assign({},
-        STYLE.startPanelType,
-        STYLE.font_roboto,
-        {
-            alignContent: 'center',
-            justifyContent: 'center',
-        }
-    ));
-    loading_panel.set({ backgroundOpacity:0.5 });
-    loading_panel.add(new TMUI.Text({ content: 'Loading' }));
-    loading_panel.position.z = -1;
-    SetVisibility(loading_panel);
-
+    page.scene.background = new Color(0xF0F0F0);
+    //#region deco
     let mixer = undefined;
     const animation_action = [ ];
     const loader = new GLTFLoader();
@@ -49,7 +26,6 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
         page.scene.background = texture;
         page.scene.environment = texture;
     });
-
     loader.load(
         StartSceneGLTF,
         (loaded)=>{
@@ -94,8 +70,6 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
             loaded.animations.forEach((_)=>{
                 animation_action.push(mixer.clipAction(_));
             });
-            loading_panel.sigs.set_visib.dispatch(false);
-            main_menu_panel.sigs.set_visib.dispatch(true);
             animation_action[0].play();
         },
         (xhr)=>{
@@ -109,48 +83,54 @@ const StartPage = (socket, client_data, app_sigs, ftm)=>{
     camRot.y = MathUtils.degToRad(-17.84);
     camRot.z = MathUtils.degToRad(-5.06);
     page.camera.rotation.set(camRot.x,camRot.y,camRot.z);
-
-    const ui_interactable = [ ];
+    //#endregion
     //#region ui
+    const ui_interactable = [ ];
     const canvas = Canvas(page.sigs);
-    const start_panel = StartPanel(ui_interactable, socket);
-    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket, page);
-    main_menu_panel.set({ backgroundOpacity: 0 });
-    main_menu_panel.position.set(0,0,-1);
-    canvas.scene.add(start_panel, main_menu_panel, loading_panel);
-    Object.assign(page, { canvas: canvas });
-    //#endregion
     const pointer = Pointer(page.sigs, canvas.camera, ui_interactable);
+    const navigate = { };
+    const start_panel = StartPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const main_panel = MainPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const user_data_panel = UserDataPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const select_avatar_panel = SelectAvatarPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const enter_inst_panel = EnterInstPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const create_inst_panel = CreateInstPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const select_world_panel = SelectWorldPanel(ui_interactable, socket, ftm, navigate, client_data);
+    Object.assign(navigate, {
+        start: start_panel,
+        main: main_panel,
+        user_data: user_data_panel,
+        select_avatar: select_avatar_panel,
+        enter_inst: enter_inst_panel,
+        create_inst: create_inst_panel,
+        select_world: select_world_panel,
+    });
+    canvas.scene.add(start_panel, main_panel, user_data_panel, select_avatar_panel, enter_inst_panel, create_inst_panel, select_world_panel);
+    //#endregion
     //#region socket event handlers
-    const OnCreateSuccess = (instance_id)=>{
-        console.log('create_success');
-    }
     const OnJoinAccept = (world_id)=>{
-        client_data.uid = socket.id;
-        console.log(client_data.uid);
-        app_sigs.change_page.dispatch(1, world_id);
+        app_sigs.change_page.dispatch('world', world_id);
     }
     //#endregion
-    //#region signal event handlers
-    const OnEnter = ()=>{
-        socket.on('create-success', OnCreateSuccess);
+    page.sigs.enter.add(()=>{
+        if(!client_data.user_name) start_panel.sigs.toggle_on.dispatch(false, undefined);
+        else main_panel.sigs.toggle_on.dispatch(false, 'start');
         socket.on('join-accept', OnJoinAccept);
-        main_menu_panel.sigs.set_visib.dispatch(false);
-        start_panel.sigs.set_visib.dispatch(false);
-        loading_panel.sigs.set_visib.dispatch(true);
-    }
-    const OnExit = ()=>{
-        socket.off('create-success', OnCreateSuccess);
+        page.sigs.render.addOnce((renderer)=>{
+            renderer.outputEncoding = sRGBEncoding;
+            renderer.toneMapping = 0;
+            renderer.toneMappingExposure = 1;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = 1;
+        }, null, 2);
+    });
+    page.sigs.exit.add(()=>{
         socket.off('join-accept', OnJoinAccept);
-    }
-    const OnUpdate = (delta)=>{
+    });
+    page.sigs.update.add((delta)=>{
         if(mixer) mixer.update(delta);
-    }
-    //#endregion
-    page.sigs.enter.add(OnEnter);
-    page.sigs.exit.add(OnExit);
-    page.sigs.update.add(OnUpdate);
+    });
     return page;
 }
 
-export { StartPage }
+export {StartPage}

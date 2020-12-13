@@ -1,97 +1,66 @@
-//#region import fonts
-import RobotoJSON from './Fonts/Roboto/Roboto-msdf.json'
-import RobotoPNG from './Fonts/Roboto/Roboto-msdf.png'
-//#endregion
-const font_roboto = {
+import RobotoJSON from '../../../assets/Fonts/Roboto/Roboto-msdf.json'
+import RobotoPNG from '../../../assets/Fonts/Roboto/Roboto-msdf.png'
+const fontRoboto = {
     fontFamily: RobotoJSON,
-    fontTexture: RobotoPNG
+    fontTexture:RobotoPNG 
 }
 
 const panelType1 = {
-    width: 1.2, height: 1,
+    width: 1.3, height: 1.05,
     padding: 0.03, margin: 0.01,
-    backgroundOpacity: 0
-}
-const startPanelType = {
-    width: 30, height: 20,
-    padding: 0, margin: 0,
-    backgroundOpacity: 1
-}
-const panelType1_header = {
-    width: 1.1, height: 0.1,
-    padding: 0.03, margin: 0.01
-}
-const panelType1_content = {
-    width: 1.1, height: 0.8,
-    padding: 0.03, margin: 0.01
-}
-
-const panelType2 = {
-    width: 1.2, height: 1,
-    padding: 0.03, margin: 0.01,
-    backgroundOpacity: 0
-}
-const panelType2_header = {
-    width: 1.1, height: 0.1,
-    padding: 0.03, margin: 0.01
-}
-const panelType2_content = {
-    width: 1.1, height: 0.7,
-    padding: 0.03, margin: 0.01
-}
-const panelType2_content_listElem = {
-    width: 1.0, height: 0.2,
-    padding: 0.03, margin: 0.01
-}
-const panelType2_content_listElem_img = {
-    width: 0.2, height: 0.15,
-    padding: 0.03, margin: 0.01
-}
-const panelType2_content_listElem_info = {
-    width: 0.7, height: 0.15,
-    padding: 0.03, margin: 0.01
-}
-const panelType2_footer = {
-    width: 1.1, height: 0.1,
-    padding: 0.03, margin: 0.01
-}
-
-const btnType1 = {
-    width: 0.3, height: 0.075,
-    padding: 0.03, margin: 0.01
-}
-const btnType2 = {
-    width: 0.5, height: 0.1,
-    padding: 0.03, margin: 0.01
-}
-
-const alignmentType1 = {
+    backgroundOpacity: 0,
     contentDirection: 'column',
     alignContent: 'center',
     justifyContent: 'center'
 }
-const alignmentType2 = {
+const panelType1Header = {
+    width: 1.3, height: 0.1,
+    padding: 0.03, margin: 0.01,
+}
+const panelType1Body = {
+    width: 1.3, height: 0.75,
+    padding: 0.03, margin: 0.01,
+}
+const panelType1Footer = {
+    width: 1.3, height: 0.125,
+    margin: 0.01,
+}
+
+const display_block = {
+    width: 1.0, height: 0.25,
+    padding: 0.03, margin: 0.01,
     contentDirection: 'row',
     alignContent: 'center',
     justifyContent: 'center'
 }
-const alignmentType3 = {
-    contentDirection: 'column',
-    alignContent: 'center',
-    justifyContent: 'start'
+const display_block_img = {
+    width: 0.24, height: 0.24,
 }
-const alignmentType4 = {
-    contentDirection: 'row',
+const display_block_text = {
+    width: 0.72, height: 0.24,
+    padding: 0.03, margin: 0.01,
+    backgroundOpacity: 0,
+    contentDirection: 'column',
+    alignContent: 'left',
+    justifyContent: 'center'
+}
+
+const buttonType1 = {
+    width: 0.4, height: 0.1,
+    padding: 0.03, margin: 0.01,
+}
+
+const loadingPanel = {
+    width: 5, height: 5,
+    backgroundOpacity: 1.0,
     alignContent: 'center',
-    justifyContent: 'start'
+    justifyContent: 'center'
 }
 
 export {
-    font_roboto,
-    startPanelType,
-    panelType1, panelType1_header, panelType1_content,
-    panelType2, panelType2_header, panelType2_content, panelType2_footer,
-    panelType2_content_listElem, panelType2_content_listElem_img, panelType2_content_listElem_info,
-    btnType1, btnType2,
-    alignmentType1, alignmentType2, alignmentType3, alignmentType4
+    fontRoboto,
+    panelType1, panelType1Header, panelType1Body, panelType1Footer,
+    buttonType1,
+    display_block, display_block_img, display_block_text,
+    loadingPanel,
 }

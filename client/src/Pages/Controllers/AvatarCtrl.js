@@ -1,39 +1,35 @@
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
-import * as THREE from 'three'
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
+import {AnimationMixer} from 'three'
 
-const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
-    console.log(id);
-
-    let avatar_id = undefined;
-    let need_update = false;
-
-    let dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
+const AvatarCtrl = (group, socket, uid, ftm, page_sigs)=>{
     const loader = new GLTFLoader();
-    loader.setDRACOLoader( dracoLoader );
-
-    //#region socket event handlers
-    const OnUpdateAvatar = (uid, _avatar_id)=>{
-        console.log(id + ', ' + uid);
-        if(id !== uid) return;
-        ftm.requestFileDownload('gltf', 'avatar', _avatar_id);
-        avatar_id = _avatar_id;
-        need_update = true;
-    }
-    //#endregion
     let mixer = undefined;
     let animation_action = { };
-    let avatar_cont = undefined;
+    let avatar_id = undefined;
+    let temp_avatar_cont = undefined;
+
+    const OnFileDownload = (result)=>{
+        if(result.request_type === 'gltf' && result.category === 'avatar' && result.data[0].uid === avatar_id){
+            socket.emit('check-avatar-id', {uid:uid, avatar_id:result.data[0].uid});
+            temp_avatar_cont = result.data[0].data;
+            binding.active = false;
+        }
+    }
+    const binding = ftm.signals.file_download.add(OnFileDownload);
+    binding.active = false;
+    //#region socket event handlers
+    const OnUpdateAvatar = (_uid, _avatar_id)=>{
+        if(uid !== _uid) return;
+        binding.active = true;
+        ftm.requestFileDownload('gltf', 'avatar', _avatar_id);
+        avatar_id = _avatar_id;
+    }
     const OnCheck = (ack_res)=>{
-        console.log(ack_res.result);
-        if(ack_res.uid === id && ack_res.result){
-            //#region loading
-            if(!avatar_cont) return;
-            loader.parse(avatar_cont, '', (loaded)=>{                      
+        if(ack_res.uid === uid && ack_res.result){
+            loader.parse(temp_avatar_cont, '', (loaded)=>{
                 group.add(loaded.scene);
                 group.remove(group.children[0]);
-                mixer = new THREE.AnimationMixer(loaded.scene);
+                mixer = new AnimationMixer(loaded.scene);
                 loaded.scene.traverse((_)=>{
                     if(_.userData === undefined) return;
                     if(_.userData.animSet === undefined) return;
@@ -48,30 +44,18 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
                     }
                 });
             });
-            //#endregion
+            console.log(group);
         }
-        avatar_cont = undefined;
     }
-    socket.on('check-avatar-id-ack', OnCheck);
-    const OnInit = ()=>{
+    //#endregion
+    group.sigs.init.add(()=>{
         socket.on('update-avatar', OnUpdateAvatar);
-        ftm.addFileDownloadListener((result)=>{
-            if(result.request_type === 'gltf' && result.category === 'avatar'){
-                if(need_update && result.data[0].uid === avatar_id){
-                    socket.emit('check-avatar-id', {  uid:id, avatar_id:result.data[0].uid });
-                    console.log({  uid:id, avatar_id:result.data[0].uid });
-                    avatar_cont = result.data[0].data;
-                    need_update = false;
-                }
-            }
-        });
-    }
-    const OnDispose = ()=>{
-        console.log('disposed?');
+        socket.on('check-avatar-id-ack', OnCheck);
+    });
+    group.sigs.dispose.add(()=>{
         socket.off('update-avatar', OnUpdateAvatar);
-    }
-    group.sigs.init.add(OnInit);
-    group.sigs.dispose.add(OnDispose);
+        socket.off('check-avatar-id-ack', OnCheck);
+    });
     page_sigs.update.add((delta)=>{
         if(mixer) mixer.update(delta);
     });
@@ -84,8 +68,7 @@ const AvatarCtrl = (id, group, socket, ftm, page_sigs, camera)=>{
     }
     return {
         PlayAnim: (anim_name)=>PlayAnim(anim_name),
-        id: id
     }
 }
 
-export { AvatarCtrl }
+export {AvatarCtrl}

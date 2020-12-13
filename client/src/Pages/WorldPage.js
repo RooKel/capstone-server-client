@@ -1,129 +1,102 @@
-import { Color, LineSegments, LineBasicMaterial, Vector3, DirectionalLight } from 'three'
-import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js'
-import { Page } from './Page.js'
-import { Pointer } from './Invokers/Pointer.js'
-import { UserManager } from './Comms/UserManager.js'
-import { InputCollector } from './Comms/InputCollector.js'
-import { MyPeer } from '../MyPeer.js'
+import {Page} from './Page.js'
+import {Pointer} from './Invoker/Pointer.js'
+import {Canvas} from './UI/Canvas.js'
+import {MainPanel} from './UI/Panels/MainPanel.js'
+import {UserDataPanel} from './UI/Panels/UserDataPanel.js'
+import {SelectAvatarPanel} from './UI/Panels/SelectAvatarPanel.js'
+import {EnterInstPanel} from './UI/Panels/EnterInstPanel.js'
+import {CreateInstPanel} from './UI/Panels/CreateInstPanel.js'
+import {SelectWorldPanel} from './UI/Panels/SelectWorldPanel.js'
+import {ButtonType1, LoadingPanel} from './UI/Templates.js'
+import {Color, DirectionalLight, Loader} from 'three'
+import {UserManager} from './Comms/UserManager.js'
 
-import { Canvas } from './UI/Canvas.js'
-import { MainMenuPanel } from './UI/WorldPage/MainMenuPanel.js'
-
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
-
-import * as TMUI from 'three-mesh-ui'
-import * as STYLE from './UI/Styles.js'
-import { SetVisibility } from './Interactions/SetVisibility.js'
-
-const WorldPage = (socket, client_data, app_sigs, ftm, world_id)=>{
-    const three_canvas = document.getElementById('three_canvas');
-
-    const loading_panel = new TMUI.Block(Object.assign({},
-        STYLE.startPanelType,
-        STYLE.font_roboto,
-        {
-            backgroundOpacity: 0,
-            alignContent: 'center',
-            justifyContent: 'center',
-        }
-    ));
-    loading_panel.set({ backgroundOpacity:0.5 });
-    loading_panel.add(new TMUI.Text({ content: 'Loading' }));
-    loading_panel.position.z = -1;
-    SetVisibility(loading_panel);
-    
+const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     const page = Page();
-    page.scene.background = new Color(0xFFFFFF);
-    const dir_light = new DirectionalLight(0xFFFFFF, 1);
-    dir_light.position.set(5,12,-18);
-    page.scene.add(dir_light);
-    // page.scene.add(
-    //     new LineSegments(
-    //         new BoxLineGeometry(10, 10, 10, 10, 10, 10).translate(0, 5, 0),
-    //         new LineBasicMaterial({ color: 0x000000 })
-    //     )
-    // );
-    let dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader( dracoLoader );
-
-    ftm.addFileDownloadListener((result)=>{
-        if(result.request_type === 'gltf' && result.category === 'world'){
-            loader.parse(result.data[0].data, '', (loaded)=>{
-                page.scene.add(loaded.scene);
-
-                loading_panel.sigs.set_visib.dispatch(false);
-            });
-        }
-    });
-    ftm.requestFileDownload('gltf', 'world', world_id);
-
-    page.camera.position.set(0,5,7.5);
-    const ui_interactable = [ ];
-    const interactable = [ ];
+    page.scene.background = new Color(0xF0F0F0);
+    page.scene.add(new DirectionalLight(0xFFFFFF, 1));
+    page.camera.position.set(0,1,5);
     //#region ui
+    const ui_interactable = [ ];
     const canvas = Canvas(page.sigs);
-    const main_menu_panel = MainMenuPanel(ui_interactable, canvas, app_sigs, ftm, socket, page);
-    canvas.scene.add(main_menu_panel, loading_panel);
-    Object.assign(page, { canvas: canvas });
+    const ui_pointer = Pointer(page.sigs, canvas.camera, ui_interactable);
+    const navigate = { };
+    const main_panel = MainPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const return_to_start_button = ButtonType1('Return', ()=>{
+        app_sigs.change_page.dispatch('start');
+        main_panel.sigs.toggle_off.dispatch(false);
+    });
+    const menu_close_button = ButtonType1('Close', ()=>{
+        main_panel.sigs.toggle_off.dispatch(false);
+        ui_on = false;
+        ui_pointer.Active(false);
+        navigate.current = undefined;
+    });
+    main_panel.body.add(return_to_start_button);
+    main_panel.footer.add(menu_close_button);
+    ui_interactable.push(return_to_start_button, menu_close_button);
+    const user_data_panel = UserDataPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const select_avatar_panel = SelectAvatarPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const enter_inst_panel = EnterInstPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const create_inst_panel = CreateInstPanel(ui_interactable, socket, ftm, navigate, client_data);
+    const select_world_panel = SelectWorldPanel(ui_interactable, socket, ftm, navigate, client_data);
+    Object.assign(navigate, {
+        current: undefined,
+        main: main_panel,
+        user_data: user_data_panel,
+        select_avatar: select_avatar_panel,
+        enter_inst: enter_inst_panel,
+        create_inst: create_inst_panel,
+        select_world: select_world_panel,
+    });
+    canvas.scene.add(main_panel, user_data_panel, select_avatar_panel, enter_inst_panel, create_inst_panel, select_world_panel);
     //#endregion
     //#region input event handlers
-    let main_menu_panel_visibility = false;
-    const OnKeyDown = (e)=>{
-        if(e.code === 'Escape'){
-            main_menu_panel_visibility = !main_menu_panel_visibility;
-            main_menu_panel.sigs.set_visib.dispatch(main_menu_panel_visibility);
-            if(main_menu_panel_visibility){
-                ui_pointer.sigs.active.dispatch(true);
-                pointer.sigs.active.dispatch(false);
-                //client_data.player_obj.sigs.dispose.dispatch();
-                page.camera.sigs.dispose.dispatch();
-            }
-            else{
-                ui_pointer.sigs.active.dispatch(false);
-                pointer.sigs.active.dispatch(true);
-                //client_data.player_obj.sigs.init.dispatch();
-                page.camera.sigs.init.dispatch();
-            }
+    let ui_on = false;
+    const OnKeyUp = (e)=>{
+        switch(e.code){
+            case 'Escape':
+                ui_on = !ui_on;
+                if(!ui_on){
+                    page.camera.sigs.init.dispatch();
+                    navigate[navigate.current].sigs.toggle_off.dispatch();
+                    navigate.current = undefined;
+                    ui_pointer.Active(false);
+                }
+                else{
+                    page.camera.sigs.dispose.dispatch();
+                    main_panel.sigs.toggle_on.dispatch();
+                    ui_pointer.Active(true);
+                }
+                break;
         }
     }
     //#endregion
-    const OnCreateSuccess = (instance_id)=>{
-        console.log('create_success');
+    //#region load world
+    const OnFileDownload = (result)=>{
+        if(result.request_type === 'gltf' && result.category === 'world' && world_id === result.data[0].uid) {
+            
+            binding.active = false;
+        }
     }
+    const binding = ftm.signals.file_download.add(OnFileDownload);
+    //#endregion
+    //#region socket event handlers
     const OnJoinAccept = (world_id)=>{
-        client_data.uid = socket.id;
-        console.log(client_data.uid);
-        app_sigs.change_page.dispatch(1, world_id);
-    }
-    //#region signal event handlers
-    const OnEnter = ()=>{
-        socket.on('create-success', OnCreateSuccess);
-        socket.on('join-accept', OnJoinAccept);
-        main_menu_panel.sigs.set_visib.dispatch(false);
-        loading_panel.sigs.set_visib.dispatch(true);
-        ui_pointer.sigs.active.dispatch(false);
-        
-        document.addEventListener('keydown', OnKeyDown);
-    }
-    const OnExit = ()=>{
-        socket.off('create-success', OnCreateSuccess);
-        socket.off('join-accept', OnJoinAccept);
-        document.removeEventListener('keydown', OnKeyDown);
+        app_sigs.change_page.dispatch('world', world_id);
     }
     //#endregion
-    page.sigs.enter.add(OnEnter);
-    page.sigs.exit.add(OnExit);
-
-    const pointer = Pointer(page.sigs, page.camera, interactable);
-    const ui_pointer = Pointer(page.sigs, canvas.camera, ui_interactable);
-
-    const input_collector = InputCollector(socket, client_data, page.sigs);
-    const user_manager = UserManager(socket, client_data, page, input_collector, ftm);
-
+    const user_manager = UserManager(socket, ftm, client_data, page);
+    page.sigs.enter.add(()=>{
+        document.addEventListener('keyup', OnKeyUp);
+        ftm.requestFileDownload('gltf', 'world', world_id);
+        socket.on('join-accept', OnJoinAccept);
+    });
+    page.sigs.exit.add(()=>{
+        document.removeEventListener('keyup', OnKeyUp);
+        socket.off('join-accept', OnJoinAccept);
+    });
     return page;
 }
 
-export { WorldPage }
+export {WorldPage}
