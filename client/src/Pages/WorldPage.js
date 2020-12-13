@@ -15,6 +15,7 @@ import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {ColorSetter} from './Prefabs/ColorSetter.js'
 import {ToggleVisibility} from './Prefabs/ToggleVisibility.js'
 import {Inspector} from './Prefabs/Inspector.js'
+import {DisplayText} from './Prefabs/DisplayText.js'
 
 import * as MINT from './Interaction/MouseInteraction.js'
 
@@ -112,6 +113,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                     });
                     //#endregion
                     let prefab = undefined;
+                    const params = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties;
                     switch(components[0].src_prefab_properties.trigger_meta_info.dest_prefab){
                         case 'color_setter':
                             prefab = ColorSetter;
@@ -121,10 +123,17 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                             break;
                         case 'inspector':
                             prefab = Inspector;
-                            const params = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties;
                             params['canvas'] = canvas;
                             params['camera'] = page.camera;
                             params['pointer'] = pointer;
+                            params['call_menu'] = OnKeyUp;
+                            break;
+                        case 'display_text':
+                            prefab = DisplayText;
+                            params['canvas'] = canvas;
+                            params['camera'] = page.camera;
+                            params['pointer'] = pointer;
+                            params['call_menu'] = OnKeyUp;
                             break;
                     }
                     switch(components[0].src_prefab){
