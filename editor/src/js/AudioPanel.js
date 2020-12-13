@@ -2,11 +2,13 @@ import {jsPanel} from './libs/jspanel/es6module/jspanel.js';
 import {LoaderUtils} from "./LoaderUtils.js";
 import * as THREE from "../../build/three.module.js";
 import {AudioData} from "./AudioData.js";
+import {AddScriptCommand} from "./commands/AddScriptCommand.js";
 import ("./libs/muuri.js");
 
 function AudioPanel(editor, panelOptions)
 {
     var scope = this;
+    this.editor = editor;
     this.clickCallback = undefined;
 
     function loadAudioFiles(files){
@@ -44,8 +46,6 @@ function AudioPanel(editor, panelOptions)
             } );
             reader.addEventListener('load', function(event){
                 var contents = event.target.result;
-                editor.addAudioBuffer(filename, contents);
-
                 scope.createItemElement(filename, contents);
 
             });
@@ -81,7 +81,10 @@ function AudioPanel(editor, panelOptions)
             '           </div>' +
             '           <div class="grid-item-content-body">' +
             '               <img class="grid-item-preview-img"/>' +
-            '           </div>' +
+            '               <button class="grid-item-button-play">PLAY</button>' +
+            '               <button class="grid-item-button-stop">STOP</button>' +
+            '               <button class="grid-item-button-remove">REMOVE</button>' +
+        '           </div>' +
             '       </div>'+
         '       </div>'+
         '       </template div>'+
@@ -104,43 +107,133 @@ function AudioPanel(editor, panelOptions)
     })
     this.itemTemplate = document.querySelector('.audio-source-grid-template');
     this.grid = new Muuri(gridElement, {
-        items: this.createItemElements(editor.audioBufferSet),
+        items: [],
         dragEnabled: true
+    });
+    this.loadItemElements(editor.audioDataSet);
+
+    editor.signals.audioAllocate.add(function(_elem, _audioData){
+        console.log(_audioData.fileName);
+        var selected = editor.selected;
+        if(selected !== undefined)
+        {
+            var audioScript = {
+                name:'AudioPlayer', source:
+                    'let prefabMeta = {\n' +
+                    '    is_global:false,\n' +
+                    '	src_user_data_id:\''+editor.selected.userData.id+'\',\n'+
+                    '    src_prefab:\'\',\n' +
+                    '	src_prefab_id:\''+THREE.MathUtils.generateUUID()+'\',\n'+
+                    '    src_prefab_properties:{\n' +
+                    '       trigger_meta_info:{\n' +
+                    '          dest_user_data_id: ['+editor.selected.userData.id+'],\n' +
+                    '          dest_prefab: \'audio_player\',\n' +
+                    '          dest_prefab_properties: {\n' +
+                    '               audioID: \''+_audioData.audioID +'\',\n'+
+                    '               volume: 0.5,\n'+
+                    '               loop: false\n'+
+                    '          }\n' +
+                    '       }\n' +
+                    '    }\n' +
+                    '}'
+            };
+            editor.execute( new AddScriptCommand( editor, editor.selected, audioScript ) );
+        }
     });
 }
 AudioPanel.prototype ={
+    loadItemElements: function(_audioDataSet){
+      const elements = [];
+        _audioDataSet.forEach((value,key,map)=>{
+           let element = this.loadItemElement(value);
+            elements.push(element);
+        });
+        return elements;
+    },
     createItemElements: function(raw_elements){
         const elements = [];
-        for(let i = 0; i < raw_elements.length; i++)
-        {
-            let raw_element = raw_elements[i];
-            let element = this.createItemElement(raw_element);
+        raw_elements.forEach((value,key,map)=>{
+            let element = this.createItemElement(value);
             elements.push(element);
-        }
+        });
         return elements;
+    },
+    loadItemElement: function(_audioData){
+        let scope = this;
+        const itemElem = document.importNode(this.itemTemplate.content.children[0], true);
+        itemElem.classList.add('h'+100, 'w' + 100);
+        itemElem.setAttribute('data-title', _audioData.fileName);
+        itemElem.setAttribute('data-uid', "test");
+        itemElem.querySelector('.grid-item-content-title').innerHTML = _audioData.fileName;
+        itemElem.querySelector('.grid-item-content-duration').innerHTML = _audioData.artist;
+        itemElem.addEventListener('dblclick',(e)=>{
+            this.editor.signals.audioAllocate.dispatch(itemElem, _audioData);
+        });
+
+        if(_audioData.coverImage === undefined)
+            itemElem.querySelector('.grid-item-preview-img').src = document.getElementById('preview-music').src;
+        else
+            itemElem.querySelector('.grid-item-preview-img').src = _audioData.coverImage;
+
+        itemElem.querySelector('.grid-item-button-play').addEventListener('click',(e)=>{
+            scope.editor.playWorldAudio(_audioData);
+        });
+        itemElem.querySelector('.grid-item-button-stop').addEventListener('click',(e)=>{
+            scope.editor.stopWorldAudio();
+        });
+        itemElem.querySelector('.grid-item-button-remove').addEventListener('click',(e)=>{
+            let item = scope.grid.getItem(itemElem);
+            scope.grid.remove([item],{removeElements:true});
+            scope.editor.removeAudioBuffer(_data.audioID);
+            scope.editor.removeAudioData(_data.audioID);
+            scope.editor.signals.audioRemove.dispatch(_data);
+        });
+        scope.grid.add(itemElem);
+        return itemElem;
     },
     createItemElement: function(filename, audioBuffer)
     {
         let scope = this;
         const itemElem = document.importNode(this.itemTemplate.content.children[0], true);
-        let data = new AudioData(new Blob([audioBuffer],{type:'application/octet-stream'}),(_data)=>{
+        let data = new AudioData(filename, new Blob([audioBuffer],{type:'application/octet-stream'}),(_data)=>{
             fillElement(itemElem, _data);
+            this.editor.addAudioBuffer(_data.audioID, _data.dataBuffer);
+            this.editor.addAudioData(_data.audioID, _data);
+            itemElem.addEventListener('dblclick',(e)=>{
+                this.editor.signals.audioAllocate.dispatch(itemElem, _data);
+            });
         });
-
 
         function fillElement(_elem,_data){
             _elem.classList.add('h'+100, 'w' + 100);
             _elem.setAttribute('data-title', _data.fileName);
             _elem.setAttribute('data-uid', "test");
             _elem.querySelector('.grid-item-content-title').innerHTML = _data.fileName;
-            _elem.querySelector('.grid-item-content-duration').innerHTML = "creator";
+            _elem.querySelector('.grid-item-content-duration').innerHTML = _data.artist;
 
             if(_data.coverImage === undefined)
                 _elem.querySelector('.grid-item-preview-img').src = document.getElementById('preview-music').src;
             else
                 _elem.querySelector('.grid-item-preview-img').src = _data.coverImage;
+
+            _elem.querySelector('.grid-item-button-play').addEventListener('click',(e)=>{
+                scope.editor.playWorldAudio(_data);
+            });
+            _elem.querySelector('.grid-item-button-stop').addEventListener('click',(e)=>{
+                scope.editor.stopWorldAudio();
+            });
+            _elem.querySelector('.grid-item-button-remove').addEventListener('click',(e)=>{
+                let item = scope.grid.getItem(itemElem);
+                scope.grid.remove([item],{removeElements:true});
+                scope.editor.removeAudioBuffer(_data.audioID);
+                scope.editor.removeAudioData(_data.audioID);
+                scope.editor.signals.audioRemove.dispatch(_data);
+            });
+
             scope.grid.add(_elem);
+            scope.editor.signals.audioLoad.dispatch(_data);
         }
+        return itemElem;
     },
     close: function()
     {

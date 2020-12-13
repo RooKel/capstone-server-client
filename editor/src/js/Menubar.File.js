@@ -489,6 +489,11 @@ function MenubarFile(editor) {
         getWorldJson(editor.scene, function (sceneJson){
 
             zip.file('world.gltf', sceneJson);
+            let count = editor.audioBufferSet.size;
+
+            let audioMetaWrapper = {
+                audioMetaInfo:[]
+            };
 
             editor.audioBufferSet.forEach((value, key, map)=>{
                 let audioBlob = new Blob([value], {type:'application/octet-stream'});
@@ -497,14 +502,26 @@ function MenubarFile(editor) {
                     if(err){
                         throw err;
                     }
-                    zip.file(key, data, {binary:true});
 
-                    let title = config.getKey('project/title');
-                    save(zip.generate({type: 'blob'}), (title !== '' ? title : 'World') + '.zip');
+                    let audioPath = key + ".mp3";
+                    zip.file(audioPath, data, {binary:true});
 
+                    let metaInfo = {
+                        audioPath:audioPath,
+                        audioID:key
+                    };
+                    audioMetaWrapper.audioMetaInfo.push(metaInfo);
+                    if(--count === 0) {
+                        zip.file("metaAudioTable.json", JSON.stringify(audioMetaWrapper,null,2));
+                        onLoad(zip);
+                    }
                 });
-
             });
+            function onLoad(zip)
+            {
+                let title = config.getKey('project/title');
+                save(zip.generate({type: 'blob'}), (title !== '' ? title : 'World') + '.zip');
+            }
         });
     }
 

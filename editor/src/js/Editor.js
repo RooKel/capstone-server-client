@@ -62,6 +62,10 @@ function Editor() {
 		objectChanged: new Signal(),
 		objectRemoved: new Signal(),
 
+		audioLoad : new Signal(),
+		audioRemove : new Signal(),
+		audioAllocate: new Signal(),
+
 		cameraAdded: new Signal(),
 		cameraRemoved: new Signal(),
 
@@ -113,7 +117,7 @@ function Editor() {
 	this.scripts = {};
 
 	this.audioBufferSet = new Map();
-	this.audioDataSet = {};
+	this.audioDataSet = new Map();
 	this.audioSet = {};
 	this.audioListeners = {};
 
@@ -175,29 +179,47 @@ Editor.prototype = {
 
 	//
 
-	addAudioBuffer: function (fileName, audioBuffer) {
-		this.audioBufferSet.set(fileName, audioBuffer);
+	addAudioBuffer: function (audioID, audioBuffer) {
+		this.audioBufferSet.set(audioID, audioBuffer);
 	},
-	addAudioToObject: function(object, audioBuffer){
+	removeAudioBuffer: function (audioID){
+		this.audioBufferSet.delete(audioID);
+	},
+	addAudioData : function (audioID, audioData){
+		this.audioDataSet.set(audioID, audioData);
+	},
+	removeAudioData: function(audioID){
+		this.audioDataSet.delete(audioID);
+	},
+	playWorldAudio : function (audioData){
+		this.addAudioToObject(this.camera, audioData.dataBuffer);
+	},
+	stopWorldAudio : function (){
+		this.audioSet[this.camera.uuid].stop();
+	},
+	addAudioToObject: function(object, audioBlob){
+		var scope = this;
 		var context = THREE.AudioContext.getContext();
-		context.decodeAudioData(audioBuffer, function (audioBuffer){
-			if(this.audioListeners[object.uuid] === undefined)
-			{
-				let listener = new THREE.AudioListener();
-				let sound = new THREE.Audio(listener);
-				sound.setBuffer(audioBuffer);
-				object.add(listener);
-				this.audioListeners[object.uuid] = listener;
-				this.audioSet[object.uuid] = sound;
-			}
-			else
-			{
-				let sound = this.audioSet[object.uuid];
-				sound.setBuffer(audioBuffer);
-			}
+		audioBlob.arrayBuffer().then(buffer=>{
+			context.decodeAudioData(buffer, function (audioBuffer) {
+				if (scope.audioListeners[object.uuid] === undefined) {
+					let listener = new THREE.AudioListener();
+					let sound = new THREE.Audio(listener);
+					sound.setBuffer(audioBuffer);
+					sound.setVolume(0.5);
+					sound.play();
+					object.add(listener);
+					scope.audioListeners[object.uuid] = listener;
+					scope.audioSet[object.uuid] = sound;
+				} else {
+					let sound = scope.audioSet[object.uuid];
+					sound.setBuffer(audioBuffer);
+					sound.play();
+				}
+			});
 		});
 	},
-	//
+ 	//
 
 	addObject: function ( object, parent, index ) {
 
