@@ -81,9 +81,9 @@ const EnterInstPanel = (interactable, socket, ftm, navigate, client_data)=>{
             });
             table.cells.forEach((_, i)=>{
                 if(cur_start_ind + i >= inst_list.length) return;
-                for(let i = 0; i < thumbnail_list.length; i++){
-                    if(thumbnail_list[i].uid === inst_list[cur_start_ind + i].instance.world_id){
-                        _.children[1].backgroundTexture.image.src = thumbnail_list[i].data;
+                for(let j = 0; j < thumbnail_list.length; j++){
+                    if(thumbnail_list[j].uid === inst_list[cur_start_ind + i].instance.world_id){
+                        _.children[1].backgroundTexture.image.src = thumbnail_list[j].data;
                         break;
                     }
                 }

@@ -1,4 +1,4 @@
-import {Group, BoxGeometry, MeshBasicMaterial, Mesh, Vector3} from 'three'
+import {Group, BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Gyroscope} from 'three'
 import {AvatarCtrl} from '../Controllers/AvatarCtrl.js'
 import {InputCollector} from './InputCollector.js'
 import {PlayerMovementCtrl} from '../Controllers/PlayerMovementCtrl.js'
@@ -23,12 +23,12 @@ const UserManager = (socket, ftm, client_data, page)=>{
         let geometry = new BoxGeometry(1,1,1);
         let material = new MeshBasicMaterial({color:0xFF0000});
         let cube = new Mesh(geometry, material);
-        group.add(cube);
+        group.add(cube);        
         Object.assign(group, { sigs: { 
             init: new signals.Signal(),
             dispose: new signals.Signal()
         }});
-        const avatar_ctrl = AvatarCtrl(group, socket, uid, ftm, page.sigs);
+        const avatar_ctrl = AvatarCtrl(group, socket, uid, ftm, page, client_data);
         if(client_data.uid === uid){
             PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs, avatar_ctrl);
             PlayerRotationCtrl(page.sigs, socket, group, data, uid, page.camera);

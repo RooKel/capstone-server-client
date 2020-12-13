@@ -7,15 +7,21 @@ import {SelectAvatarPanel} from './UI/Panels/SelectAvatarPanel.js'
 import {EnterInstPanel} from './UI/Panels/EnterInstPanel.js'
 import {CreateInstPanel} from './UI/Panels/CreateInstPanel.js'
 import {SelectWorldPanel} from './UI/Panels/SelectWorldPanel.js'
-import {ButtonType1, LoadingPanel} from './UI/Templates.js'
-import {Color, DirectionalLight, Loader} from 'three'
+import {ButtonType1} from './UI/Templates.js'
+import {Color, DirectionalLight} from 'three'
 import {UserManager} from './Comms/UserManager.js'
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+import * as MINT from './Interaction/MouseInteraction.js'
 
 const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     const page = Page();
     page.scene.background = new Color(0xF0F0F0);
     page.scene.add(new DirectionalLight(0xFFFFFF, 1));
     page.camera.position.set(0,1,5);
+    const loader = new GLTFLoader();
+    const interactable = [ ];
+    const pointer = Pointer(page.sigs, page.camera, interactable);
     //#region ui
     const ui_interactable = [ ];
     const canvas = Canvas(page.sigs);
@@ -27,9 +33,11 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
         main_panel.sigs.toggle_off.dispatch(false);
     });
     const menu_close_button = ButtonType1('Close', ()=>{
+        page.camera.sigs.init.dispatch();
         main_panel.sigs.toggle_off.dispatch(false);
         ui_on = false;
         ui_pointer.Active(false);
+        pointer.Active(true);
         navigate.current = undefined;
     });
     main_panel.body.add(return_to_start_button);
@@ -62,11 +70,13 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                     navigate[navigate.current].sigs.toggle_off.dispatch();
                     navigate.current = undefined;
                     ui_pointer.Active(false);
+                    pointer.Active(true);
                 }
                 else{
                     page.camera.sigs.dispose.dispatch();
                     main_panel.sigs.toggle_on.dispatch();
                     ui_pointer.Active(true);
+                    pointer.Active(false);
                 }
                 break;
         }
@@ -75,7 +85,31 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     //#region load world
     const OnFileDownload = (result)=>{
         if(result.request_type === 'gltf' && result.category === 'world' && world_id === result.data[0].uid) {
-            
+            loader.parse(result.data[0].data, '', (loaded)=>{
+                page.scene.add(loaded.scene);
+                loaded.scene.traverse((_)=>{
+                    if(!_.userData) return;
+                    if(!_.userData.script) return;
+                    const components = [ ];
+                    _.userData.script.forEach((__)=>{
+                        const temp_func = new Function(__.source + '\nreturn prefabMeta;');
+                        components.push(temp_func());
+                    });
+                    MINT.LeftClick(_, ()=>{
+                        const target_uuid = components[0].src_prefab_properties.trigger_meta_info.dest_user_data_id;
+                        let target = undefined;
+                        loaded.scene.traverse((__)=>{
+                            if(!__.userData) return;
+                            if('' + __.userData.id === '' + target_uuid){
+                                target = __;
+                            }
+                        });
+                        const param = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties.color;
+                        target.material.color = new Color(param);
+                    });
+                    interactable.push(_);
+                });
+            });
             binding.active = false;
         }
     }

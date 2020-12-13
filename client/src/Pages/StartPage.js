@@ -53,7 +53,6 @@ const StartPage = (socket, ftm, client_data, app_sigs)=>{
                     _.material = toonMat;
                 }
             })
-            console.log(astro);
 
             let debri = loaded.scene.children[1];
             debri.translateX(-8);
