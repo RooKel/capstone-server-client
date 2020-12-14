@@ -139,11 +139,11 @@ function onConnect(socket)
 {
     console.log(socket.id + "가 접속했다");
     /* generate instance id and assign world, master id */
-    socket.on('create-world', world_id, room_name => {
+    socket.on('create-world', data => {
         var instance_id = makeUID();
         instances[instance_id] = new Instance();
-        instances[instance_id].room_name = room_name;
-        instances[instance_id].world_id = world_id;
+        instances[instance_id].room_name = data.room_name;
+        instances[instance_id].world_id = data.world_id;
         instances[instance_id].master_id = socket.id;
 
         socket.emit('create-success', instance_id);
