@@ -8,7 +8,7 @@ import {EnterInstPanel} from './UI/Panels/EnterInstPanel.js'
 import {CreateInstPanel} from './UI/Panels/CreateInstPanel.js'
 import {SelectWorldPanel} from './UI/Panels/SelectWorldPanel.js'
 import {ButtonType1} from './UI/Templates.js'
-import {Color, DirectionalLight, AudioListener, PositionalAudio, AudioLoader, Vector2} from 'three'
+import {Color, AudioListener, PositionalAudio, AudioContext} from 'three'
 import {UserManager} from './Comms/UserManager.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {ColorSetter} from './Prefabs/ColorSetter.js'
@@ -27,7 +27,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     const loader = new GLTFLoader();
     const interactable = [ ];
     const pointer = Pointer(page.sigs, page.camera, interactable);
-    let audio_files = undefined; 
+    let audio_files = [ ]; 
+    const all_pos_audio = [ ];
     //#region ui
     const ui_interactable = [ ];
     const canvas = Canvas(page.sigs);
@@ -137,7 +138,17 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                         break;
                     case 'audio_player':
                         prefab = PlayAudio;
-                        params['audio_files'] = audio_files;
+                        const lookfor = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties.audioID;
+                        let blob = audio_files.find((_)=>_.audioID===lookfor).dataBuffer;
+                        let context = AudioContext.getContext();
+                        blob.arrayBuffer().then(buffer=>{
+                            context.decodeAudioData(buffer, function (audioBuffer) {
+                                const sound = new PositionalAudio(listener);
+                                sound.setBuffer(audioBuffer);
+                                all_pos_audio.push(sound);
+                                params['audio_file'] = sound;
+                            });
+                        });
                         break;
                 }
                 switch(components[0].src_prefab){
@@ -171,13 +182,11 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
         });
     }
     const OnFileDownload = (result)=>{
-        console.log(result);
         if(result.request_type === 'zip' && result.category === 'world' && world_id === result.data[0].uid) {
             PackageUtil.convBinaryToPackage(result.data[0].data, (conv_result)=>{
-                console.log(conv_result);
                 PackageUtil.convFilesToAudioData(conv_result.audioMetaInfo, conv_result.audioFiles, (audio_conv_result)=>{
-                    console.log(audio_conv_result);
-                    LoadGLTF(conv_result.gltf);
+                    audio_files = [...audio_conv_result];
+                    LoadGLTF(conv_result.gltf.asText());
                 });
             });
             binding.active = false;
@@ -199,7 +208,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
-        
+        all_pos_audio.forEach((_)=>_.stop());
     });
     return page;
 }

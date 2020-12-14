@@ -1,4 +1,4 @@
-import {JSZip} from 'jszip'
+import {JSZip} from './jszip.module.min.js'
 import {PackageData} from "./PackageData.js";
 import {LoaderUtils} from "./LoaderUtils.js";
 import * as THREE from 'three';
