@@ -125,10 +125,6 @@ function onConnect(socket)
     socket.on('world-init', world_data => {
         console.log("world-init 실행");
         //console.log(data);
-
-        for (var entity in world_data) {
-            
-        }
     });
 
     /* if user join instance, broadcast other-joined event */
