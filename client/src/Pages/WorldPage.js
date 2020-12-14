@@ -162,7 +162,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                 data_array.push(data_tuple);
             });
             console.log(data_array);
-            socket.emit('instance-list', data_array);
+            socket.emit('world-init', data_array);
         });
     }
     const OnFileDownload = (result)=>{
