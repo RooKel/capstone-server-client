@@ -72,6 +72,17 @@ const EnterInstPanel = (interactable, socket, ftm, navigate, client_data)=>{
         });
     }
     const thumbnail_list = [ ];
+    const FillTable = ()=>{
+        table.cells.forEach((_, i)=>{
+            if(cur_start_ind + i >= inst_list.length) return;
+            for(let j = 0; j < thumbnail_list.length; j++){
+                if(thumbnail_list[j].uid === inst_list[cur_start_ind + i].instance.world_id){
+                    _.children[1].backgroundTexture.image.src = thumbnail_list[j].data;
+                    break;
+                }
+            }
+        });
+    }
     const OnFileDownload = (result)=>{
         if(result.request_type === 'thumbnail' && result.category === 'world') {
             result.data.forEach((_)=>{
@@ -79,15 +90,7 @@ const EnterInstPanel = (interactable, socket, ftm, navigate, client_data)=>{
                 _.data = 'data:image/png;base64,' + b64(_.data);
                 thumbnail_list.push(_);
             });
-            table.cells.forEach((_, i)=>{
-                if(cur_start_ind + i >= inst_list.length) return;
-                for(let j = 0; j < thumbnail_list.length; j++){
-                    if(thumbnail_list[j].uid === inst_list[cur_start_ind + i].instance.world_id){
-                        _.children[1].backgroundTexture.image.src = thumbnail_list[j].data;
-                        break;
-                    }
-                }
-            });
+            FillTable();
             binding.active = false;
         }
     }
