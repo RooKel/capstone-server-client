@@ -138,6 +138,12 @@ function parseData(id)
 function onConnect(socket)
 {
     console.log(socket.id + "가 접속했다");
+
+    /* bind user nickname to socket id */
+    socket.on('create-nickname', nickname => {
+        nicknames[socket.id] = nickname;
+    });
+
     /* generate instance id and assign world, master id */
     socket.on('create-world', data => {
         var instance_id = makeUID();
@@ -167,6 +173,7 @@ function onConnect(socket)
 
         // intialize user quaternion data
         var user_entity = instance.entities[socket.id];
+        user_entity.nickname = nicknames[socket.id];
         user_entity.quaternion = new THREE.Quaternion();
 
         // send login accept message to sender
