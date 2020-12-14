@@ -124,7 +124,7 @@ function onConnect(socket)
     /* initialize world data only once from the client */
     socket.on('world-init', world_data => {
         console.log("world-init 실행");
-        //console.log(data);
+        console.log(world_data);
     });
 
     /* if user join instance, broadcast other-joined event */
