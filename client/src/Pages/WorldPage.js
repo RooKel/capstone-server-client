@@ -11,13 +11,13 @@ import {ButtonType1} from './UI/Templates.js'
 import {Color, DirectionalLight, AudioListener, PositionalAudio, AudioLoader, Vector2} from 'three'
 import {UserManager} from './Comms/UserManager.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
-
 import {ColorSetter} from './Prefabs/ColorSetter.js'
 import {ToggleVisibility} from './Prefabs/ToggleVisibility.js'
 import {Inspector} from './Prefabs/Inspector.js'
 import {DisplayText} from './Prefabs/DisplayText.js'
-
+import {PlayAudio} from './Prefabs/PlayAudio.js'
 import * as MINT from './Interaction/MouseInteraction.js'
+import {PackageUtil} from './PackageUtil/PackageUtil.js'
 
 const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     const page = Page();
@@ -26,7 +26,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     page.camera.add(listener);
     const loader = new GLTFLoader();
     const interactable = [ ];
-    const pointer = Pointer(page.sigs, page.camera, interactable);    
+    const pointer = Pointer(page.sigs, page.camera, interactable);
+    let audio_files = undefined; 
     //#region ui
     const ui_interactable = [ ];
     const canvas = Canvas(page.sigs);
@@ -134,6 +135,10 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                         params['pointer'] = pointer;
                         params['call_menu'] = OnKeyUp;
                         break;
+                    case 'audio_player':
+                        prefab = PlayAudio;
+                        params['audio_files'] = audio_files;
+                        break;
                 }
                 switch(components[0].src_prefab){
                     case 'hover':
@@ -166,8 +171,15 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
         });
     }
     const OnFileDownload = (result)=>{
-        if(result.request_type === 'gltf' && result.category === 'world' && world_id === result.data[0].uid) {
-            LoadGLTF(result.data[0].data);
+        console.log(result);
+        if(result.request_type === 'zip' && result.category === 'world' && world_id === result.data[0].uid) {
+            PackageUtil.convBinaryToPackage(result.data[0].data, (conv_result)=>{
+                console.log(conv_result);
+                PackageUtil.convFilesToAudioData(conv_result.audioMetaInfo, conv_result.audioFiles, (audio_conv_result)=>{
+                    console.log(audio_conv_result);
+                    LoadGLTF(conv_result.gltf);
+                });
+            });
             binding.active = false;
         }
     }
@@ -181,7 +193,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     const user_manager = UserManager(socket, ftm, client_data, page);
     page.sigs.enter.add(()=>{
         document.addEventListener('keyup', OnKeyUp);
-        ftm.requestFileDownload('gltf', 'world', world_id);
+        ftm.requestFileDownload('zip', 'world', world_id);
         socket.on('join-accept', OnJoinAccept);
     });
     page.sigs.exit.add(()=>{
