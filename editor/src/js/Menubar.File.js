@@ -10,6 +10,7 @@ import {GLTFLoader} from "../../examples/jsm/loaders/GLTFLoader.js";
 import {AddObjectCommand} from "./commands/AddObjectCommand.js";
 import {LoaderUtils} from "./LoaderUtils.js";
 import {AudioData} from "./AudioData.js";
+import {PackageUtil} from "./PackageUtil.js";
 
 function b64(e){
     let t="";
@@ -61,7 +62,19 @@ function MenubarFile(editor) {
         }
         else if(res.request_type === 'zip')
         {
-            let zip = new JSZip(res.data[0].data);
+            PackageUtil.convBinaryToPackage(res.data[0].data, function(packageData){
+                PackageUtil.convFilesToAudioData(packageData.audioMetaInfo, packageData.audioFiles,(audioDataSet=>{
+                    for (let i = 0; i < audioDataSet.length; i++)
+                    {
+                        let _data = audioDataSet[i];
+                        editor.addAudioBuffer(_data.audioID, _data.dataBuffer);
+                        editor.addAudioData(_data.audioID, _data);
+                    }
+                    loadModelFileToEditor(packageData.gltf);
+                    //  close loading panel
+                }));
+            });
+            /*let zip = new JSZip(res.data[0].data);
             let files = {
                 gltf : undefined,
                 audioFiles : [],
@@ -87,7 +100,7 @@ function MenubarFile(editor) {
             loadModelFileToEditor(files.gltf);
             loadAudioFilesToEditor(files.audioMetaInfo, files.audioFiles);
 
-            editor.signals.loadStateChanged.dispatch("close");
+            editor.signals.loadStateChanged.dispatch("close");*/
         }
     }
 
@@ -558,7 +571,6 @@ function MenubarFile(editor) {
     function loadAudioFilesToEditor(metaFile, files)
     {
         let filesMap = LoaderUtils.createFilesMap(files);
-
         let manager = new THREE.LoadingManager();
         manager.setURLModifier( function ( url ) {
 
