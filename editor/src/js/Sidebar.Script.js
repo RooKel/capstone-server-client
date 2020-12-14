@@ -47,7 +47,6 @@ function SidebarScript( editor ) {
 
 	} );
 	container.add( newScript );
-
 	/*
 	var loadScript = new UI.Button( 'Load' );
 	loadScript.setMarginLeft( '4px' );

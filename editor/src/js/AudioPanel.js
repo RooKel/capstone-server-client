@@ -122,7 +122,7 @@ function AudioPanel(editor, panelOptions)
                     'let prefabMeta = {\n' +
                     '    is_global:false,\n' +
                     '	src_user_data_id:\''+editor.selected.userData.id+'\',\n'+
-                    '    src_prefab:\'\',\n' +
+                    '    src_prefab:\'left_click\',\n' +
                     '	src_prefab_id:\''+THREE.MathUtils.generateUUID()+'\',\n'+
                     '    src_prefab_properties:{\n' +
                     '       trigger_meta_info:{\n' +
