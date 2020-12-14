@@ -97,6 +97,7 @@ const EnterInstPanel = (interactable, socket, ftm, navigate, client_data)=>{
     let cur_start_ind = 0;
     const OnInstanceList = (_inst_list)=>{
         inst_list = [..._inst_list];
+        console.log(_inst_list);
         table.cells.forEach((_, i)=>{
             const img_block = _.children[1];
             const txt_block = _.children[2];
