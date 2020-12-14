@@ -116,6 +116,7 @@ function onConnect(socket)
         instances[instance_id].room_name = data.room_name;
         instances[instance_id].world_id = data.world_id;
         instances[instance_id].master_id = socket.id;
+        instances[instance_id].master_name = nicknames[socket.id];
 
         socket.emit('create-success', instance_id);
     });
