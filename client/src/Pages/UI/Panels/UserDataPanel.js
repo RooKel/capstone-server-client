@@ -87,6 +87,7 @@ const UserDataPanel = (interactable, socket, ftm, navigate, client_data)=>{
     });
     panel.sigs.toggle_off.add(()=>{
         client_data.user_name = user_name_inp_field.text.content;
+        socket.emit('create-nickname', client_data.user_name);
         Clear();
         binding.active = false;
     });

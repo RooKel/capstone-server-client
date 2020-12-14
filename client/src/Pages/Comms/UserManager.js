@@ -28,7 +28,7 @@ const UserManager = (socket, ftm, client_data, page)=>{
             init: new signals.Signal(),
             dispose: new signals.Signal()
         }});
-        const avatar_ctrl = AvatarCtrl(group, socket, uid, ftm, page, client_data);
+        const avatar_ctrl = AvatarCtrl(group, socket, uid, ftm, page, data, client_data);
         if(client_data.uid === uid){
             PlayerMovementCtrl(socket, uid, data, group, page.camera, input_collector, page.sigs, avatar_ctrl);
             PlayerRotationCtrl(page.sigs, socket, group, data, uid, page.camera);

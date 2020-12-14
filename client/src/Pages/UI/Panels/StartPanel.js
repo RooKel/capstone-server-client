@@ -21,6 +21,7 @@ const StartPanel = (interactable, socket, ftm, navigate, client_data)=>{
     const user_name_inp_field = TextInputType1('Username:', 20, interactable, panel.sigs);
     const start_button = ButtonType1('Start', ()=>{
         client_data.user_name = user_name_inp_field.text.content;
+        socket.emit('create-nickname', client_data.user_name);
         panel.sigs.toggle_off.dispatch(false);
         navigate['main'].sigs.toggle_on.dispatch(false, 'start');
     });

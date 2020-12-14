@@ -1,11 +1,12 @@
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
-import {AnimationMixer} from 'three'
+import {AnimationMixer, Vector2} from 'three'
 
 import {Block, Text} from 'three-mesh-ui'
 import {Nameplate} from './Nameplate.js'
+import {fontRoboto} from '../UI/Styles.js'
 import {Vector3, Box3} from 'three'
 
-const AvatarCtrl = (group, socket, uid, ftm, page, client_data)=>{
+const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
     const loader = new GLTFLoader();
     let mixer = undefined;
     let animation_action = { };
@@ -41,13 +42,20 @@ const AvatarCtrl = (group, socket, uid, ftm, page, client_data)=>{
                     for(let a = 0; a < _.userData.animSet.length; a++){
                         let animByState = loaded.animations.find(
                             (anim)=>{
-                                return anim.name === _.userData.animSet[a].animation
+                                return anim.name === _.userData.animSet[a].animation;
                             }
                         );
                         animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
                     }
                 });
             });
+            const nameplate_block = new Block(Object.assign({}, fontRoboto, {
+                width: 0.5, height:0.25,
+                alignContent: 'center',
+                justifyContent: 'center'
+            }));
+            nameplate_block.add(new Text({content: data.nickname}));
+            const nameplate = Nameplate(group, client_data, nameplate_block, new Vector2(0,2,0), page);
             
         }
     }

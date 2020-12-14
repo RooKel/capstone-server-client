@@ -19,7 +19,7 @@ import {DisplayText} from './Prefabs/DisplayText.js'
 
 import * as MINT from './Interaction/MouseInteraction.js'
 
-const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
+const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     const page = Page();
     page.scene.background = new Color(0xF0F0F0);
     const listener = new AudioListener();
@@ -153,15 +153,15 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
                 const data_tuple = { 
                     id:         _.userData.id,
                     instance:   {
-                        position:   _.position,
-                        quaternion: _.quaternion,
-                        scale:      _.scale,
-                        userData:   _.userData,
+                        instance_id:    instance_id,
+                        position:       _.position,
+                        quaternion:     _.quaternion,
+                        scale:          _.scale,
+                        userData:       _.userData,
                     }
                 };
                 data_array.push(data_tuple);
             });
-            console.log(data_array);
             socket.emit('world-init', data_array);
         });
     }
@@ -174,8 +174,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     const binding = ftm.signals.file_download.add(OnFileDownload);
     //#endregion
     //#region socket event handlers
-    const OnJoinAccept = (world_id)=>{
-        app_sigs.change_page.dispatch('world', world_id);
+    const OnJoinAccept = (world_id, instance_id)=>{
+        app_sigs.change_page.dispatch('world', world_id, instance_id);
     }
     //#endregion
     const user_manager = UserManager(socket, ftm, client_data, page);
