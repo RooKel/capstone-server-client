@@ -36,7 +36,7 @@ function MenubarView( editor ) {
 		if(editor.floatingPanels.audio !== undefined)
 			editor.floatingPanels.audio.close();
 		editor.floatingPanels.audio = new AudioPanel(editor,{
-			theme 		: 'dark filleddark',
+			theme 		: '1b1b1b fillcolor 2e2e2e',
 			headerTitle	: 'Audio Source View'
 		});
 

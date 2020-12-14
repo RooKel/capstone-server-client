@@ -15,7 +15,7 @@
     display: flex;
     align-items: center;
     text-transform: uppercase;
-    font-family: "test";
+    font-family: math;
     color: white;
 }
 @font-face {
@@ -23,20 +23,19 @@
     src:url("./fonts/Mark Simonson - Proxima Nova Alt Condensed Semibold.otf");
 }
 .upload-grid-container input{
-    width: 90%;
-    height: 28px;
+    width: 80%;
+    height: 26px;
     font-size: 16px;
 }
 
 .upload-grid-container button {
     width: 40%;
     height: 60%;
-    margin-right: -2%;
-    background-color: lightblue;
+    background-color: #F04128;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
     color: white;
-    font-family: 'test';
-    letter-spacing: 2px;
+    border-radius: 5px;
+    font-family: math;
 }
 
 .Submit-Area .button-wrapper {
@@ -49,9 +48,10 @@
 }
 
 .name-rect {
-    width: 30%;
+    width: 120px;
     height: 100%;
-    padding-left: 5%;
+    padding-left: 10%;
+    padding-right: 8px;
     font-size: 22px;
 }
 
@@ -62,6 +62,7 @@
 
 .Preview-Area {
     grid-area: Preview-Area;
+    z-index: 1;
 }
 .Preview-Area img{
     background-color: white;
@@ -87,10 +88,11 @@
     grid-area: Content-Outline;
     justify-content: left;
     flex-direction: column;
-    background-color: rgb(160,175,191);
+    background-color: #525252;
     margin-right: 5%;
     margin-left: 2%;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+    border-radius: 7px;
 }
 .Content-Name {
     justify-content: left;

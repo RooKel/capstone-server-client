@@ -47,8 +47,9 @@
     border: 0;
     box-sizing: border-box;
     vertical-align: baseline;
-    font-family: Roboto,"Open Sans",Lato,"Helvetica Neue",Arial,sans-serif;
+    font-family: system-ui;
     font-weight: normal;
+    text-transform: uppercase;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;

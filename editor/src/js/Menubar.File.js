@@ -8,8 +8,6 @@ import {UploadPanel} from "./UploadPanel.js";
 import {DRACOLoader} from "../../examples/jsm/loaders/DRACOLoader.js";
 import {GLTFLoader} from "../../examples/jsm/loaders/GLTFLoader.js";
 import {AddObjectCommand} from "./commands/AddObjectCommand.js";
-import {LoaderUtils} from "./LoaderUtils.js";
-import {AudioData} from "./AudioData.js";
 import {PackageUtil} from "./PackageUtil.js";
 
 function b64(e){
@@ -74,33 +72,6 @@ function MenubarFile(editor) {
                     //  close loading panel
                 }));
             });
-            /*let zip = new JSZip(res.data[0].data);
-            let files = {
-                gltf : undefined,
-                audioFiles : [],
-                audioMetaInfo : undefined
-            };
-            zip.filter(function(path,file){
-                var extension = file.name.split( '.' ).pop().toLowerCase();
-                console.log(file.name);
-                switch (extension)
-                {
-                    case 'gltf':
-                        files.gltf = file;
-                        break;
-                    case 'mp3':
-                        files.audioFiles.push(file);
-                        break;
-                    case 'json':
-                        files.audioMetaInfo = JSON.parse(file.asText());
-                        break;
-                }
-            });
-
-            loadModelFileToEditor(files.gltf);
-            loadAudioFilesToEditor(files.audioMetaInfo, files.audioFiles);
-
-            editor.signals.loadStateChanged.dispatch("close");*/
         }
     }
 
@@ -125,7 +96,7 @@ function MenubarFile(editor) {
                 preview   : undefined,
             };
             editor.floatingPanels.upload_avatar = new UploadPanel(panelContents, {
-                theme      : 'lightslategray filleddark',
+                theme 		: '1b1b1b fillcolor 2e2e2e',
                 headerTitle: 'Avatar Upload'
             }, function (dataStream) {
                 editor.signals.loadStateChanged.dispatch("open");
@@ -150,7 +121,7 @@ function MenubarFile(editor) {
                 preview   : undefined,
             };
             editor.floatingPanels.upload_world = new UploadPanel(panelContents, {
-                theme      : 'lightslategray filleddark',
+                theme 		: '1b1b1b fillcolor 2e2e2e',
                 headerTitle: 'World Upload'
             }, function (dataStream) {
                 editor.signals.loadStateChanged.dispatch("open");
@@ -174,7 +145,7 @@ function MenubarFile(editor) {
                 editor.floatingPanels.download_avatar.close();
             }
             let tmpGrid = new GridPanel(elements, {
-                theme      : 'dark filleddark',
+                theme 		: '1b1b1b fillcolor 2e2e2e',
                 headerTitle: 'Avatar Download'
             }, (event) => {
                 console.log(event.type);
@@ -200,7 +171,7 @@ function MenubarFile(editor) {
             //  Download thumbnail files
 
             editor.floatingPanels.download_world = new GridPanel(elements, {
-                theme      : 'dark filleddark',
+                theme 		: '1b1b1b fillcolor 2e2e2e',
                 headerTitle: 'World Download'
             }, (event)=>
             {
@@ -504,6 +475,13 @@ function MenubarFile(editor) {
         let audioMetaWrapper = {
             audioMetaInfo:[]
         };
+        if(_editor.audioBufferSet.size == 0)
+        {
+            zip.file("metaAudioTable.json", JSON.stringify(audioMetaWrapper,null,2));
+            onCreate(zip);
+            return;
+        }
+
         _editor.audioBufferSet.forEach((value, key, map)=>{
             let audioBlob = new Blob([value], {type:'application/octet-stream'});
             let uri = URL.createObjectURL(audioBlob);
@@ -567,42 +545,6 @@ function MenubarFile(editor) {
             });
             editor.signals.loadStateChanged.dispatch("close");
         } );
-    }
-    function loadAudioFilesToEditor(metaFile, files)
-    {
-        let filesMap = LoaderUtils.createFilesMap(files);
-        let manager = new THREE.LoadingManager();
-        manager.setURLModifier( function ( url ) {
-
-            let file = filesMap[ url ];
-
-            if ( file ) {
-
-                console.log( 'Loading', url );
-
-                return URL.createObjectURL( file );
-
-            }
-            return url;
-        } );
-        for (let i = 0; i < files.length; i++)
-        {
-            var file = files[i];
-            var metaInfo = metaFile.audioMetaInfo.find(element=>element.audioPath === file.name);
-            var filename = metaInfo.audioName;
-            var audioID = metaInfo.audioID;
-            var extension = filename.split( '.' ).pop().toLowerCase();
-
-
-            file.lastModifiedDate = file.date;
-            file.type = "audio/mpeg";
-            let blob = new Blob([file.asArrayBuffer()], {type:'application/octet-stream'});
-
-            let data = new AudioData(audioID, filename, blob, (_data)=>{
-                editor.addAudioBuffer(_data.audioID, _data.dataBuffer);
-                editor.addAudioData(_data.audioID, _data);
-            });
-        }
     }
     function exportWorld() {
 
