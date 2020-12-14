@@ -14,6 +14,7 @@ var Entity = function() {
     this.color = 0;
     this.position_buffer = [];
     this.quaternion_buffer = [];
+    this.extras = undefined;
 }
 
 module.exports = Entity;
