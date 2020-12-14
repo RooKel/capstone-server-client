@@ -26,13 +26,13 @@ const App = ()=>{
         pages[cur_page_ind].sigs.enter.dispatch();
         sigs.change_page.add((to, world_id, instance_id)=>{
             pages[cur_page_ind].sigs.exit.dispatch();
+            if(pages[1]) pages.splice(1, 1);
             switch(to){
                 case 'start':
                     pages[0].sigs.enter.dispatch();
                     cur_page_ind = 0;
                     break;
                 case 'world':
-                    if(pages[1]) pages.splice(1, 1);
                     pages.push(WorldPage(socket, ftm, client_data, sigs, world_id, instance_id));
                     pages[1].sigs.enter.dispatch();
                     cur_page_ind = 1;
