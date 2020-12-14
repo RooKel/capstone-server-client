@@ -1,10 +1,6 @@
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
-import {AnimationMixer, Vector2} from 'three'
-
-import {Block, Text} from 'three-mesh-ui'
+import {AnimationMixer, Box3, Vector3} from 'three'
 import {Nameplate} from './Nameplate.js'
-import {fontRoboto} from '../UI/Styles.js'
-import {Vector3, Box3} from 'three'
 
 const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
     const loader = new GLTFLoader();
@@ -12,6 +8,9 @@ const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
     let animation_action = { };
     let avatar_id = undefined;
     let temp_avatar_cont = undefined;
+
+    const nameplate = Nameplate(data.nickname, group, client_data, page);
+    page.scene.add(nameplate);
 
     const OnFileDownload = (result)=>{
         if(result.request_type === 'gltf' && result.category === 'avatar' && result.data[0].uid === avatar_id){
@@ -48,15 +47,9 @@ const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
                         animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
                     }
                 });
+                const bbox = new Box3().setFromObject(loaded.scene);
+                nameplate.sigs.change_offset.dispatch(new Vector3(0,bbox.max.y + 0.25,0));
             });
-            const nameplate_block = new Block(Object.assign({}, fontRoboto, {
-                width: 0.5, height:0.25,
-                alignContent: 'center',
-                justifyContent: 'center'
-            }));
-            nameplate_block.add(new Text({content: data.nickname}));
-            const nameplate = Nameplate(group, client_data, nameplate_block, new Vector2(0,2,0), page);
-            
         }
     }
     //#endregion
@@ -67,6 +60,7 @@ const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
     group.sigs.dispose.add(()=>{
         socket.off('update-avatar', OnUpdateAvatar);
         socket.off('check-avatar-id-ack', OnCheck);
+        nameplate.sigs.dispose.dispatch();
     });
     page.sigs.update.add((delta)=>{
         if(mixer) mixer.update(delta);
