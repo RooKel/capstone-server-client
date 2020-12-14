@@ -68,7 +68,7 @@ function MenubarFile(editor) {
                         editor.addAudioBuffer(_data.audioID, _data.dataBuffer);
                         editor.addAudioData(_data.audioID, _data);
                     }
-                    loadModelFileToEditor(packageData.gltf);
+                    loadModelFileToEditor(packageData.gltf.asText());
                     //  close loading panel
                 }));
             });
@@ -513,7 +513,7 @@ function MenubarFile(editor) {
 
         let loader = new GLTFLoader();
         loader.setDRACOLoader( dracoLoader );
-        loader.parse( gltfFile.asText(), '', function ( result ) {
+        loader.parse( gltfFile, '', function ( result ) {
 
             let scene = result.scene;
             scene.name = result.scene.name;
@@ -558,7 +558,12 @@ function MenubarFile(editor) {
             let audioMetaWrapper = {
                 audioMetaInfo:[]
             };
-
+            if(editor.audioBufferSet.size == 0)
+            {
+                zip.file("metaAudioTable.json", JSON.stringify(audioMetaWrapper,null,2));
+                onLoad(zip);
+                return;
+            }
             editor.audioBufferSet.forEach((value, key, map)=>{
                 let audioBlob = new Blob([value], {type:'application/octet-stream'});
                 let uri = URL.createObjectURL(audioBlob);

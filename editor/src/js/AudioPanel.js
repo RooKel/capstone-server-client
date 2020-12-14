@@ -184,6 +184,9 @@ AudioPanel.prototype ={
         itemElem.querySelector('.grid-item-button-remove').addEventListener('click',(e)=>{
             let item = scope.grid.getItem(itemElem);
             scope.grid.remove([item],{removeElements:true});
+            if(scope.editor.getWorldAudio().isPlaying){
+
+            }
             scope.editor.removeAudioBuffer(_data.audioID);
             scope.editor.removeAudioData(_data.audioID);
             scope.editor.signals.audioRemove.dispatch(_data);

@@ -197,6 +197,9 @@ Editor.prototype = {
 	stopWorldAudio : function (){
 		this.audioSet[this.camera.uuid].stop();
 	},
+	getWorldAudio : function (){
+		return this.audioSet[this.camera.uuid];
+	},
 	addAudioToObject: function(object, audioBlob){
 		var scope = this;
 		var context = THREE.AudioContext.getContext();
