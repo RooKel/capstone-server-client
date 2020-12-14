@@ -192,8 +192,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
             PackageUtil.convBinaryToPackage(result.data[0].data, (conv_result)=>{
                 PackageUtil.convFilesToAudioData(conv_result.audioMetaInfo, conv_result.audioFiles, (audio_conv_result)=>{
                     audio_files = [...audio_conv_result];
-                    LoadGLTF(conv_result.gltf.asText());
                 });
+                LoadGLTF(conv_result.gltf.asText());
             });
             binding.active = false;
         }
