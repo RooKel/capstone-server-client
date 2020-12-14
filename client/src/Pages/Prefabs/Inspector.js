@@ -1,10 +1,13 @@
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
+import {Color} from 'three'
 
 const Inspector = (dest, params)=>{
     document.addEventListener('keyup', (e)=>{
         if(e.code === 'Escape'){
             params.canvas.camera.position.set(0,0,0);
             params.canvas.camera.lookAt(0,0,-1);
+            params.canvas.light.position.set(0,1,1);
+            params.canvas.scene.background = null;
             cam_ctrl.dispose();
             light_ctrl.dispose();
             params.canvas.scene.remove(clone);
@@ -21,6 +24,8 @@ const Inspector = (dest, params)=>{
     const clone = dest.clone();
     clone.position.set(0,0,-2);
     params.canvas.scene.add(clone);
+
+    params.canvas.scene.background = new Color(0x000000);
 
     const cam_ctrl = new OrbitControls(params.canvas.camera, document.getElementById('three-canvas'));
     cam_ctrl.target.set(0,0,-2);

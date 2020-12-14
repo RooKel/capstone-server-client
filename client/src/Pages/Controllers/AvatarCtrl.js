@@ -48,6 +48,7 @@ const AvatarCtrl = (group, socket, uid, ftm, page, client_data)=>{
                     }
                 });
             });
+            
         }
     }
     //#endregion
