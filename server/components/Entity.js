@@ -9,11 +9,13 @@ var Entity = function() {
     this.quaternion = new Quaternion();
     //  Model Quaternion
     this.model_quaternion = new Quaternion();
-    this.speed = 2;
+    this.scale_x = 0;
+    this.scale_y = 0;
+    this.scale_z = 0;
     this.nickname = undefined;
-    this.color = 0;
     this.position_buffer = [];
     this.quaternion_buffer = [];
+    this.extras = undefined;
 }
 
 module.exports = Entity;

@@ -122,9 +122,37 @@ function onConnect(socket)
     });
 
     /* initialize world data only once from the client */
-    socket.on('world-init', world_data => {
+    socket.on('world-init', data => {
         console.log("world-init 실행");
-        console.log(world_data);
+        
+        // for (var i in data) {
+        //     var uid = data[i].id;
+        //     var instance = data[i].instance;
+        //     var instance_id = instance.instance_id;
+        //     var world_instance = instances[instance_id];
+
+        //     if (!world_instance.entities[uid]) {
+        //         var position = instance.position;
+        //         var quaternion = instance.quaternion;
+        //         var scale = instance.scale;
+        //         var extras = instance.userData;
+
+        //         world_instance.entities[uid] = new Entity();
+        //         var entity = world_instance.entities[uid];
+        //         entity.x = position.x;
+        //         entity.y = position.y;
+        //         entity.z = position.z;
+        //         entity.quaternion._x = quaternion._x;
+        //         entity.quaternion._y = quaternion._y;
+        //         entity.quaternion._z = quaternion._z;
+        //         entity.quaternion._w = quaternion._w;
+        //         entity.scale_x = scale.x;
+        //         entity.scale_y = scale.y;
+        //         entity.scale_z = scale.z;
+        //         entity.extras = extras;
+        //         console.log(entity);
+        //     }
+        // }
     });
 
     /* if user join instance, broadcast other-joined event */
