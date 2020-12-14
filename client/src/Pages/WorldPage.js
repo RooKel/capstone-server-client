@@ -26,7 +26,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     page.camera.add(listener);
     const loader = new GLTFLoader();
     const interactable = [ ];
-    const pointer = Pointer(page.sigs, page.camera, interactable);
+    const pointer = Pointer(page.sigs, page.camera, interactable);    
     //#region ui
     const ui_interactable = [ ];
     const canvas = Canvas(page.sigs);
@@ -89,67 +89,85 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id)=>{
     }
     //#endregion
     //#region load world
+    const LoadGLTF = (gltf)=>{
+        loader.parse(gltf, '', (loaded)=>{
+            page.scene.add(loaded.scene);
+            loaded.scene.traverse((_)=>{
+                if(!_.userData) return;
+                if(!_.userData.script) return;
+                const components = [ ];
+                _.userData.script.forEach((__)=>{
+                    const temp_func = new Function(__.source + '\nreturn prefabMeta;');
+                    components.push(temp_func());
+                });
+                if(components.length <= 0) return;
+                //#region find targets
+                const target_uuid = components[0].src_prefab_properties.trigger_meta_info.dest_user_data_id;
+                let target = undefined;
+                loaded.scene.traverse((__)=>{
+                    if(!__.userData) return;
+                    if('' + __.userData.id === '' + target_uuid){
+                        target = __;
+                    }
+                });
+                //#endregion
+                let prefab = undefined;
+                const params = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties;
+                switch(components[0].src_prefab_properties.trigger_meta_info.dest_prefab){
+                    case 'color_setter':
+                        prefab = ColorSetter;
+                        break;
+                    case 'toggle_visibility':
+                        prefab = ToggleVisibility;
+                        break;
+                    case 'inspector':
+                        prefab = Inspector;
+                        params['canvas'] = canvas;
+                        params['camera'] = page.camera;
+                        params['pointer'] = pointer;
+                        params['call_menu'] = OnKeyUp;
+                        break;
+                    case 'display_text':
+                        prefab = DisplayText;
+                        params['canvas'] = canvas;
+                        params['camera'] = page.camera;
+                        params['pointer'] = pointer;
+                        params['call_menu'] = OnKeyUp;
+                        break;
+                }
+                switch(components[0].src_prefab){
+                    case 'hover':
+                        MINT.Hover(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                        break;
+                    case 'left_click':
+                        MINT.LeftClick(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                        break;
+                    case 'idle':
+                        MINT.Idle(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                        break;
+                }
+                interactable.push(_);
+            });
+            const data_array = [ ];
+            loaded.scene.traverse((_)=>{
+                const data_tuple = { 
+                    id:         _.userData.id,
+                    instance:   {
+                        position:   _.position,
+                        quaternion: _.quaternion,
+                        scale:      _.scale,
+                        userData:   _.userData,
+                    }
+                };
+                data_array.push(data_tuple);
+            });
+            console.log(data_array);
+            socket.emit('world-init', data_array);
+        });
+    }
     const OnFileDownload = (result)=>{
         if(result.request_type === 'gltf' && result.category === 'world' && world_id === result.data[0].uid) {
-            loader.parse(result.data[0].data, '', (loaded)=>{
-                page.scene.add(loaded.scene);
-                loaded.scene.traverse((_)=>{
-                    if(!_.userData) return;
-                    if(!_.userData.script) return;
-                    const components = [ ];
-                    _.userData.script.forEach((__)=>{
-                        const temp_func = new Function(__.source + '\nreturn prefabMeta;');
-                        components.push(temp_func());
-                    });
-                    if(components.length <= 0) return;
-                    //#region find targets
-                    const target_uuid = components[0].src_prefab_properties.trigger_meta_info.dest_user_data_id;
-                    let target = undefined;
-                    loaded.scene.traverse((__)=>{
-                        if(!__.userData) return;
-                        if('' + __.userData.id === '' + target_uuid){
-                            target = __;
-                        }
-                    });
-                    //#endregion
-                    let prefab = undefined;
-                    const params = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties;
-                    switch(components[0].src_prefab_properties.trigger_meta_info.dest_prefab){
-                        case 'color_setter':
-                            prefab = ColorSetter;
-                            break;
-                        case 'toggle_visibility':
-                            prefab = ToggleVisibility;
-                            break;
-                        case 'inspector':
-                            prefab = Inspector;
-                            params['canvas'] = canvas;
-                            params['camera'] = page.camera;
-                            params['pointer'] = pointer;
-                            params['call_menu'] = OnKeyUp;
-                            break;
-                        case 'display_text':
-                            prefab = DisplayText;
-                            params['canvas'] = canvas;
-                            params['camera'] = page.camera;
-                            params['pointer'] = pointer;
-                            params['call_menu'] = OnKeyUp;
-                            break;
-                    }
-                    switch(components[0].src_prefab){
-                        case 'hover':
-                            MINT.Hover(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
-                            break;
-                        case 'left_click':
-                            MINT.LeftClick(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
-                            break;
-                        case 'idle':
-                            MINT.Idle(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
-                            break;
-                    }
-                    interactable.push(_);
-                });
-            });
+            LoadGLTF(result.data[0].data);
             binding.active = false;
         }
     }

@@ -97,6 +97,7 @@ const EnterInstPanel = (interactable, socket, ftm, navigate, client_data)=>{
     let cur_start_ind = 0;
     const OnInstanceList = (_inst_list)=>{
         inst_list = [..._inst_list];
+        console.log(_inst_list);
         table.cells.forEach((_, i)=>{
             const img_block = _.children[1];
             const txt_block = _.children[2];
@@ -105,7 +106,7 @@ const EnterInstPanel = (interactable, socket, ftm, navigate, client_data)=>{
                 return;
             }
             img_block.backgroundTexture.image.src = LoadingPNG;
-            txt_block.add(new Text({content:'name: ' + inst_list[cur_start_ind + i].id, fontSize: 0.03}));
+            txt_block.add(new Text({content:'name: ' + inst_list[cur_start_ind + i].room_name, fontSize: 0.03}));
             txt_block.add(new Text({content:'\nmaster: ' + inst_list[cur_start_ind + i].instance.master_id, fontSize: 0.03}));
             MINT.LeftClick(_, ()=>{
                 socket.emit('rq-exit-instance', true);
