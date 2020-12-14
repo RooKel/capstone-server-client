@@ -100,41 +100,6 @@ var timer = setInterval(updateClock, 1000 / fps);
 // socket.emit   : Sender only
 // io.emit       : All clients except sender
 io.on('connection', onConnect);
-function parseData(id)
-{
-    // Instantiate a loader
-    var loader = new GLTFLoader();
-
-    // Optional: Provide a DRACOLoader instance to decode compressed mesh data
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( 'three/examples/jsm/loaders/' );
-    loader.setDRACOLoader( dracoLoader );
-
-    const path = id;
-    // Load a glTF resource
-    loader.load(
-        // resource URL
-        'data/' + id + '/' + 'GLTF.gltf',
-        // called when the resource is loaded
-        function ( gltf ) {
-            console.log("GLTF 로드 완료");
-            console.log(gltf);
-
-        },
-        // called while loading is progressing
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        // called when loading has errors
-        function ( error ) {
-
-            console.log( 'An error happened' );
-
-        }
-    );
-}
 function onConnect(socket)
 {
     console.log(socket.id + "가 접속했다");
@@ -151,11 +116,15 @@ function onConnect(socket)
         instances[instance_id].room_name = data.room_name;
         instances[instance_id].world_id = data.world_id;
         instances[instance_id].master_id = socket.id;
+        instances[instance_id].master_name = nicknames[socket.id];
 
         socket.emit('create-success', instance_id);
+    });
 
-        /* 여기 아래부터 파싱 진행 및 오브젝트 초기화 단계 */
-        //parseData(world_id);
+    /* initialize world data only once from the client */
+    socket.on('world-init', world_data => {
+        console.log("world-init 실행");
+        console.log(world_data);
     });
 
     /* if user join instance, broadcast other-joined event */
@@ -177,7 +146,7 @@ function onConnect(socket)
         user_entity.quaternion = new THREE.Quaternion();
 
         // send login accept message to sender
-        socket.emit('join-accept', instances[instance_id].world_id);
+        socket.emit('join-accept', instances[instance_id].world_id, instance_id);
 
         // send each entity data because socket.io doesn't support to send dictionary data
         for (var entity_id in instance.entities)

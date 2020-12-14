@@ -107,8 +107,8 @@ const StartPage = (socket, ftm, client_data, app_sigs)=>{
     canvas.scene.add(start_panel, main_panel, user_data_panel, select_avatar_panel, enter_inst_panel, create_inst_panel, select_world_panel);
     //#endregion
     //#region socket event handlers
-    const OnJoinAccept = (world_id)=>{
-        app_sigs.change_page.dispatch('world', world_id);
+    const OnJoinAccept = (world_id, instance_id)=>{
+        app_sigs.change_page.dispatch('world', world_id, instance_id);
     }
     //#endregion
     page.sigs.enter.add(()=>{

@@ -1,16 +1,16 @@
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
-import {AnimationMixer} from 'three'
-
-import {Block, Text} from 'three-mesh-ui'
+import {AnimationMixer, Box3, Vector3} from 'three'
 import {Nameplate} from './Nameplate.js'
-import {Vector3, Box3} from 'three'
 
-const AvatarCtrl = (group, socket, uid, ftm, page, client_data)=>{
+const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
     const loader = new GLTFLoader();
     let mixer = undefined;
     let animation_action = { };
     let avatar_id = undefined;
     let temp_avatar_cont = undefined;
+
+    const nameplate = Nameplate(data.nickname, group, client_data, page);
+    page.scene.add(nameplate);
 
     const OnFileDownload = (result)=>{
         if(result.request_type === 'gltf' && result.category === 'avatar' && result.data[0].uid === avatar_id){
@@ -41,14 +41,15 @@ const AvatarCtrl = (group, socket, uid, ftm, page, client_data)=>{
                     for(let a = 0; a < _.userData.animSet.length; a++){
                         let animByState = loaded.animations.find(
                             (anim)=>{
-                                return anim.name === _.userData.animSet[a].animation
+                                return anim.name === _.userData.animSet[a].animation;
                             }
                         );
                         animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
                     }
                 });
+                const bbox = new Box3().setFromObject(loaded.scene);
+                nameplate.sigs.change_offset.dispatch(new Vector3(0,bbox.max.y + 0.25,0));
             });
-            
         }
     }
     //#endregion
@@ -59,6 +60,7 @@ const AvatarCtrl = (group, socket, uid, ftm, page, client_data)=>{
     group.sigs.dispose.add(()=>{
         socket.off('update-avatar', OnUpdateAvatar);
         socket.off('check-avatar-id-ack', OnCheck);
+        nameplate.sigs.dispose.dispatch();
     });
     page.sigs.update.add((delta)=>{
         if(mixer) mixer.update(delta);

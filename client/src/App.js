@@ -24,7 +24,7 @@ const App = ()=>{
     const Start = ()=>{
         ftm.listenFileDownload();
         pages[cur_page_ind].sigs.enter.dispatch();
-        sigs.change_page.add((to, world_id)=>{
+        sigs.change_page.add((to, world_id, instance_id)=>{
             pages[cur_page_ind].sigs.exit.dispatch();
             switch(to){
                 case 'start':
@@ -33,7 +33,7 @@ const App = ()=>{
                     break;
                 case 'world':
                     if(pages[1]) pages.splice(1, 1);
-                    pages.push(WorldPage(socket, ftm, client_data, sigs, world_id));
+                    pages.push(WorldPage(socket, ftm, client_data, sigs, world_id, instance_id));
                     pages[1].sigs.enter.dispatch();
                     cur_page_ind = 1;
                     break;
