@@ -34,6 +34,10 @@ const Pointer = (page_sigs, camera, interactable)=>{
     });
     page_sigs.update.add(()=>{
         if(!active || !pointer_pos.x || !pointer_pos.y) return;
+        if(document.pointerLockElement){
+            pointer_pos.x = 0;
+            pointer_pos.y = 0; 
+        }
         raycaster.setFromCamera(pointer_pos, camera);
         let closest = undefined;
         let closest_dist = undefined;
@@ -46,7 +50,7 @@ const Pointer = (page_sigs, camera, interactable)=>{
             }
         });
         interactable.forEach((_)=>{
-            if(_ !== closest && _.sigs.idle)
+            if(_ !== closest && _.sigs && _.sigs.idle)
                 _.sigs.idle.dispatch();
         });
         if(closest){

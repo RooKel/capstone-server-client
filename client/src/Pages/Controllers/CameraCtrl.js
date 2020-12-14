@@ -12,6 +12,18 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
     let pending_inputs = [ ];
     let input_sequence_number = 0;
 
+    const OnPointerLockChange = ()=>{
+        if(document.pointerLockElement){
+            OnInit();
+        }
+        else
+            OnDispose();
+    }
+    document.addEventListener('pointerlockchange', OnPointerLockChange);
+    sigs.exit.add(()=>{
+        document.removeEventListener('pointerlockchange', OnPointerLockChange);
+    });
+
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== client_data.uid) return;
@@ -43,10 +55,10 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
             prev_mouse_pos = { x:e.offsetX, y:e.offsetY };
         }
         else{
-            d_mouse_pos.mouse_dx = (e.offsetX - prev_mouse_pos.x) / screen.width;
-            d_mouse_pos.mouse_dy = (prev_mouse_pos.y - e.offsetY) / screen.height;
-            prev_mouse_pos.x = e.offsetX;
-            prev_mouse_pos.y = e.offsetY;
+            d_mouse_pos.mouse_dx = e.movementX / screen.width;
+            d_mouse_pos.mouse_dy = -e.movementY / screen.height;
+            prev_mouse_pos.x += e.movementX;
+            prev_mouse_pos.y -= e.movementY;
         }
     }
     //#endregion

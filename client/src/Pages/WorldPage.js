@@ -29,6 +29,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     const pointer = Pointer(page.sigs, page.camera, interactable);
     let audio_files = [ ]; 
     const all_pos_audio = [ ];
+    const three_canvas = document.getElementById('three-canvas');
+    three_canvas.requestPointerLock = three_canvas.requestPointerLock || three_canvas.mozRequestPointerLock;
     //#region ui
     const ui_interactable = [ ];
     const canvas = Canvas(page.sigs);
@@ -41,7 +43,6 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
         main_panel.sigs.toggle_off.dispatch(false);
     });
     const menu_close_button = ButtonType1('Close', ()=>{
-        page.camera.sigs.init.dispatch();
         main_panel.sigs.toggle_off.dispatch(false);
         ui_on = false;
         ui_pointer.Active(false);
@@ -74,20 +75,22 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
             case 'Escape':
                 ui_on = !ui_on;
                 if(!ui_on){
-                    page.camera.sigs.init.dispatch();
                     navigate[navigate.current].sigs.toggle_off.dispatch();
                     navigate.current = undefined;
                     ui_pointer.Active(false);
                     pointer.Active(true);
                 }
                 else{
-                    page.camera.sigs.dispose.dispatch();
                     main_panel.sigs.toggle_on.dispatch();
                     ui_pointer.Active(true);
                     pointer.Active(false);
                 }
                 break;
         }
+    }
+    const OnMouseDown = (e)=>{
+        if(e.button === 0 && !ui_on)
+            three_canvas.requestPointerLock();
     }
     //#endregion
     //#region load world
@@ -97,6 +100,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
             loaded.scene.traverse((_)=>{
                 if(!_.userData) return;
                 if(!_.userData.script) return;
+                if(_.userData.script.length <= 0) return;
                 const components = [ ];
                 _.userData.script.forEach((__)=>{
                     const temp_func = new Function(__.source + '\nreturn prefabMeta;');
@@ -154,15 +158,17 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                 switch(components[0].src_prefab){
                     case 'hover':
                         MINT.Hover(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                        interactable.push(_);
                         break;
                     case 'left_click':
                         MINT.LeftClick(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                        interactable.push(_);
                         break;
                     case 'idle':
                         MINT.Idle(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
+                        interactable.push(_);
                         break;
                 }
-                interactable.push(_);
             });
             const data_array = [ ];
             loaded.scene.traverse((_)=>{
@@ -204,11 +210,13 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
         document.addEventListener('keyup', OnKeyUp);
         ftm.requestFileDownload('zip', 'world', world_id);
         socket.on('join-accept', OnJoinAccept);
+        document.addEventListener('mousedown', OnMouseDown);
     });
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
-        all_pos_audio.forEach((_)=>_.stop());
+        if(all_pos_audio.length > 0) all_pos_audio.forEach((_)=>_.stop());
+        document.removeEventListener('mousedown', OnMouseDown);
     });
     return page;
 }

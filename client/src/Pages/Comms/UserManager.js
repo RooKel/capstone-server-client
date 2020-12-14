@@ -39,7 +39,7 @@ const UserManager = (socket, ftm, client_data, page)=>{
             }});
             const cam_ctrl = CameraCtrl(socket, client_data, Object.assign({}, data), page.camera, input_collector, page.sigs);
             page.camera.sigs.change_target.dispatch(group, new Vector3(0,1,0));
-            page.camera.sigs.init.dispatch();
+            //page.camera.sigs.init.dispatch();
             client_data.player_obj = group;
         }
         else{
