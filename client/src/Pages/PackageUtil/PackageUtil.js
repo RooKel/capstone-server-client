@@ -59,19 +59,26 @@ PackageUtil.convFilesToAudioData = function (_metaFile, _files, onComplete)
                 }
                 return url;
             } );
-            for (let i = 0; i < files.length; i++)
+            if(files.length == 0)
             {
-                var file = files[i];
-                var metaInfo = metaFile.audioMetaInfo.find(element=>element.audioPath === file.name);
-                var filename = metaInfo.audioName;
-                var audioID = metaInfo.audioID;
+                resolve('resolved');
+            }
+            else
+            {
+                for (let i = 0; i < files.length; i++)
+                {
+                    var file = files[i];
+                    var metaInfo = metaFile.audioMetaInfo.find(element=>element.audioPath === file.name);
+                    var filename = metaInfo.audioName;
+                    var audioID = metaInfo.audioID;
 
-                let blob = new Blob([file.asArrayBuffer()], {type:'application/octet-stream'});
+                    let blob = new Blob([file.asArrayBuffer()], {type:'application/octet-stream'});
 
-                let data = new AudioData(audioID, filename, blob, (_data)=>{
-                    resultSet.push(data);
-                    resolve('resolved');
-                });
+                    let data = new AudioData(audioID, filename, blob, (_data)=>{
+                        resultSet.push(data);
+                        resolve('resolved');
+                    });
+                }
             }
         });
     }
