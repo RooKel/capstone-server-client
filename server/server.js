@@ -37,6 +37,7 @@ const makeUID = function() { return '_' + Math.random().toString(36).substr(2, 9
 // all of instances.
 var instances = [];
 var instance_of_users = [];
+var nicknames = [];
 var avatars = [];
 var peers = [];
 
@@ -138,9 +139,10 @@ function onConnect(socket)
 {
     console.log(socket.id + "가 접속했다");
     /* generate instance id and assign world, master id */
-    socket.on('create-world', world_id => {
+    socket.on('create-world', world_id, room_name => {
         var instance_id = makeUID();
         instances[instance_id] = new Instance();
+        instances[instance_id].room_name = room_name;
         instances[instance_id].world_id = world_id;
         instances[instance_id].master_id = socket.id;
 
