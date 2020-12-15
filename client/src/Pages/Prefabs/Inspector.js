@@ -28,8 +28,13 @@ const Inspector = (dest, params)=>{
     params.canvas.scene.background = new Color(0x000000);
 
     const cam_ctrl = new OrbitControls(params.canvas.camera, document.getElementById('three-canvas'));
+    cam_ctrl.enableZoom = false;
+    cam_ctrl.enablePan = false;
+    
     cam_ctrl.target.set(0,0,-2);
     const light_ctrl = new OrbitControls(params.canvas.light, document.getElementById('three-canvas'));
+    light_ctrl.enableZoom = false;
+    light_ctrl.enablePan = false;
 }
 
 export {Inspector}
