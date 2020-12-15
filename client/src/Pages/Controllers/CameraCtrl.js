@@ -14,10 +14,13 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
 
     const OnPointerLockChange = ()=>{
         if(document.pointerLockElement){
+            console.log('init');
             OnInit();
         }
-        else
+        else{
+            console.log('dispose');
             OnDispose();
+        }
     }
     document.addEventListener('pointerlockchange', OnPointerLockChange);
     sigs.exit.add(()=>{

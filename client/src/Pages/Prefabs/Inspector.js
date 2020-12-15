@@ -4,6 +4,7 @@ import {Color} from 'three'
 const Inspector = (dest, params)=>{
     document.addEventListener('keyup', (e)=>{
         if(e.code === 'Escape'){
+            console.log('inspector');
             params.canvas.camera.position.set(0,0,0);
             params.canvas.camera.lookAt(0,0,-1);
             params.canvas.light.position.set(0,1,1);
@@ -14,9 +15,11 @@ const Inspector = (dest, params)=>{
             params.pointer.Active(true);
             params.camera.sigs.init.dispatch();
             document.addEventListener('keyup', params.call_menu);
-            e.stopPropagation();
+            document.getElementById('three-canvas').requestPointerLock();
         }
     }, {once: true});
+
+    document.exitPointerLock();
     document.removeEventListener('keyup', params.call_menu);
     params.pointer.Active(false);
     params.camera.sigs.dispose.dispatch();
@@ -24,7 +27,6 @@ const Inspector = (dest, params)=>{
     const clone = dest.clone();
     clone.position.set(0,0,-2);
     params.canvas.scene.add(clone);
-
     params.canvas.scene.background = new Color(0x000000);
 
     const cam_ctrl = new OrbitControls(params.canvas.camera, document.getElementById('three-canvas'));
