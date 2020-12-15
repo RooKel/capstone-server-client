@@ -15,6 +15,7 @@ var Entity = function() {
     this.position_buffer = [];
     this.quaternion_buffer = [];
     this.extras = undefined;
+    this.toggle = false;
 }
 
 module.exports = Entity;
