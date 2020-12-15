@@ -110,9 +110,8 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
     sigs.update.add(OnUpdate);
     //#region public funcs
     const ChangeTarget = (_target, _offset)=>{
-        if(!(_target instanceof THREE.Object3D)) return -1;
-        if(!(_offset instanceof THREE.Vector3)) return -1;
-        target = _target;
+        if(_target)
+            target = _target;
         offset = _offset;
     }
     camera.sigs.change_target.add(ChangeTarget);

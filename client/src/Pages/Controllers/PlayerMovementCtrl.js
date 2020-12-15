@@ -4,6 +4,8 @@ const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, p
     const netw_obj = data;
     let pending_inputs = [ ];
     let input_sequence_number = 0;
+    let anim_name = undefined;
+
     const pressed = [false,false,false,false];
     const key_map = {
         0:['KeyW','ArrowUp'],
@@ -61,18 +63,25 @@ const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, p
         else horizontal = -1;
 
         if(anim_ctrl){
-            if(vertical !== 0 || horizontal !== 0){
-                if(!walking){
-                    anim_ctrl.PlayAnim('walk');
-                    walking = true;
-                }
+            let temp_anim_name = undefined;
+            if(vertical < 0){
+                temp_anim_name = 'walk_front';
+            }
+            else if(vertical > 0){
+                temp_anim_name = 'walk_back';
+            }
+            else if(horizontal > 0){
+                temp_anim_name = 'walk_right';
+            }
+            else if(horizontal < 0){
+                temp_anim_name = 'walk_left';
             }
             else{
-                if(walking) {
-                    anim_ctrl.PlayAnim('idle');
-                    walking = false;
-                }
+                temp_anim_name = 'idle';
             }
+            if(anim_name !== temp_anim_name)
+                anim_name = temp_anim_name;
+            anim_ctrl.PlayAnim(anim_name);
         }
 
         //console.log(horizontal + ", " + vertical);
@@ -90,6 +99,7 @@ const PlayerMovementCtrl = (socket, uid, data, model, camera, input_collector, p
         const input = { 
             move_dx: move.x * delta,
             move_dy: move.z * delta,
+            animation_state: anim_name,
             input_sequence_number: input_sequence_number++
         };
         input_collector.AddMsg('input', input);

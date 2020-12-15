@@ -1,5 +1,5 @@
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
-import {AnimationMixer, Box3, Vector3} from 'three'
+import {AnimationMixer, Box3, Vector3, SkinnedMesh} from 'three'
 import {Nameplate} from './Nameplate.js'
 
 const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
@@ -9,8 +9,11 @@ const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
     let avatar_id = undefined;
     let temp_avatar_cont = undefined;
 
-    const nameplate = Nameplate(data.nickname, group, client_data, page);
-    page.scene.add(nameplate);
+    let nameplate = undefined;
+    if(uid !== client_data.uid){
+        nameplate = Nameplate(data.nickname, group, client_data, page);
+        page.scene.add(nameplate);
+    }
 
     const OnFileDownload = (result)=>{
         if(result.request_type === 'gltf' && result.category === 'avatar' && result.data[0].uid === avatar_id){
@@ -47,8 +50,15 @@ const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
                         animation_action[_.userData.animSet[a].state] = mixer.clipAction(animByState, _);
                     }
                 });
-                const bbox = new Box3().setFromObject(loaded.scene);
-                nameplate.sigs.change_offset.dispatch(new Vector3(0,bbox.max.y + 0.25,0));
+                let cheat = undefined;
+                loaded.scene.traverse((_)=>{
+                    if(_.name === 'mixamorigHeadTop_End_end'){
+                        cheat = _.position;
+                    }
+                });
+                if(cheat){
+                    if(nameplate) nameplate.sigs.change_offset.dispatch(new Vector3(0,cheat.y + 0.5,0));
+                }
             });
         }
     }
@@ -60,7 +70,7 @@ const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
     group.sigs.dispose.add(()=>{
         socket.off('update-avatar', OnUpdateAvatar);
         socket.off('check-avatar-id-ack', OnCheck);
-        nameplate.sigs.dispose.dispatch();
+        if(uid !== client_data.uid) nameplate.sigs.dispose.dispatch();
     });
     page.sigs.update.add((delta)=>{
         if(mixer) mixer.update(delta);
