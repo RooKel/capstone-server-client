@@ -295,6 +295,17 @@ function onConnect(socket)
         console.log(socket.id + "유저의 아바타 갱신 : " + avatar_id);
     })
 
+    /* global object processing */
+    socket.on('interaction', data => {
+        var instance_id = data.instance_id;
+        var uid = data.uid;
+
+        var instance = instances[instance_id];
+        var entity = instance.entities[uid];
+        entity.toggle = !entity.toggle;
+        io.in(instance_id).emit('interaction-ack', { uid: uid, toggle: entity.toggle, extras: entity.extras });
+    })
+
     /* upload avatar or world from client */
     socket.on('file-upload', data => {
         // generate world id and set directory
