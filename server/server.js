@@ -150,7 +150,7 @@ function onConnect(socket)
                 entity.scale_y = scale.y;
                 entity.scale_z = scale.z;
                 entity.extras = extras;
-                console.log(entity);
+                //console.log(entity);
             }
         }
     });
