@@ -22,7 +22,7 @@ function AudioData (_audioID, _fileName, _audioFile, _callback)
             scope.artist = tags.artist;
 
             var image = tags.picture;
-            if(image !== null)
+            if(image !== undefined)
             {
                 var base64String = "";
                 for (var i = 0; i < image.data.length; i++) {
