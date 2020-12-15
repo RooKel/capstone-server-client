@@ -8,7 +8,7 @@ import {EnterInstPanel} from './UI/Panels/EnterInstPanel.js'
 import {CreateInstPanel} from './UI/Panels/CreateInstPanel.js'
 import {SelectWorldPanel} from './UI/Panels/SelectWorldPanel.js'
 import {ButtonType1} from './UI/Templates.js'
-import {Color, AudioListener, PositionalAudio, AudioContext} from 'three'
+import {Color, AudioListener, PositionalAudio, AudioContext, AnimationMixer} from 'three'
 import {UserManager} from './Comms/UserManager.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {ColorSetter} from './Prefabs/ColorSetter.js'
@@ -16,6 +16,7 @@ import {ToggleVisibility} from './Prefabs/ToggleVisibility.js'
 import {Inspector} from './Prefabs/Inspector.js'
 import {DisplayText} from './Prefabs/DisplayText.js'
 import {PlayAudio} from './Prefabs/PlayAudio.js'
+import {AnimationPlayer} from './Prefabs/AnimationPlayer.js'
 import * as MINT from './Interaction/MouseInteraction.js'
 import {PackageUtil} from './PackageUtil/PackageUtil.js'
 
@@ -29,6 +30,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     const pointer = Pointer(page.sigs, page.camera, interactable);
     let audio_files = [ ]; 
     const all_pos_audio = [ ];
+    const obj_mixers = [ ];
     const three_canvas = document.getElementById('three-canvas');
     three_canvas.requestPointerLock = three_canvas.requestPointerLock || three_canvas.mozRequestPointerLock;
     //#region ui
@@ -95,6 +97,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     //#endregion
     //#region load world
     const LoadGLTF = (gltf)=>{
+        const awake_objects = [ ];
         loader.parse(gltf, '', (loaded)=>{
             page.scene.add(loaded.scene);
             loaded.scene.traverse((_)=>{
@@ -107,68 +110,131 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                     components.push(temp_func());
                 });
                 if(components.length <= 0) return;
-                //#region find targets
-                const target_uuid = components[0].src_prefab_properties.trigger_meta_info.dest_user_data_id;
-                let target = undefined;
-                loaded.scene.traverse((__)=>{
-                    if(!__.userData) return;
-                    if('' + __.userData.id === '' + target_uuid){
-                        target = __;
+                components.forEach((__)=>{
+                    //#region find targets
+                    const target_uuid = __.src_prefab_properties.trigger_meta_info.dest_user_data_id[0];
+                    let target = undefined;
+                    loaded.scene.traverse((___)=>{
+                        if(!___.userData) return;
+                        if('' + ___.userData.id === '' + target_uuid){
+                            target = ___;
+                        }
+                    });
+                    //#endregion
+                    let prefab = undefined;
+                    const params = __.src_prefab_properties.trigger_meta_info.dest_prefab_properties;
+                    switch(__.src_prefab_properties.trigger_meta_info.dest_prefab){
+                        case 'color_setter':
+                            prefab = ColorSetter;
+                            break;
+                        case 'toggle_visibility':
+                            prefab = ToggleVisibility;
+                            break;
+                        case 'inspector':
+                            prefab = Inspector;
+                            params['canvas'] = canvas;
+                            params['camera'] = page.camera;
+                            params['pointer'] = pointer;
+                            params['call_menu'] = OnKeyUp;
+                            break;
+                        case 'display_text':
+                            prefab = DisplayText;
+                            params['canvas'] = canvas;
+                            params['camera'] = page.camera;
+                            params['pointer'] = pointer;
+                            params['call_menu'] = OnKeyUp;
+                            break;
+                        case 'audio_player':
+                            prefab = PlayAudio;
+                            const lookfor = __.src_prefab_properties.trigger_meta_info.dest_prefab_properties.audioID;
+                            let blob = audio_files.find((audio)=>audio.audioID===lookfor).dataBuffer;
+                            let context = AudioContext.getContext();
+                            let sound = new PositionalAudio(listener);
+                            params['audio_file'] = sound;
+                            blob.arrayBuffer().then(buffer=>{
+                                context.decodeAudioData(buffer, function (audioBuffer) {
+                                    if(!target){
+                                        sound.setBuffer(audioBuffer);
+                                        all_pos_audio.push(sound);
+                                    }
+                                    else{
+                                        sound.setBuffer(audioBuffer);
+                                        sound.position.copy(target.position);
+                                        all_pos_audio.push(sound);
+                                    }
+                                });
+                            });
+                            break;
+                        case 'animation_player':
+                            prefab = AnimationPlayer;
+                            const mixer = new AnimationMixer(target);
+                            const animation_action = { };
+                            target.traverse((___)=>{
+                                if(___.userData === undefined) return;
+                                if(___.userData.animSet === undefined) return;
+                                if(___.userData.animSet.length === 0) return;
+                                for(let a = 0; a < ___.userData.animSet.length; a++){
+                                    let animByState = loaded.animations.find(
+                                        (anim)=>{
+                                            return anim.name === ___.userData.animSet[a].animation;
+                                        }
+                                    );
+                                    animation_action[___.userData.animSet[a].state] = mixer.clipAction(animByState, ___);
+                                }
+                            });
+                            params['animation_action'] = animation_action;
+                            obj_mixers.push(mixer);
+                            break;
+                    }
+                    if(!__.is_global){
+                        switch(__.src_prefab){
+                            case 'hover':
+                                MINT.Hover(_, ()=>prefab(target, params));
+                                interactable.push(_);
+                                break;
+                            case 'left_click':
+                                MINT.LeftClick(_, ()=>prefab(target, params));
+                                interactable.push(_);
+                                break;
+                            case 'idle':
+                                MINT.Idle(_, ()=>prefab(target, params));
+                                interactable.push(_);
+                                break;
+                            case 'awake':
+                                //params['audio_file'].autoplay = true;
+                                params['awake'] = true;
+                                awake_objects.push(()=>prefab(target, params));
+                                break;
+                        }
+                    }
+                    else{
+                        const OnAck = (ack_info)=>{
+                            if(ack_info.uid === _.userData.id){
+                                prefab(target, params);
+                            }
+                        }
+                        socket.on('interaction-ack', OnAck);
+                        switch(__.src_prefab){
+                            case 'hover':
+                                MINT.Hover(_, ()=>socket.emit('interaction', {instance_id: instance_id, uid: _.userData.id}));
+                                interactable.push(_);
+                                break;
+                            case 'left_click':
+                                MINT.LeftClick(_, ()=>socket.emit('interaction', {instance_id: instance_id, uid: _.userData.id}));
+                                interactable.push(_);
+                                break;
+                            case 'idle':
+                                MINT.Idle(_, ()=>socket.emit('interaction', {instance_id: instance_id, uid: _.userData.id}));
+                                interactable.push(_);
+                                break;
+                            case 'awake':
+                                params['awake'] = true;
+                                awake_objects.push(()=>prefab(target, params));
+                                break;
+                        }
                     }
                 });
-                //#endregion
-                let prefab = undefined;
-                const params = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties;
-                switch(components[0].src_prefab_properties.trigger_meta_info.dest_prefab){
-                    case 'color_setter':
-                        prefab = ColorSetter;
-                        break;
-                    case 'toggle_visibility':
-                        prefab = ToggleVisibility;
-                        break;
-                    case 'inspector':
-                        prefab = Inspector;
-                        params['canvas'] = canvas;
-                        params['camera'] = page.camera;
-                        params['pointer'] = pointer;
-                        params['call_menu'] = OnKeyUp;
-                        break;
-                    case 'display_text':
-                        prefab = DisplayText;
-                        params['canvas'] = canvas;
-                        params['camera'] = page.camera;
-                        params['pointer'] = pointer;
-                        params['call_menu'] = OnKeyUp;
-                        break;
-                    case 'audio_player':
-                        prefab = PlayAudio;
-                        const lookfor = components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties.audioID;
-                        let blob = audio_files.find((_)=>_.audioID===lookfor).dataBuffer;
-                        let context = AudioContext.getContext();
-                        blob.arrayBuffer().then(buffer=>{
-                            context.decodeAudioData(buffer, function (audioBuffer) {
-                                const sound = new PositionalAudio(listener);
-                                sound.setBuffer(audioBuffer);
-                                all_pos_audio.push(sound);
-                                params['audio_file'] = sound;
-                            });
-                        });
-                        break;
-                }
-                switch(components[0].src_prefab){
-                    case 'hover':
-                        MINT.Hover(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
-                        interactable.push(_);
-                        break;
-                    case 'left_click':
-                        MINT.LeftClick(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
-                        interactable.push(_);
-                        break;
-                    case 'idle':
-                        MINT.Idle(_, ()=>prefab(target, components[0].src_prefab_properties.trigger_meta_info.dest_prefab_properties));
-                        interactable.push(_);
-                        break;
-                }
+                console.log(_.sigs);
             });
             const data_array = [ ];
             loaded.scene.traverse((_)=>{
@@ -185,6 +251,9 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                 data_array.push(data_tuple);
             });
             socket.emit('world-init', data_array);
+            awake_objects.forEach((_)=>{
+                _();
+            });
         });
     }
     const OnFileDownload = (result)=>{
@@ -192,8 +261,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
             PackageUtil.convBinaryToPackage(result.data[0].data, (conv_result)=>{
                 PackageUtil.convFilesToAudioData(conv_result.audioMetaInfo, conv_result.audioFiles, (audio_conv_result)=>{
                     audio_files = [...audio_conv_result];
+                    LoadGLTF(conv_result.gltf.asText());
                 });
-                LoadGLTF(conv_result.gltf.asText());
             });
             binding.active = false;
         }
@@ -212,10 +281,15 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
         socket.on('join-accept', OnJoinAccept);
         document.addEventListener('mousedown', OnMouseDown);
     });
+    page.sigs.update.add((delta)=>{
+        obj_mixers.forEach((_)=>_.update(delta));
+    })
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
-        if(all_pos_audio.length > 0) all_pos_audio.forEach((_)=>_.stop());
+        if(all_pos_audio.length > 0) all_pos_audio.forEach((_)=>{
+            if(_ !== null)_.stop();
+        });
         document.removeEventListener('mousedown', OnMouseDown);
     });
     return page;

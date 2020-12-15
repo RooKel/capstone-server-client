@@ -35,7 +35,7 @@ const UserManager = (socket, ftm, client_data, page)=>{
             Object.assign(page.camera, { sigs: { 
                 init: new signals.Signal(),
                 dispose: new signals.Signal(),
-                change_target: new signals.Signal()
+                change_target: new signals.Signal(),
             }});
             const cam_ctrl = CameraCtrl(socket, client_data, Object.assign({}, data), page.camera, input_collector, page.sigs);
             page.camera.sigs.change_target.dispatch(group, new Vector3(0,1,0));

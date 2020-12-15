@@ -1,7 +1,12 @@
 import {Color} from 'three'
 
 const ColorSetter = (dest, params)=>{
-    dest.material.color = new Color(params.color);
+    if(params.type === 'light'){
+        dest.color.setHex(params.color);
+    }
+    else{
+        dest.material.color = new Color(params.color);
+    }
 }
 
 export {ColorSetter}

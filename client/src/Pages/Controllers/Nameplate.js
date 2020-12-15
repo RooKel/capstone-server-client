@@ -4,8 +4,8 @@ import {Vector3} from 'three'
 
 const Nameplate = (nickname, follow_target, client_data, page)=>{
     let fontSize = 2 / nickname.length;
-    if(nickname.length < 7)
-        fontSize = 0.3;
+    if(nickname.length < 6)
+        fontSize = 0.2;
     const nameplate_block = new Block(Object.assign({}, fontRoboto, {
         width: 1, height:0.3,
         backgroundOpacity: 0.8,

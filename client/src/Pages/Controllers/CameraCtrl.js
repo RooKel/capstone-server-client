@@ -1,11 +1,12 @@
 import * as THREE from 'three'
+import { Vector3 } from 'three';
 
 const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
     let mouse_sensitivity = 50;
     const netw_obj = data;
     const sum = { x:0, y:0 };
     let target = undefined;
-    let offset = undefined;
+    let offset = new Vector3(0,0,0);
 
     let prev_mouse_pos = undefined;
     let d_mouse_pos = { mouse_dx:0, mouse_dy:0 };
@@ -14,10 +15,13 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
 
     const OnPointerLockChange = ()=>{
         if(document.pointerLockElement){
+            console.log('init');
             OnInit();
         }
-        else
+        else{
+            console.log('dispose');
             OnDispose();
+        }
     }
     document.addEventListener('pointerlockchange', OnPointerLockChange);
     sigs.exit.add(()=>{
@@ -110,10 +114,9 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
     sigs.update.add(OnUpdate);
     //#region public funcs
     const ChangeTarget = (_target, _offset)=>{
-        if(!(_target instanceof THREE.Object3D)) return -1;
-        if(!(_offset instanceof THREE.Vector3)) return -1;
-        target = _target;
-        offset = _offset;
+        if(_target)
+            target = _target;
+        offset.set(_offset.x, _offset.y, _offset.z);
     }
     camera.sigs.change_target.add(ChangeTarget);
     //#endregion

@@ -1,12 +1,15 @@
-import { Vector3 } from "three";
+import { Matrix4, Vector3 } from "three";
 
 const OthUserMovementCtrl = (socket, uid, data, model, page_sigs, anim_ctrl)=>{
     const netw_obj = data;
     const server_update_rate = 12;
     let prev_model_pos = new Vector3(data.x, 0, data.y);
+    let current_anim = undefined;
+    let prev_anim = undefined;
     //#region socket event handlers
     const ProcessServerMessage = (msg)=>{
         if(msg.entity_id !== uid) return;
+        current_anim = msg.entity_properties.animation_state;
         netw_obj.position_buffer.push([
             +new Date(),
             msg.entity_properties.x,
@@ -37,16 +40,10 @@ const OthUserMovementCtrl = (socket, uid, data, model, page_sigs, anim_ctrl)=>{
 
         model.position.x = netw_obj.x;
         model.position.z = netw_obj.y;
-        if(anim_ctrl) {
-            if(!walking && (prev_model_pos.x !== model.position.x || prev_model_pos.z !== model.position.z)){
-                anim_ctrl.PlayAnim('walk');
-                walking = true;
-            }
-            else if(walking && (prev_model_pos.x === model.position.x && prev_model_pos.z === model.position.z)){
-                anim_ctrl.PlayAnim('idle');
-                walking = false;
-            }
-            prev_model_pos.copy(model.position);
+        if(anim_ctrl && current_anim) {
+            if(current_anim !== prev_anim)
+                anim_ctrl.PlayAnim(current_anim);
+            prev_anim = current_anim;
         }
     }
     const OnDispose = ()=>{
