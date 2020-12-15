@@ -1,11 +1,12 @@
 import * as THREE from 'three'
+import { Vector3 } from 'three';
 
 const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
     let mouse_sensitivity = 50;
     const netw_obj = data;
     const sum = { x:0, y:0 };
     let target = undefined;
-    let offset = undefined;
+    let offset = new Vector3(0,0,0);
 
     let prev_mouse_pos = undefined;
     let d_mouse_pos = { mouse_dx:0, mouse_dy:0 };
@@ -115,7 +116,7 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
     const ChangeTarget = (_target, _offset)=>{
         if(_target)
             target = _target;
-        offset = _offset;
+        offset.set(_offset.x, _offset.y, _offset.z);
     }
     camera.sigs.change_target.add(ChangeTarget);
     //#endregion

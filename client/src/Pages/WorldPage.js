@@ -287,7 +287,9 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
-        if(all_pos_audio.length > 0) all_pos_audio.forEach((_)=>_.stop());
+        if(all_pos_audio.length > 0) all_pos_audio.forEach((_)=>{
+            if(_ !== null)_.stop();
+        });
         document.removeEventListener('mousedown', OnMouseDown);
     });
     return page;
