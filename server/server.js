@@ -83,7 +83,6 @@ var updateClock = function() {
 
         for (var entity_id in instance.entities)
         {
-            instance.entities[entity_id].x += 0.01;
             io.in(instance_id).emit('instance-state', { 'entity_id': entity_id, 'entity_properties': instance.entities[entity_id], 'last_processed_input': last_processed_input[entity_id] });
         }
     }
