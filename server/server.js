@@ -269,6 +269,7 @@ function onConnect(socket)
 
             user_entity.x_rot -= data.mouse_dx;
             user_entity.y_rot -= data.mouse_dy;
+            user_entity.animation_state = data.animation_state;
 
             let tempQuat =  new Quaternion();
             let mulQuat = new Quaternion();

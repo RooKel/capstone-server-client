@@ -12,6 +12,7 @@ var Entity = function() {
     this.speed = 2;
     this.nickname = undefined;
     this.color = 0;
+    this.animation_state = undefined;
     this.position_buffer = [];
     this.quaternion_buffer = [];
     this.extras = undefined;
