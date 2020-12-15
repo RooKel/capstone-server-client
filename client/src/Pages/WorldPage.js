@@ -12,9 +12,7 @@ import {Color, AudioListener, PositionalAudio, AudioContext, AnimationMixer} fro
 import {UserManager} from './Comms/UserManager.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {ColorSetter} from './Prefabs/ColorSetter.js'
-import {ToggleVisibility} from './Prefabs/ToggleVisibility.js'
 import {Inspector} from './Prefabs/Inspector.js'
-import {DisplayText} from './Prefabs/DisplayText.js'
 import {PlayAudio} from './Prefabs/PlayAudio.js'
 import {AnimationPlayer} from './Prefabs/AnimationPlayer.js'
 import * as MINT from './Interaction/MouseInteraction.js'
@@ -31,6 +29,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     let audio_files = [ ]; 
     const all_pos_audio = [ ];
     const obj_mixers = [ ];
+    let ui_on = false;
     const three_canvas = document.getElementById('three-canvas');
     three_canvas.requestPointerLock = three_canvas.requestPointerLock || three_canvas.mozRequestPointerLock;
     //#region ui
@@ -71,7 +70,6 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     canvas.scene.add(main_panel, user_data_panel, select_avatar_panel, enter_inst_panel, create_inst_panel, select_world_panel);
     //#endregion
     //#region input event handlers
-    let ui_on = false;
     const OnKeyUp = (e)=>{
         switch(e.code){
             case 'Escape':
@@ -127,18 +125,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                         case 'color_setter':
                             prefab = ColorSetter;
                             break;
-                        case 'toggle_visibility':
-                            prefab = ToggleVisibility;
-                            break;
                         case 'inspector':
                             prefab = Inspector;
-                            params['canvas'] = canvas;
-                            params['camera'] = page.camera;
-                            params['pointer'] = pointer;
-                            params['call_menu'] = OnKeyUp;
-                            break;
-                        case 'display_text':
-                            prefab = DisplayText;
                             params['canvas'] = canvas;
                             params['camera'] = page.camera;
                             params['pointer'] = pointer;
@@ -151,16 +139,15 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                             let context = AudioContext.getContext();
                             let sound = new PositionalAudio(listener);
                             params['audio_file'] = sound;
+                            all_pos_audio.push(sound);
                             blob.arrayBuffer().then(buffer=>{
                                 context.decodeAudioData(buffer, function (audioBuffer) {
                                     if(!target){
                                         sound.setBuffer(audioBuffer);
-                                        all_pos_audio.push(sound);
                                     }
                                     else{
                                         sound.setBuffer(audioBuffer);
                                         sound.position.copy(target.position);
-                                        all_pos_audio.push(sound);
                                     }
                                 });
                             });
@@ -234,7 +221,6 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                         }
                     }
                 });
-                console.log(_.sigs);
             });
             const data_array = [ ];
             loaded.scene.traverse((_)=>{
@@ -283,12 +269,12 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     });
     page.sigs.update.add((delta)=>{
         obj_mixers.forEach((_)=>_.update(delta));
-    })
+    });
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
         if(all_pos_audio.length > 0) all_pos_audio.forEach((_)=>{
-            if(_ !== null)_.stop();
+            _.stop();
         });
         document.removeEventListener('mousedown', OnMouseDown);
     });

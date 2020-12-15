@@ -15,11 +15,9 @@ const CameraCtrl = (socket, client_data, data, camera, input_collector, sigs)=>{
 
     const OnPointerLockChange = ()=>{
         if(document.pointerLockElement){
-            console.log('init');
             OnInit();
         }
         else{
-            console.log('dispose');
             OnDispose();
         }
     }

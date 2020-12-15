@@ -2,9 +2,8 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import {Color} from 'three'
 
 const Inspector = (dest, params)=>{
-    document.addEventListener('keyup', (e)=>{
+    const OnKeyUp = (e)=>{
         if(e.code === 'Escape'){
-            console.log('inspector');
             params.canvas.camera.position.set(0,0,0);
             params.canvas.camera.lookAt(0,0,-1);
             params.canvas.light.position.set(0,1,1);
@@ -16,8 +15,10 @@ const Inspector = (dest, params)=>{
             params.camera.sigs.init.dispatch();
             document.addEventListener('keyup', params.call_menu);
             document.getElementById('three-canvas').requestPointerLock();
+            document.removeEventListener('keyup', OnKeyUp);
         }
-    }, {once: true});
+    }
+    document.addEventListener('keyup', OnKeyUp);
 
     document.exitPointerLock();
     document.removeEventListener('keyup', params.call_menu);

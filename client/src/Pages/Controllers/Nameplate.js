@@ -3,13 +3,10 @@ import {fontRoboto} from '../UI/Styles.js'
 import {Vector3} from 'three'
 
 const Nameplate = (nickname, follow_target, client_data, page)=>{
-    let fontSize = 2 / nickname.length;
-    if(nickname.length < 6)
-        fontSize = 0.2;
     const nameplate_block = new Block(Object.assign({}, fontRoboto, {
         width: 1, height:0.3,
         backgroundOpacity: 0.8,
-        fontSize: fontSize,
+        fontSize: 0.2,
         borderRadius: 0.075,
         alignContent: 'center',
         justifyContent: 'center'
@@ -23,7 +20,7 @@ const Nameplate = (nickname, follow_target, client_data, page)=>{
             follow_target.position.y + offset.y,
             follow_target.position.z + offset.z
         );
-        nameplate_block.lookAt(client_data.player_obj.position);
+        if(client_data.player_obj) nameplate_block.lookAt(client_data.player_obj.position);
     }
     page.sigs.update.add(OnUpdate);
 

@@ -1,9 +1,9 @@
 
 const PlayAudio = (dest, params)=>{
+    console.log(dest, params);
     const my_audio = params['audio_file'];
     const volume = params['volume'];
     const loop = params['loop'];
-    console.log(params);
     my_audio.autoplay = params['awake'];
     my_audio.setVolume(volume);
     my_audio.setLoop(loop);
