@@ -22,11 +22,14 @@ function AudioData (_audioID, _fileName, _audioFile, _callback)
             scope.artist = tags.artist;
 
             var image = tags.picture;
-            var base64String = "";
-            for (var i = 0; i < image.data.length; i++) {
-                base64String += String.fromCharCode(image.data[i]);
+            if(image !== null)
+            {
+                var base64String = "";
+                for (var i = 0; i < image.data.length; i++) {
+                    base64String += String.fromCharCode(image.data[i]);
+                }
+                scope.coverImage = "data:" + image.format + ";base64," + window.btoa(base64String);
             }
-            scope.coverImage = "data:" + image.format + ";base64," + window.btoa(base64String);
             scope.dataBuffer = file;
             if(_callback !== undefined)
                 _callback(scope);
