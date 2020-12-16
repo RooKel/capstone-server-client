@@ -141,16 +141,11 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                             let context = AudioContext.getContext();
                             let sound = new PositionalAudio(listener);
                             params['audio_file'] = sound;
-                            all_pos_audio.push(sound);
                             blob.arrayBuffer().then(buffer=>{
                                 context.decodeAudioData(buffer, function (audioBuffer) {
-                                    if(!target){
-                                        sound.setBuffer(audioBuffer);
-                                    }
-                                    else{
-                                        sound.setBuffer(audioBuffer);
-                                        sound.position.copy(target.position);
-                                    }
+                                    sound.setBuffer(audioBuffer);
+                                    sound.position.copy(target.position);
+                                    all_pos_audio.push(sound);
                                 });
                             });
                             break;
@@ -242,7 +237,6 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
             awake_objects.forEach((_)=>{
                 _();
             });
-            console.log(all_pos_audio);
         });
         canvas.scene.remove(loading_panel);
         document.addEventListener('keyup', OnKeyUp);
@@ -278,7 +272,11 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
-        console.log(all_pos_audio);
+        all_pos_audio.forEach((_)=>{
+            if(!_) return;
+            if(_ === null) return;
+            _.stop();
+        });
         document.removeEventListener('mousedown', OnMouseDown);
     });
     return page;

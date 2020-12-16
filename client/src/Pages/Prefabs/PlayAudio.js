@@ -6,12 +6,7 @@ const PlayAudio = (dest, params)=>{
     my_audio.autoplay = params['awake'];
     my_audio.setVolume(volume);
     my_audio.setLoop(loop);
-    if(dest){
-        if(my_audio.isPlaying)
-            my_audio.stop();
-        else
-            my_audio.play();
-    }
+    my_audio.play();
 }
 
 export {PlayAudio}
