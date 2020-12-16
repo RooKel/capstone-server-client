@@ -302,8 +302,8 @@ function onConnect(socket)
 
         var instance = instances[instance_id];
         var entity = instance.entities[uid];
-        entity.toggle = !entity.toggle;
-        io.in(instance_id).emit('interaction-ack', { uid: uid, toggle: entity.toggle, extras: entity.extras });
+        //entity.toggle = !entity.toggle;
+        io.in(instance_id).emit('interaction-ack', { uid: uid });
     })
 
     /* upload avatar or world from client */
