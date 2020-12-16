@@ -7,8 +7,8 @@ import {SelectAvatarPanel} from './UI/Panels/SelectAvatarPanel.js'
 import {EnterInstPanel} from './UI/Panels/EnterInstPanel.js'
 import {CreateInstPanel} from './UI/Panels/CreateInstPanel.js'
 import {SelectWorldPanel} from './UI/Panels/SelectWorldPanel.js'
-import {ButtonType1} from './UI/Templates.js'
-import {Color, AudioListener, PositionalAudio, AudioContext, AnimationMixer} from 'three'
+import {ButtonType1, LoadingPanel} from './UI/Templates.js'
+import {Color, AudioListener, PositionalAudio, AudioContext, AnimationMixer, LogLuvEncoding} from 'three'
 import {UserManager} from './Comms/UserManager.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {ColorSetter} from './Prefabs/ColorSetter.js'
@@ -33,6 +33,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     const three_canvas = document.getElementById('three-canvas');
     three_canvas.requestPointerLock = three_canvas.requestPointerLock || three_canvas.mozRequestPointerLock;
     //#region ui
+    const loading_panel = LoadingPanel();
+    Object.assign(loading_panel, {sigs:{}});
     const ui_interactable = [ ];
     const canvas = Canvas(page.sigs);
     const ui_pointer = Pointer(page.sigs, canvas.camera, ui_interactable);
@@ -52,7 +54,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     });
     main_panel.body.add(return_to_start_button);
     main_panel.footer.add(menu_close_button);
-    ui_interactable.push(return_to_start_button, menu_close_button);
+    ui_interactable.push(return_to_start_button, menu_close_button, loading_panel);
     const user_data_panel = UserDataPanel(ui_interactable, socket, ftm, navigate, client_data);
     const select_avatar_panel = SelectAvatarPanel(ui_interactable, socket, ftm, navigate, client_data);
     const enter_inst_panel = EnterInstPanel(ui_interactable, socket, ftm, navigate, client_data);
@@ -67,7 +69,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
         create_inst: create_inst_panel,
         select_world: select_world_panel,
     });
-    canvas.scene.add(main_panel, user_data_panel, select_avatar_panel, enter_inst_panel, create_inst_panel, select_world_panel);
+    canvas.scene.add(main_panel, user_data_panel, select_avatar_panel, enter_inst_panel, create_inst_panel, select_world_panel, loading_panel);
     //#endregion
     //#region input event handlers
     const OnKeyUp = (e)=>{
@@ -236,11 +238,16 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                 };
                 data_array.push(data_tuple);
             });
-            socket.emit('world-init', data_array);
+            //socket.emit('world-init', data_array);
             awake_objects.forEach((_)=>{
                 _();
             });
+            console.log(all_pos_audio);
         });
+        canvas.scene.remove(loading_panel);
+        document.addEventListener('keyup', OnKeyUp);
+        socket.on('join-accept', OnJoinAccept);
+        document.addEventListener('mousedown', OnMouseDown);
     }
     const OnFileDownload = (result)=>{
         if(result.request_type === 'zip' && result.category === 'world' && world_id === result.data[0].uid) {
@@ -262,10 +269,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     //#endregion
     const user_manager = UserManager(socket, ftm, client_data, page);
     page.sigs.enter.add(()=>{
-        document.addEventListener('keyup', OnKeyUp);
+        loading_panel.position.z = -1;
         ftm.requestFileDownload('zip', 'world', world_id);
-        socket.on('join-accept', OnJoinAccept);
-        document.addEventListener('mousedown', OnMouseDown);
     });
     page.sigs.update.add((delta)=>{
         obj_mixers.forEach((_)=>_.update(delta));
@@ -273,9 +278,7 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
     page.sigs.exit.add(()=>{
         document.removeEventListener('keyup', OnKeyUp);
         socket.off('join-accept', OnJoinAccept);
-        if(all_pos_audio.length > 0) all_pos_audio.forEach((_)=>{
-            _.stop();
-        });
+        console.log(all_pos_audio);
         document.removeEventListener('mousedown', OnMouseDown);
     });
     return page;

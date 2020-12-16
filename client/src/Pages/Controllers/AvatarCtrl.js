@@ -58,7 +58,7 @@ const AvatarCtrl = (group, socket, uid, ftm, page, data, client_data)=>{
                 });
                 if(cheat){
                     if(nameplate){
-                        nameplate.sigs.change_offset.dispatch(new Vector3(0,cheat.y + 0.5,0));
+                        nameplate.sigs.change_offset.dispatch(new Vector3(0,cheat.y + 0.25,0));
                     }
                     else{
                         page.camera.sigs.change_target.dispatch(undefined, new Vector3(0,cheat.y,0));

@@ -1,7 +1,6 @@
 
 
 const AnimationPlayer = (dest, params)=>{
-    console.log(params);
     const animation_action = params.animation_action;
     const anim_name = params.anim_name;
     if(!animation_action[anim_name]) return;

@@ -1,6 +1,5 @@
 
 const PlayAudio = (dest, params)=>{
-    console.log(dest, params);
     const my_audio = params['audio_file'];
     const volume = params['volume'];
     const loop = params['loop'];
