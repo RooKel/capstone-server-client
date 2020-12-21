@@ -100,6 +100,23 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
         const awake_objects = [ ];
         loader.parse(gltf, '', (loaded)=>{
             page.scene.add(loaded.scene);
+            //#region world-init
+            const data_array = [ ];
+            loaded.scene.traverse((_)=>{
+                const data_tuple = { 
+                    id:         _.userData.id,
+                    instance:   {
+                        instance_id:    instance_id,
+                        position:       _.position,
+                        quaternion:     _.quaternion,
+                        scale:          _.scale,
+                        userData:       _.userData,
+                    }
+                };
+                data_array.push(data_tuple);
+            });
+            socket.emit('world-init', data_array);
+            //#endregion
             loaded.scene.traverse((_)=>{
                 if(!_.userData) return;
                 if(!_.userData.script) return;
@@ -110,6 +127,8 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                     components.push(temp_func());
                 });
                 if(components.length <= 0) return;
+                //console.log(_.name, components.length);
+
                 components.forEach((__)=>{
                     //#region find targets
                     const target_uuid = __.src_prefab_properties.trigger_meta_info.dest_user_data_id[0];
@@ -141,11 +160,15 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                             let context = AudioContext.getContext();
                             let sound = new PositionalAudio(listener);
                             params['audio_file'] = sound;
+                            all_pos_audio.push(sound);
+                            params['ready'] = false;
+                            //console.log(params['ready']);
                             blob.arrayBuffer().then(buffer=>{
                                 context.decodeAudioData(buffer, function (audioBuffer) {
                                     sound.setBuffer(audioBuffer);
                                     sound.position.copy(target.position);
-                                    all_pos_audio.push(sound);
+                                    params['ready'] = true;
+                                    //console.log(params['ready']);
                                 });
                             });
                             break;
@@ -192,18 +215,41 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                         }
                     }
                     else{
-                        const OnAck = (ack_info)=>{
-                            if(ack_info.uid === _.userData.id){
-                                prefab(target, params);
+                        // const OnAck = (ack_info)=>{
+                        //     if(ack_info.uid === _.userData.id){
+                        //         prefab(target, params);
+                        //     }
+                        // }
+                        // socket.on('interaction-ack', OnAck);
+                        if(_.prev_toggle === undefined){
+                            Object.assign(_, {
+                                prev_toggle: false,
+                                call_backs: []
+                            });
+                            const OnInstanceState = (msg)=>{
+                                if(msg.entity_id === _.userData.id){
+                                    if(_.prev_toggle !== msg.entity_properties.toggle){
+                                        _.call_backs.forEach((_)=>{
+                                            _.prefab(_.target, _.params);
+                                        });
+                                        _.prev_toggle = msg.entity_properties.toggle;
+                                    }
+                                }
                             }
+                            socket.on('instance-state', OnInstanceState);
                         }
-                        socket.on('interaction-ack', OnAck);
+                        _.call_backs.push({
+                            prefab: prefab,
+                            target: target,
+                            params: params
+                        });
                         switch(__.src_prefab){
                             case 'hover':
                                 MINT.Hover(_, ()=>socket.emit('interaction', {instance_id: instance_id, uid: _.userData.id}));
                                 interactable.push(_);
                                 break;
                             case 'left_click':
+                                if(_.sigs && _.sigs.left_click) break;
                                 MINT.LeftClick(_, ()=>socket.emit('interaction', {instance_id: instance_id, uid: _.userData.id}));
                                 interactable.push(_);
                                 break;
@@ -219,21 +265,6 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
                     }
                 });
             });
-            const data_array = [ ];
-            loaded.scene.traverse((_)=>{
-                const data_tuple = { 
-                    id:         _.userData.id,
-                    instance:   {
-                        instance_id:    instance_id,
-                        position:       _.position,
-                        quaternion:     _.quaternion,
-                        scale:          _.scale,
-                        userData:       _.userData,
-                    }
-                };
-                data_array.push(data_tuple);
-            });
-            //socket.emit('world-init', data_array);
             awake_objects.forEach((_)=>{
                 _();
             });
@@ -275,8 +306,10 @@ const WorldPage = (socket, ftm, client_data, app_sigs, world_id, instance_id)=>{
         all_pos_audio.forEach((_)=>{
             if(!_) return;
             if(_ === null) return;
+            if(!_.isPlaying) return;
             _.stop();
         });
+        socket.off('instance-state');
         document.removeEventListener('mousedown', OnMouseDown);
     });
     return page;

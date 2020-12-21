@@ -302,7 +302,7 @@ function onConnect(socket)
 
         var instance = instances[instance_id];
         var entity = instance.entities[uid];
-        //entity.toggle = !entity.toggle;
+        entity.toggle = !entity.toggle;
         io.in(instance_id).emit('interaction-ack', { uid: uid });
     })
 

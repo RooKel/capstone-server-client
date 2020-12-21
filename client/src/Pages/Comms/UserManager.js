@@ -12,6 +12,7 @@ const UserManager = (socket, ftm, client_data, page)=>{
     const input_collector = InputCollector(socket, client_data, page.sigs);
     //#region socket event handlers
     const AddUser = (uid, data)=>{
+        if(!data.nickname) return;
         let group = new Group();
         group.position.set(data.x, 0, data.y);
         group.quaternion.set(
