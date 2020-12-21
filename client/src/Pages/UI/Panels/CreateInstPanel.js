@@ -61,6 +61,7 @@ const CreateInstPanel = (interactable, socket, ftm, navigate, client_data)=>{
         justifyContent: 'center'
     });
     const submit_button = ButtonType1('Submit', ()=>{
+        if(!selected_world_uid || world_name_inp_field.text.content === '') return;
         socket.emit('create-world', {
             world_id: selected_world_uid, 
             room_name: world_name_inp_field.text.content
