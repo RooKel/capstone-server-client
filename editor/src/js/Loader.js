@@ -27,6 +27,7 @@ import { LoaderUtils } from './LoaderUtils.js';
 
 import { JSZip } from '../../examples/jsm/libs/jszip.module.min.js';
 import { JSONLoader } from "../../build/three.module.js";
+import {PackageUtil} from "./PackageUtil.js";
 
 function Loader( editor ) {
 
@@ -690,73 +691,127 @@ function Loader( editor ) {
 
 		}
 
-		//
+		PackageUtil.convBinaryToPackage(contents, function (packageData){
+			//	If not Package File
+			if(packageData.audioMetaInfo === undefined)
+			{
+				zip.filter( function ( path, file ) {
 
-		zip.filter( function ( path, file ) {
+					var manager = new THREE.LoadingManager();
+					manager.setURLModifier( function ( url ) {
 
-			var manager = new THREE.LoadingManager();
-			manager.setURLModifier( function ( url ) {
+						var file = zip.files[ url ];
 
-				var file = zip.files[ url ];
+						if ( file ) {
 
-				if ( file ) {
+							console.log( 'Loading', url );
 
-					console.log( 'Loading', url );
+							var blob = new Blob( [ file.asArrayBuffer() ], { type: 'application/octet-stream' } );
+							return URL.createObjectURL( blob );
 
-					var blob = new Blob( [ file.asArrayBuffer() ], { type: 'application/octet-stream' } );
-					return URL.createObjectURL( blob );
+						}
 
-				}
-
-				return url;
-
-			} );
-
-			var extension = file.name.split( '.' ).pop().toLowerCase();
-
-			switch ( extension ) {
-
-				case 'fbx':
-
-					var loader = new FBXLoader( manager );
-					var object = loader.parse( file.asArrayBuffer() );
-
-					editor.execute( new AddObjectCommand( editor, object ) );
-
-					break;
-
-				case 'glb':
-
-					var dracoLoader = new DRACOLoader();
-					dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
-
-					var loader = new GLTFLoader();
-					loader.setDRACOLoader( dracoLoader );
-
-					loader.parse( file.asArrayBuffer(), '', function ( result ) {
-
-						var scene = result.scene;
-
-						editor.addAnimation( scene, result.animations );
-						editor.execute( new AddObjectCommand( editor, scene ) );
+						return url;
 
 					} );
 
-					break;
+					var extension = file.name.split( '.' ).pop().toLowerCase();
 
-				case 'gltf':
+					switch ( extension ) {
 
-					var dracoLoader = new DRACOLoader();
+						case 'fbx':
+
+							var loader = new FBXLoader( manager );
+							var object = loader.parse( file.asArrayBuffer() );
+
+							editor.execute( new AddObjectCommand( editor, object ) );
+
+							break;
+
+						case 'glb':
+
+							var dracoLoader = new DRACOLoader();
+							dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
+
+							var loader = new GLTFLoader();
+							loader.setDRACOLoader( dracoLoader );
+
+							loader.parse( file.asArrayBuffer(), '', function ( result ) {
+
+								var scene = result.scene;
+
+								editor.addAnimation( scene, result.animations );
+								editor.execute( new AddObjectCommand( editor, scene ) );
+
+							} );
+
+							break;
+
+						case 'gltf':
+
+							var dracoLoader = new DRACOLoader();
+							dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
+
+							var loader = new GLTFLoader( manager );
+							loader.setDRACOLoader( dracoLoader );
+							loader.parse( file.asText(), '', function ( result ) {
+
+								var scene = result.scene;
+
+								editor.addAnimation( scene, result.animations );
+								editor.execute( new AddObjectCommand( editor, scene ) );
+
+								editor.scene.traverse(x => {
+
+									if(x.userData === undefined)        return;
+									if(x.userData.animSet === undefined)return;
+
+									let getAnimSet = [];
+									for (let a = 0; a < x.userData.animSet.length; a++)
+									{
+										let animByName = result.animations.find(
+											anim => anim.name === x.userData.animSet[a].animation
+										);
+										getAnimSet.push(animByName);
+									}
+
+									editor.addAnimation( x, getAnimSet );
+									editor.deselect();
+								});
+
+								/*var scene = result.scene;
+                                editor.execute( new AddObjectCommand( editor, scene ) );*/
+							} );
+							break;
+						case 'json':
+							handleJSON( JSON.parse( file.asText() ) );
+
+					}
+
+				} );
+			}
+			else
+			{
+				PackageUtil.convFilesToAudioData(packageData.audioMetaInfo, packageData.audioFiles, (audioDataSet=>{
+					for (let i = 0; i < audioDataSet.length; i++)
+					{
+						let _data = audioDataSet[i];
+						editor.addAudioBuffer(_data.audioID, _data.dataBuffer);
+						editor.addAudioData(_data.audioID, _data);
+					}
+					let dracoLoader = new DRACOLoader();
 					dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
-
-					var loader = new GLTFLoader( manager );
+					let loader = new GLTFLoader();
 					loader.setDRACOLoader( dracoLoader );
-					loader.parse( file.asText(), '', function ( result ) {
+					loader.parse( packageData.gltf.asText(), '', function ( result ) {
 
-						var scene = result.scene;
-
-						editor.addAnimation( scene, result.animations );
-						editor.execute( new AddObjectCommand( editor, scene ) );
+						let scene = result.scene;
+						scene.name = result.scene.name;
+						for (let c = 0; c < scene.children.length;)
+						{
+							//  명령 수행마다 children이 하나씩 사라짐 => 0 index만 참조
+							editor.execute( new AddObjectCommand( editor, scene.children[0] ) );
+						}
 
 						editor.scene.traverse(x => {
 
@@ -771,21 +826,20 @@ function Loader( editor ) {
 								);
 								getAnimSet.push(animByName);
 							}
-
+							for (let s = 0; s < x.userData.script.length; s++)
+							{
+								let script = x.userData.script[s];
+							}
 							editor.addAnimation( x, getAnimSet );
 							editor.deselect();
 						});
-
-						/*var scene = result.scene;
-						editor.execute( new AddObjectCommand( editor, scene ) );*/
+						editor.signals.loadStateChanged.dispatch("close");
 					} );
-					break;
-				case 'json':
-					handleJSON( JSON.parse( file.asText() ) );
-
+				}));
 			}
+		});
 
-		} );
+		//
 
 	}
 
