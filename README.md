@@ -1,4 +1,4 @@
-# capstone-server-client
+# My Virtual Workshop
 
 테스트 환경세팅
 1.	프로젝트 zip 파일을 다운로드 받고 압축을 해제한다.
@@ -10,6 +10,8 @@ $ npm run build
 3.	클라이언트는 http://localhost:3000/ 에서, 에디터는 http://localhost:3000/editor 에서 기동할 수 있다.
 
 
+
+# 테스트
 
 클라이언트에서 테스트하기 전에 우선 에디터에서 아바타와 월드를 업로드해야 한다.
 1.	http://localhost:3000/editor 에 접속한다.
